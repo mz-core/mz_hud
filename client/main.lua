@@ -235,6 +235,11 @@ local function getVehiclePayload()
     gearLabel = 'N'
   end
 
+  local seatbeltStatus = false
+  if speedometerConfig.show_seatbelt == true then
+    seatbeltStatus = GetPedConfigFlag(playerPed, 16, true) ~= 0
+  end
+
   return {
     action = 'updateVehicle',
     vehicle = {
@@ -243,7 +248,7 @@ local function getVehiclePayload()
       rpm = clamp(math.floor((GetVehicleCurrentRpm(vehicle) or 0.0) * 100), 0, 100),
       fuel = clamp(math.floor(GetVehicleFuelLevel(vehicle) or 0.0), 0, 100),
       gear = gearLabel,
-      seatbelt = false,
+      seatbelt = seatbeltStatus,
       lights = (lightsOn == 1 or highbeamsOn == 1),
       engine = GetIsVehicleEngineRunning(vehicle)
     }

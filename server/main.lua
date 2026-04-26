@@ -153,12 +153,40 @@ local function getDefaults()
   return deepCopy(Config.DefaultHUD or {})
 end
 
+local function sanitizeCommsOptions(key, incoming, defaultOptions)
+  if key ~= 'voice' and key ~= 'radio' then
+    return nil
+  end
+
+  local options = type(incoming) == 'table' and incoming or {}
+  local defaults = defaultOptions or {}
+
+  if key == 'voice' then
+    return {
+      show_label = sanitizeBool(options.show_label, defaults.show_label ~= false),
+      show_level_text = sanitizeBool(options.show_level_text, defaults.show_level_text ~= false),
+      show_talking_text = sanitizeBool(options.show_talking_text, defaults.show_talking_text ~= false),
+      inactive_opacity = clampNumber(options.inactive_opacity, 0, 100, defaults.inactive_opacity or 72)
+    }
+  elseif key == 'radio' then
+    return {
+      show_frequency = sanitizeBool(options.show_frequency, defaults.show_frequency ~= false),
+      show_inactive = sanitizeBool(options.show_inactive, defaults.show_inactive ~= false),
+      show_talking_text = sanitizeBool(options.show_talking_text, defaults.show_talking_text ~= false),
+      inactive_text = sanitizeText(options.inactive_text, defaults.inactive_text or 'OFF', 12),
+      frequency_suffix = sanitizeText(options.frequency_suffix, defaults.frequency_suffix or 'MHz', 12)
+    }
+  end
+
+  return nil
+end
+
 local function sanitizeElements(defaults, incoming)
   local elements = {}
 
   for key, defaultElement in pairs(defaults.elements or {}) do
     local entry = type(incoming) == 'table' and incoming[key] or {}
-    elements[key] = {
+    local sanitized = {
       enabled = sanitizeBool(entry.enabled, defaultElement.enabled),
       label = sanitizeText(entry.label, defaultElement.label or key, 24),
       icon = sanitizeEnum(entry.icon, ALLOWED_ICONS, defaultElement.icon),
@@ -172,6 +200,12 @@ local function sanitizeElements(defaults, incoming)
       opacity = clampNumber(entry.opacity, 0, 100, defaultElement.opacity),
       individual = (key == 'voice' or key == 'radio') and true or sanitizeBool(entry.individual, defaultElement.individual == true)
     }
+
+    if key == 'voice' or key == 'radio' then
+      sanitized.comms_options = sanitizeCommsOptions(key, entry.comms_options, defaultElement.comms_options)
+    end
+
+    elements[key] = sanitized
   end
 
   return elements
