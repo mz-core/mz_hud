@@ -1,0 +1,288 @@
+/* MZ HUD - Status module styles
+   Movido de web/style.css sem alterar classes ou visual.
+   Mantém também estilos compartilhados usados pelos itens de status. */
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: var(--item-opacity, 1);
+}
+
+.hud-ring {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(10, 14, 18, 0) 52%, rgba(10, 14, 18, 0.94) 53%),
+    conic-gradient(var(--item-accent) calc(var(--item-value) * 1%), rgba(255, 255, 255, 0.08) 0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    0 0 22px color-mix(in srgb, var(--item-accent) 28%, transparent);
+}
+
+.hud-ring::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: inherit;
+  background: rgba(10, 14, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hud-center {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+/* Base de ícones/masks fica em web/style.css para URL de assets resolver corretamente. */
+
+.hud-value {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.hud-label {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(10, 14, 18, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.hud-speaking .hud-ring {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    0 0 26px rgba(34, 197, 94, 0.52);
+}
+
+/* ===== mz_hud editor v2: visual próximo ao exemplo + preview vivo ===== */
+.hud-root.editor-preview-mode {
+  pointer-events: auto;
+  z-index: 105;
+}
+
+.hud-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: default;
+}
+
+.editor-preview-mode .hud-item,
+.editor-preview-mode .speedometer {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.editor-preview-mode .hud-item.is-selected,
+.editor-preview-mode .speedometer.is-selected {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  border-radius: 12px;
+  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.95));
+}
+
+.hud-style-circle .hud-ring {
+  width: 48px;
+  height: 48px;
+}
+
+.hud-style-bar .hud-bar-box {
+  width: 96px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--item-accent) 45%, transparent);
+}
+
+.hud-style-bar .hud-icon {
+  flex: 0 0 auto;
+  color: #ffffff;
+}
+
+.hud-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(55, 65, 81, 0.95);
+  overflow: hidden;
+}
+
+.hud-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--item-accent);
+  box-shadow: 0 0 8px var(--item-accent);
+}
+
+.hud-style-square .hud-square-box {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--item-accent) 45%, transparent);
+}
+
+.hud-square-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--item-accent);
+  box-shadow: 0 0 10px var(--item-accent);
+}
+
+.hud-style-square .hud-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  z-index: 1;
+}
+
+.hud-style-pill .hud-pill-box {
+  min-width: 78px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--item-accent) 45%, transparent);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hud-style-pill .hud-icon {
+  color: var(--item-accent);
+}
+
+/* ===== MZ HUD editor v3: itens independentes, voz separada, posições em porcentagem ===== */
+.hud-layout-free {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-layout-free .hud-item {
+  position: fixed;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(var(--item-scale, 1));
+  transform-origin: center center;
+}
+
+.editor-preview-mode .hud-layout-free .hud-item {
+  pointer-events: auto;
+}
+
+.hud-anchor-free { left: var(--item-x, 50%); top: var(--item-y, 95%); }
+.hud-anchor-bottom-left { left: 3%; top: 94%; }
+.hud-anchor-bottom-center { left: 50%; top: 94%; }
+.hud-anchor-bottom-right { left: 97%; top: 94%; }
+.hud-anchor-center-left { left: 3%; top: 50%; }
+.hud-anchor-center { left: 50%; top: 50%; }
+.hud-anchor-center-right { left: 97%; top: 50%; }
+.hud-anchor-top-left { left: 3%; top: 6%; }
+.hud-anchor-top-center { left: 50%; top: 6%; }
+.hud-anchor-top-right { left: 97%; top: 6%; }
+
+.hud-voice-item .hud-ring,
+.hud-voice-item .hud-bar-box,
+.hud-voice-item .hud-square-box,
+.hud-voice-item .hud-pill-box {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.18),
+    0 0 14px rgba(34, 197, 94, 0.22),
+    0 10px 18px rgba(0, 0, 0, 0.38);
+}
+
+/* ===== MZ HUD editor v4: grupo de status + itens soltos opcionais ===== */
+.hud-status-group {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: var(--group-gap, 8px);
+  opacity: var(--group-opacity, 1);
+  transform: translate(-50%, -50%) scale(var(--group-scale, 1));
+  transform-origin: center center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.editor-preview-mode .hud-status-group {
+  pointer-events: auto;
+}
+
+.hud-status-group .hud-item {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  transform: scale(var(--item-scale, 1)) !important;
+  flex: 0 0 auto;
+}
+
+.hud-group-anchor-free { left: var(--group-x, 50%); top: var(--group-y, 94%); }
+.hud-group-anchor-bottom-left { left: 8%; top: 94%; }
+.hud-group-anchor-bottom-center { left: 50%; top: 94%; }
+.hud-group-anchor-bottom-right { left: 92%; top: 94%; }
+.hud-group-anchor-center-left { left: 8%; top: 50%; }
+.hud-group-anchor-center { left: 50%; top: 50%; }
+.hud-group-anchor-center-right { left: 92%; top: 50%; }
+.hud-group-anchor-top-left { left: 8%; top: 6%; }
+.hud-group-anchor-top-center { left: 50%; top: 6%; }
+.hud-group-anchor-top-right { left: 92%; top: 6%; }
+
+.hud-anchor-grouped {
+  position: relative;
+}
+
+/* ===== Modelo extra importado da hud.zip ===== */
+.hud-style-hudzip .hudzip-status-circle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.50);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.28));
+}
+.hud-style-hudzip .hudzip-health { transform: scaleX(-1); }
+.hud-style-hudzip .hudzip-health .hud-icon { transform: scaleX(-1); }
+.hudzip-status-svg { position: absolute; inset: -5px; width: 50px; height: 50px; overflow: visible; }
+.hudzip-status-svg circle { fill: none; stroke-width: 2.4px; stroke-dasharray: 113; transition: stroke-dashoffset .35s ease, stroke .2s ease; transform: rotate(-90deg); transform-origin: center; }
+.hudzip-circle-back { stroke: rgba(255,255,255,.20); stroke-width: 3.2px !important; }
+.hudzip-circle-fill { stroke: var(--item-accent, #fff); filter: drop-shadow(0 0 2px var(--item-accent, #fff)); }
+.hud-style-hudzip .hud-icon { position: relative; z-index: 2; width: 14px; height: 14px; color: #fff; }

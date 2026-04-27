@@ -16,7 +16,10 @@
     "primary_color": "#ffffff",
     "secondary_color": "#3b82f6",
     "accent_color": "#ef4444",
-    "background_color": "#000000"
+    "background_color": "#000000",
+    "free": false,
+    "x": 88,
+    "y": 82
   },
   "elements": {
     "health": {

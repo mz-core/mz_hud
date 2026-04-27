@@ -1,3 +1,5 @@
+local DebugVoice = false
+
 local HudState = {
   config = nil,
   canManage = false,
@@ -14,6 +16,83 @@ local VoiceRuntime = {
   radioTalking = false,
   radioTalkingUntil = 0
 }
+
+
+local WeaponHashToName = {
+  [`WEAPON_PISTOL`] = 'weapon_pistol',
+  [`WEAPON_PISTOL_MK2`] = 'weapon_pistol_mk2',
+  [`WEAPON_COMBATPISTOL`] = 'weapon_combatpistol',
+  [`WEAPON_APPISTOL`] = 'weapon_appistol',
+  [`WEAPON_PISTOL50`] = 'weapon_pistol50',
+  [`WEAPON_SNSPISTOL`] = 'weapon_snspistol',
+  [`WEAPON_SNSPISTOL_MK2`] = 'weapon_snspistol_mk2',
+  [`WEAPON_HEAVYPISTOL`] = 'weapon_heavypistol',
+  [`WEAPON_VINTAGEPISTOL`] = 'weapon_vintagepistol',
+  [`WEAPON_CERAMICPISTOL`] = 'weapon_ceramicpistol',
+  [`WEAPON_REVOLVER`] = 'weapon_revolver',
+  [`WEAPON_REVOLVER_MK2`] = 'weapon_revolver_mk2',
+  [`WEAPON_DOUBLEACTION`] = 'weapon_doubleaction',
+  [`WEAPON_MICROSMG`] = 'weapon_microsmg',
+  [`WEAPON_SMG`] = 'weapon_smg',
+  [`WEAPON_SMG_MK2`] = 'weapon_smg_mk2',
+  [`WEAPON_ASSAULTSMG`] = 'weapon_assaultsmg',
+  [`WEAPON_COMBATPDW`] = 'weapon_combatpdw',
+  [`WEAPON_MACHINEPISTOL`] = 'weapon_machinepistol',
+  [`WEAPON_MINISMG`] = 'weapon_minismg',
+  [`WEAPON_ASSAULTRIFLE`] = 'weapon_assaultrifle',
+  [`WEAPON_ASSAULTRIFLE_MK2`] = 'weapon_assaultrifle_mk2',
+  [`WEAPON_CARBINERIFLE`] = 'weapon_carbinerifle',
+  [`WEAPON_CARBINERIFLE_MK2`] = 'weapon_carbinerifle_mk2',
+  [`WEAPON_ADVANCEDRIFLE`] = 'weapon_advancedrifle',
+  [`WEAPON_SPECIALCARBINE`] = 'weapon_specialcarbine',
+  [`WEAPON_SPECIALCARBINE_MK2`] = 'weapon_specialcarbine_mk2',
+  [`WEAPON_BULLPUPRIFLE`] = 'weapon_bullpuprifle',
+  [`WEAPON_BULLPUPRIFLE_MK2`] = 'weapon_bullpuprifle_mk2',
+  [`WEAPON_COMPACTRIFLE`] = 'weapon_compactrifle',
+  [`WEAPON_MILITARYRIFLE`] = 'weapon_militaryrifle',
+  [`WEAPON_HEAVYRIFLE`] = 'weapon_heavyrifle',
+  [`WEAPON_PUMPSHOTGUN`] = 'weapon_pumpshotgun',
+  [`WEAPON_PUMPSHOTGUN_MK2`] = 'weapon_pumpshotgun_mk2',
+  [`WEAPON_SAWNOFFSHOTGUN`] = 'weapon_sawnoffshotgun',
+  [`WEAPON_ASSAULTSHOTGUN`] = 'weapon_assaultshotgun',
+  [`WEAPON_BULLPUPSHOTGUN`] = 'weapon_bullpupshotgun',
+  [`WEAPON_DBSHOTGUN`] = 'weapon_dbshotgun',
+  [`WEAPON_HEAVYSHOTGUN`] = 'weapon_heavyshotgun',
+  [`WEAPON_COMBATSHOTGUN`] = 'weapon_combatshotgun',
+  [`WEAPON_MG`] = 'weapon_mg',
+  [`WEAPON_COMBATMG`] = 'weapon_combatmg',
+  [`WEAPON_COMBATMG_MK2`] = 'weapon_combatmg_mk2',
+  [`WEAPON_GUSENBERG`] = 'weapon_gusenberg',
+  [`WEAPON_SNIPERRIFLE`] = 'weapon_sniperrifle',
+  [`WEAPON_HEAVYSNIPER`] = 'weapon_heavysniper',
+  [`WEAPON_HEAVYSNIPER_MK2`] = 'weapon_heavysniper_mk2',
+  [`WEAPON_MARKSMANRIFLE`] = 'weapon_marksmanrifle',
+  [`WEAPON_MARKSMANRIFLE_MK2`] = 'weapon_marksmanrifle_mk2',
+  [`WEAPON_STUNGUN`] = 'weapon_stungun',
+  [`WEAPON_KNIFE`] = 'weapon_knife',
+  [`WEAPON_NIGHTSTICK`] = 'weapon_nightstick',
+  [`WEAPON_HAMMER`] = 'weapon_hammer',
+  [`WEAPON_BAT`] = 'weapon_bat',
+  [`WEAPON_CROWBAR`] = 'weapon_crowbar',
+  [`WEAPON_GOLFCLUB`] = 'weapon_golfclub',
+  [`WEAPON_BOTTLE`] = 'weapon_bottle',
+  [`WEAPON_DAGGER`] = 'weapon_dagger',
+  [`WEAPON_HATCHET`] = 'weapon_hatchet',
+  [`WEAPON_MACHETE`] = 'weapon_machete',
+  [`WEAPON_SWITCHBLADE`] = 'weapon_switchblade',
+  [`WEAPON_BATTLEAXE`] = 'weapon_battleaxe',
+  [`WEAPON_POOLCUE`] = 'weapon_poolcue',
+  [`WEAPON_WRENCH`] = 'weapon_wrench',
+  [`WEAPON_STONE_HATCHET`] = 'weapon_stone_hatchet',
+  [`WEAPON_FLASHLIGHT`] = 'weapon_flashlight',
+  [`WEAPON_KNUCKLE`] = 'weapon_knuckle',
+  [`WEAPON_UNARMED`] = 'weapon_unarmed'
+}
+
+local function getWeaponNameFromHash(hash)
+  return WeaponHashToName[hash] or ('weapon_' .. tostring(hash))
+end
+
 
 local function setRadioTalkingState(active)
   VoiceRuntime.radioTalking = active == true
@@ -94,7 +173,16 @@ local function getPlayerMetadataValue(key, fallback)
 end
 
 local function getVoiceState()
-  local talking = NetworkIsPlayerTalking(PlayerId())
+  local playerId = PlayerId()
+  local talking = NetworkIsPlayerTalking(playerId) == true
+
+  if DebugVoice then
+    print(('[mz_hud voice] network=%s final=%s'):format(
+      tostring(talking),
+      tostring(talking)
+    ))
+  end
+
   local proximityState = LocalPlayer and LocalPlayer.state and LocalPlayer.state.proximity or nil
   local modeIndex = 2
 
@@ -154,9 +242,8 @@ local function getRadioState()
     talking = playerState.radioTalking == true or playerState.isTalkingOnRadio == true or playerState.radioActive == true
   end
 
+  -- Only use the timer-based talking state if it hasn't expired yet
   if VoiceRuntime.radioTalkingUntil > GetGameTimer() then
-    talking = true
-  elseif VoiceRuntime.radioTalking == true then
     talking = true
   end
 
@@ -191,7 +278,7 @@ local function getStatusPayload()
       hunger = getPlayerMetadataValue('hunger', 100),
       thirst = getPlayerMetadataValue('thirst', 100),
       stress = getPlayerMetadataValue('stress', 0),
-      stamina = clamp(math.floor(GetPlayerSprintStaminaRemaining(PlayerId()) or 100), 0, 100),
+      stamina = clamp(100 - math.floor(GetPlayerSprintStaminaRemaining(PlayerId()) or 0), 0, 100),
       oxygen = oxygen,
       voice = voice.value,
       voiceLabel = voice.label,
@@ -227,6 +314,11 @@ local function getVehiclePayload()
   end
 
   local lightsOn, highbeamsOn = GetVehicleLightsState(vehicle)
+  local indicatorState = GetVehicleIndicatorLights(vehicle)
+  local indicatorLeft = indicatorState == 1 or indicatorState == 3
+  local indicatorRight = indicatorState == 2 or indicatorState == 3
+  local engineHealth = clamp(math.floor((GetVehicleEngineHealth(vehicle) or 0.0) / 10), 0, 100)
+  local throttle = clamp(math.floor((GetControlNormal(0, 71) or 0.0) * 100), 0, 100)
   local gear = GetVehicleCurrentGear(vehicle)
   local gearLabel = tostring(gear)
   if gear == 0 then
@@ -246,11 +338,59 @@ local function getVehiclePayload()
       visible = true,
       speed = math.floor(speedValue + 0.5),
       rpm = clamp(math.floor((GetVehicleCurrentRpm(vehicle) or 0.0) * 100), 0, 100),
+      throttle = throttle,
       fuel = clamp(math.floor(GetVehicleFuelLevel(vehicle) or 0.0), 0, 100),
       gear = gearLabel,
       seatbelt = seatbeltStatus,
       lights = (lightsOn == 1 or highbeamsOn == 1),
-      engine = GetIsVehicleEngineRunning(vehicle)
+      indicatorLeft = indicatorLeft,
+      indicatorRight = indicatorRight,
+      engine = GetIsVehicleEngineRunning(vehicle),
+      engineHealth = engineHealth
+    }
+  }
+end
+
+
+local function getWeaponPayload()
+  local weaponConfig = HudState.config and HudState.config.weapon or nil
+
+  if not weaponConfig or weaponConfig.enabled ~= true or HudState.hudVisible ~= true then
+    return {
+      action = 'updateWeapon',
+      weapon = { visible = false }
+    }
+  end
+
+  local ped = PlayerPedId()
+  local weaponHash = GetSelectedPedWeapon(ped)
+
+  if weaponHash == `WEAPON_UNARMED` then
+    return {
+      action = 'updateWeapon',
+      weapon = { visible = false }
+    }
+  end
+
+  local ok, ammoInClip = GetAmmoInClip(ped, weaponHash)
+  if ok ~= true then
+    ammoInClip = 0
+  end
+
+  local totalAmmo = GetAmmoInPedWeapon(ped, weaponHash) or 0
+  local reserveAmmo = totalAmmo - (ammoInClip or 0)
+  if reserveAmmo < 0 then
+    reserveAmmo = 0
+  end
+
+  return {
+    action = 'updateWeapon',
+    weapon = {
+      visible = true,
+      name = getWeaponNameFromHash(weaponHash),
+      hash = tostring(weaponHash),
+      clip = ammoInClip or 0,
+      reserve = reserveAmmo
     }
   }
 end
@@ -542,6 +682,16 @@ CreateThread(function()
     end
 
     Wait(getPolling('vehicle_ms', 100))
+  end
+end)
+
+CreateThread(function()
+  while true do
+    if HudState.bootstrapDone and HudState.config then
+      sendUI(getWeaponPayload())
+    end
+
+    Wait(getPolling('weapon_ms', 200))
   end
 end)
 

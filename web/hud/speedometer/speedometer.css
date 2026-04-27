@@ -1,0 +1,367 @@
+/* Modelo de velocímetro HUD.zip separado do style.css principal.
+   Mexa aqui para ajustar o visual do modelo sem encostar no editor inteiro. */
+
+.speedometer-style-hudzip {
+  width: clamp(245px, 15vw, 280px) !important;
+  min-height: clamp(190px, 11vw, 215px);
+}
+
+.speedometer-style-hudzip .speedometer-hudzip {
+  position: relative;
+  width: clamp(245px, 15vw, 280px);
+  min-height: clamp(190px, 11vw, 215px);
+  padding: 0;
+  border: 0;
+  background: transparent !important;
+  box-shadow: none;
+  color: var(--speed-primary, #fff);
+  font-family: "Montserrat", "Segoe UI", sans-serif;
+}
+
+/* Arco principal branco/acelerômetro */
+.hudzip-speed-arc {
+  position: absolute;
+  left: 50%;
+  top: -35%;
+  width: clamp(165px, 15vw, 296px);
+  height: clamp(165px, 15vw, 296px);
+  overflow: visible;
+  transform: translateX(-50%);
+}
+
+.hudzip-speed-track,
+.hudzip-speed-fill {
+  fill: transparent;
+  stroke-width: clamp(2.4px, 0.05vw, 2.8px);
+  stroke-linecap: round;
+  stroke-dasharray: 88 126;
+  transform: rotate(140deg);
+  transform-origin: 50% 50%;
+}
+
+.hudzip-speed-track {
+  stroke: rgba(255, 255, 255, 0.16);
+}
+
+.hudzip-speed-fill {
+  stroke: var(--speed-primary, #fff);
+  filter: drop-shadow(
+    0 0 5px color-mix(in srgb, var(--speed-primary) 70%, transparent)
+  );
+  transition:
+    stroke-dashoffset 0.22s linear,
+    stroke 0.2s ease;
+}
+
+/* Círculos laterais: fuel e motor */
+.hudzip-side-circle {
+  position: absolute;
+  bottom: 42px;
+  width: clamp(60px, 3.8vw, 72px);
+  height: clamp(60px, 3.8vw, 72px);
+  display: grid;
+  place-items: center;
+  color: var(--speed-primary, #fff);
+}
+
+/* Gasolina esquerda - um pouco mais perto do centro */
+.hudzip-fuel {
+  left: clamp(-30px, -1.5vw, -18px);
+}
+
+.hudzip-fuel.is-low {
+  color: var(--speed-accent, #ef4444);
+}
+
+/* Motor direita - um pouco mais perto do centro */
+.hudzip-engine-circle {
+  right: clamp(-30px, -1.5vw, -18px);
+}
+
+/* SVG do círculo lateral */
+.hudzip-status-svg {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hudzip-circle-back,
+.hudzip-circle-fill {
+  fill: transparent;
+  stroke-width: 3.4;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.hudzip-circle-back {
+  stroke: rgba(255, 255, 255, 0.15);
+}
+
+.hudzip-circle-fill {
+  stroke: currentColor;
+  transition:
+    stroke-dashoffset 0.22s linear,
+    stroke 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Estados do motor */
+.hudzip-engine-circle.is-ok {
+  color: var(--speed-secondary, #22c55e);
+}
+
+.hudzip-engine-circle.is-warning {
+  color: #f59e0b;
+}
+
+.hudzip-engine-circle.is-off {
+  color: var(--speed-accent, #ef4444);
+}
+
+/* Base do texto/ícone lateral */
+.hudzip-side-value {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.85);
+}
+
+.hudzip-side-value b {
+  margin-left: 1px;
+  font-size: 9px;
+  opacity: 0.65;
+}
+
+.hudzip-side-icon {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+}
+
+.hudzip-side-icon .speedometer-icon-mask {
+  width: 12px;
+  height: 12px;
+}
+
+/* Fuel: ícone em cima, número embaixo, mais juntos no centro */
+.hudzip-fuel .hudzip-side-icon {
+  top: 20px;
+  bottom: auto;
+}
+
+.hudzip-fuel .hudzip-side-icon .speedometer-icon-mask {
+  width: 16px;
+  height: 16px;
+}
+
+.hudzip-fuel .hudzip-side-value {
+  top: 35px;
+  font-size: 13px;
+}
+
+/* Motor: ícone centralizado no círculo */
+.hudzip-engine-circle .hudzip-side-icon {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+.hudzip-engine-circle .hudzip-side-icon .speedometer-icon-mask {
+  width: 16px;
+  height: 16px;
+}
+
+/* Marcha */
+.hudzip-gear {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.hudzip-gear small {
+  min-width: 12px;
+  color: rgba(255, 255, 255, 0.36);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.hudzip-gear div {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--speed-accent) 56%, transparent);
+  color: var(--speed-accent, #ef4444);
+  font-size: 11px;
+  font-weight: 900;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+/* RPM */
+.hudzip-rpm {
+  position: absolute;
+  left: 50%;
+  top: 34px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.hudzip-rpm strong {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.hudzip-rpm-leds {
+  display: flex;
+  gap: 3px;
+}
+
+.hudzip-rpm-leds span {
+  width: 6px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.hudzip-rpm-leds span.active {
+  background: var(--speed-secondary, #fff);
+  box-shadow: 0 0 7px
+    color-mix(in srgb, var(--speed-secondary) 70%, transparent);
+}
+
+.hudzip-rpm-leds span.hot.active {
+  background: var(--speed-accent, #ef4444);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--speed-accent) 70%, transparent);
+}
+
+/* Velocidade central */
+.speedometer-hudzip h1 {
+  position: absolute;
+  left: 50%;
+  top: 62px;
+  transform: translateX(-50%);
+  width: 112px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 46px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.speedometer-hudzip h1 b {
+  color: var(--speed-primary, #fff);
+}
+
+.speedometer-hudzip em {
+  position: absolute;
+  left: 50%;
+  top: 110px;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Setas, cinto e luzes */
+.hudzip-car-info {
+  position: absolute;
+  left: 50%;
+  top: 136px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.hudzip-arrows {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hudzip-info-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-grid;
+  place-items: center;
+  opacity: 0.72;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hudzip-info-icon .speedometer-icon-mask {
+  width: 14px;
+  height: 14px;
+}
+
+.hudzip-info-icon.is-active {
+  opacity: 1;
+  color: var(--speed-secondary, #22c55e);
+}
+
+.hudzip-info-icon.is-danger {
+  opacity: 1;
+  color: var(--speed-accent, #ef4444);
+  animation: hudzipBlink 1s step-end infinite;
+}
+
+/* Setas brancas por padrão e piscando quando ativas */
+.hudzip-arrow {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  opacity: 0.36;
+  filter: brightness(0) invert(1);
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease,
+    transform 0.2s ease;
+}
+
+.hudzip-arrow.is-active {
+  opacity: 1;
+  filter: none;
+  animation: hudzipBlink 0.75s step-end infinite;
+}
+
+@keyframes hudzipBlink {
+  0%,
+  49% {
+    opacity: 0.25;
+  }
+
+  50%,
+  100% {
+    opacity: 1;
+  }
+}

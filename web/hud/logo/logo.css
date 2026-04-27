@@ -1,0 +1,53 @@
+/* MZ HUD - Logo */
+.hud-logo {
+  position: fixed;
+  z-index: 12;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+.hud-logo img {
+  display: block;
+  object-fit: contain;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.logo-top-left {
+  left: 24px;
+  top: 24px;
+}
+
+.logo-top-right {
+  right: 24px;
+  top: 24px;
+}
+
+.logo-bottom-left {
+  left: 24px;
+  bottom: 110px;
+}
+
+.logo-bottom-right {
+  right: 24px;
+  bottom: 110px;
+}
+
+.hud-logo {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* posições completas para logo */
+.logo-bottom-center { left: 50%; bottom: 24px; transform: translateX(-50%); }
+.logo-center-left { left: 24px; top: 50%; transform: translateY(-50%); }
+.logo-center { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.logo-center-right { right: 24px; top: 50%; transform: translateY(-50%); }
+.logo-top-center { left: 50%; top: 24px; transform: translateX(-50%); }

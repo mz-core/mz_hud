@@ -1,0 +1,46 @@
+/* MZ HUD - Voice module CSS
+   Regras específicas da voz. A base .hud-comms e ícones/masks ficam globais em style.css. */
+
+.hud-comms-voice:not(.is-speaking) {
+  opacity: calc(var(--item-opacity, 1) * var(--comms-idle-opacity, .72));
+}
+
+.hud-comms-voice {
+  grid-template-columns: 34px 20px 1fr;
+  min-width: 154px;
+}
+
+.voice-meter {
+  height: 30px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.voice-meter span {
+  width: 4px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.18);
+  transition: height .16s ease, background .16s ease, opacity .16s ease;
+}
+
+.voice-meter span:nth-child(2) { height: 16px; }
+.voice-meter span:nth-child(3) { height: 24px; }
+.voice-meter span.active {
+  background: var(--item-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--item-accent) 55%, transparent);
+}
+
+.hud-comms-voice.voice-level-low { --item-accent: #38bdf8; }
+.hud-comms-voice.voice-level-normal { --item-accent: #22c55e; }
+.hud-comms-voice.voice-level-high { --item-accent: #f59e0b; }
+
+.hud-comms.is-speaking {
+  animation: mzCommsPulse 900ms ease-in-out infinite;
+  border-color: color-mix(in srgb, var(--item-accent) 72%, rgba(255,255,255,.14));
+}
+
+.hud-comms.is-speaking .comms-icon-wrap {
+  background: color-mix(in srgb, var(--item-accent) 32%, rgba(255,255,255,.08));
+}

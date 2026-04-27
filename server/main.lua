@@ -18,6 +18,8 @@ local ALLOWED_HUD_POSITIONS = ALLOWED_POSITIONS
 
 local ALLOWED_SPEED_POSITIONS = ALLOWED_POSITIONS
 
+local ALLOWED_WEAPON_POSITIONS = ALLOWED_POSITIONS
+
 local ALLOWED_MINIMAP_STYLES = {
   circle = true,
   square = true,
@@ -36,7 +38,8 @@ local ALLOWED_SPEED_STYLES = {
   analog = true,
   minimal = true,
   racing = true,
-  classic = true
+  classic = true,
+  hudzip = true
 }
 
 local ALLOWED_ICONS = {
@@ -55,7 +58,9 @@ local ALLOWED_ELEMENT_STYLES = {
   circle = true,
   bar = true,
   square = true,
-  pill = true
+  pill = true,
+  hudzip = true,
+  comms = true
 }
 
 local function deepCopy(value)
@@ -104,6 +109,13 @@ local function sanitizeBool(value, fallback)
     return value
   end
   return fallback
+end
+
+local function defaultBool(value, fallback)
+  if value == nil then
+    return fallback
+  end
+  return value == true
 end
 
 local function sanitizeEnum(value, allowed, fallback)
@@ -232,6 +244,7 @@ local function sanitizeHudConfig(incoming)
   local general = type(incoming) == 'table' and incoming.general or {}
   local logo = type(incoming) == 'table' and incoming.logo or {}
   local speedometer = type(incoming) == 'table' and incoming.speedometer or {}
+  local weapon = type(incoming) == 'table' and incoming.weapon or {}
 
   return {
     general = {
@@ -257,6 +270,9 @@ local function sanitizeHudConfig(incoming)
     speedometer = {
       enabled = sanitizeBool(speedometer.enabled, defaults.speedometer.enabled),
       position = sanitizeEnum(speedometer.position, ALLOWED_SPEED_POSITIONS, defaults.speedometer.position),
+      free = sanitizeBool(speedometer.free, defaultBool(defaults.speedometer and defaults.speedometer.free, false)),
+      x = clampNumber(speedometer.x, 0, 100, defaults.speedometer and defaults.speedometer.x or 88),
+      y = clampNumber(speedometer.y, 0, 100, defaults.speedometer and defaults.speedometer.y or 82),
       style = sanitizeEnum(speedometer.style, ALLOWED_SPEED_STYLES, defaults.speedometer.style or 'digital'),
       unit = sanitizeEnum(speedometer.unit, ALLOWED_UNITS, defaults.speedometer.unit),
       show_speed = sanitizeBool(speedometer.show_speed, defaults.speedometer.show_speed ~= false),
@@ -272,6 +288,20 @@ local function sanitizeHudConfig(incoming)
       background_color = sanitizeColor(speedometer.background_color, defaults.speedometer.background_color or '#000000'),
       opacity = clampNumber(speedometer.opacity, 0, 100, defaults.speedometer.opacity),
       scale = clampNumber(speedometer.scale, 60, 150, defaults.speedometer.scale)
+    },
+    weapon = {
+      enabled = sanitizeBool(weapon.enabled, defaultBool(defaults.weapon and defaults.weapon.enabled, true)),
+      position = sanitizeEnum(weapon.position, ALLOWED_WEAPON_POSITIONS, defaults.weapon and defaults.weapon.position or 'bottom-right'),
+      free = sanitizeBool(weapon.free, defaultBool(defaults.weapon and defaults.weapon.free, false)),
+      x = clampNumber(weapon.x, 0, 100, defaults.weapon and defaults.weapon.x or 88),
+      y = clampNumber(weapon.y, 0, 100, defaults.weapon and defaults.weapon.y or 78),
+      show_image = sanitizeBool(weapon.show_image, defaultBool(defaults.weapon and defaults.weapon.show_image, true)),
+      show_ammo = sanitizeBool(weapon.show_ammo, defaultBool(defaults.weapon and defaults.weapon.show_ammo, true)),
+      show_name = sanitizeBool(weapon.show_name, defaultBool(defaults.weapon and defaults.weapon.show_name, false)),
+      icon_model = sanitizeText(weapon.icon_model, defaults.weapon and defaults.weapon.icon_model or 'default', 24),
+      image_model = sanitizeText(weapon.image_model, defaults.weapon and defaults.weapon.image_model or 'default', 24),
+      opacity = clampNumber(weapon.opacity, 0, 100, defaults.weapon and defaults.weapon.opacity or 92),
+      scale = clampNumber(weapon.scale, 60, 150, defaults.weapon and defaults.weapon.scale or 100)
     },
     elements = sanitizeElements(defaults, type(incoming) == 'table' and incoming.elements or nil)
   }

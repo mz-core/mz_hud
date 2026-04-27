@@ -1,0 +1,34 @@
+/* MZ HUD - Radio module CSS
+   Regras específicas do rádio. A base .hud-comms e ícones/masks ficam globais em style.css. */
+
+.hud-comms-radio {
+  min-width: 152px;
+  grid-template-columns: 22px 34px 1fr;
+}
+
+.hud-comms-radio.is-radio-off {
+  filter: grayscale(.45);
+  opacity: calc(var(--item-opacity, 1) * .62);
+}
+
+.radio-signal {
+  width: 18px;
+  height: 28px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.radio-signal span {
+  width: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.20);
+}
+
+.radio-signal span:nth-child(1) { height: 8px; }
+.radio-signal span:nth-child(2) { height: 15px; }
+.radio-signal span:nth-child(3) { height: 23px; }
+.hud-comms-radio.is-radio-active .radio-signal span { background: var(--item-accent); }
+.hud-comms-radio.is-speaking .radio-signal span { animation: mzSignalBounce 680ms ease-in-out infinite; }
+.hud-comms-radio.is-speaking .radio-signal span:nth-child(2) { animation-delay: 90ms; }
+.hud-comms-radio.is-speaking .radio-signal span:nth-child(3) { animation-delay: 180ms; }

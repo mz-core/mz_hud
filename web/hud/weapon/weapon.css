@@ -1,0 +1,90 @@
+/* MZ HUD - weapon HUD */
+.weapon-hud {
+  position: fixed;
+  z-index: 28;
+  pointer-events: none;
+  transform-origin: center center;
+}
+.weapon-bottom-right { right: 24px; bottom: 190px; transform-origin: right bottom; }
+.weapon-bottom-center { left: 50%; bottom: 190px; transform-origin: center bottom; }
+.weapon-bottom-left { left: 24px; bottom: 190px; transform-origin: left bottom; }
+.weapon-top-right { right: 24px; top: 96px; transform-origin: right top; }
+.weapon-top-center { left: 50%; top: 96px; transform-origin: center top; }
+.weapon-top-left { left: 24px; top: 96px; transform-origin: left top; }
+.weapon-center-right { right: 24px; top: 50%; transform-origin: right center; }
+.weapon-center-left { left: 24px; top: 50%; transform-origin: left center; }
+.weapon-center { left: 50%; top: 50%; transform-origin: center center; }
+.weapon-free { transform-origin: center center; }
+.weapon-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 9px;
+  border-radius: 14px;
+  background: rgba(5, 8, 12, 0.54);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,.20);
+  color: rgba(248,250,252,.92);
+}
+.weapon-card::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(248,250,252,.56);
+  box-shadow: 0 0 8px rgba(248,250,252,.28);
+}
+.weapon-image {
+  width: 58px;
+  height: 30px;
+  object-fit: contain;
+  opacity: .88;
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,.32));
+}
+.weapon-placeholder {
+  width: 32px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: rgba(248,250,252,.68);
+}
+.weapon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.weapon-info strong {
+  font-size: 10px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  max-width: 105px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(248,250,252,.72);
+}
+.weapon-ammo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 850;
+  color: rgba(248,250,252,.94);
+}
+.weapon-ammo .speedometer-icon-mask {
+  width: 14px;
+  height: 14px;
+  opacity: .72;
+}
+.weapon-ammo span { font-size: 17px; line-height: 1; }
+.weapon-ammo em {
+  font-style: normal;
+  font-size: 11px;
+  color: rgba(248,250,252,.52);
+}
+.editor-preview-mode .weapon-hud.is-selected .weapon-card {
+  outline: 2px solid rgba(255,255,255,.82);
+  outline-offset: 4px;
+  box-shadow: 0 0 16px rgba(20,184,166,.36);
+}

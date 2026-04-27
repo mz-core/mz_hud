@@ -5,12 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>mz_hud</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="hud/status/status.css">
+  <link rel="stylesheet" href="hud/voice/voice.css">
+  <link rel="stylesheet" href="hud/radio/radio.css">
+  <link rel="stylesheet" href="hud/logo/logo.css">
+  <link rel="stylesheet" href="hud/weapon/weapon.css">
+  <link rel="stylesheet" href="hud/speedometer/speedometer.css">
+  <link rel="stylesheet" href="hud/editor/editor.css">
 </head>
 <body class="hud-initializing" style="background: transparent !important; background-color: rgba(0,0,0,0) !important;">
   <div id="hud-root" class="hud-root">
     <div id="hud-logo" class="hud-logo hidden"></div>
     <div id="hud-container" class="hud-container"></div>
     <div id="speedometer" class="speedometer hidden"></div>
+    <div id="weapon-hud" class="weapon-hud hidden"></div>
   </div>
 
   <div id="editor-overlay" class="editor-overlay hidden">
@@ -107,6 +115,14 @@
             <span>Posicao</span>
             <select id="speedometer-position"></select>
           </label>
+          <label class="toggle-row">
+            <span>Posicao livre em porcentagem</span>
+            <input id="speedometer-free" type="checkbox">
+          </label>
+          <div class="editor-mini-grid">
+            <label><span>X (%)</span><input id="speedometer-x" type="number" min="0" max="100" step="0.1"></label>
+            <label><span>Y (%)</span><input id="speedometer-y" type="number" min="0" max="100" step="0.1"></label>
+          </div>
           <label>
             <span>Modelo</span>
             <select id="speedometer-style"></select>
@@ -130,6 +146,10 @@
           <label class="toggle-row">
             <span>Mostrar marcha</span>
             <input id="speedometer-show-gear" type="checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Mostrar cinto</span>
+            <input id="speedometer-show-seatbelt" type="checkbox">
           </label>
           <label class="toggle-row">
             <span>Mostrar luzes</span>
@@ -168,6 +188,47 @@
           </div>
         </section>
 
+
+        <section class="editor-card">
+          <h2>Armas</h2>
+          <p class="editor-help">Exibe arma equipada, imagem e munição. Visual discreto no mesmo padrão de voz e rádio.</p>
+          <label class="toggle-row">
+            <span>Ativar HUD de armas</span>
+            <input id="weapon-enabled" type="checkbox">
+          </label>
+          <label>
+            <span>Posição rápida</span>
+            <select id="weapon-position"></select>
+          </label>
+          <label class="toggle-row">
+            <span>Posição livre em porcentagem</span>
+            <input id="weapon-free" type="checkbox">
+          </label>
+          <div class="editor-mini-grid">
+            <label><span>X (%)</span><input id="weapon-x" type="number" min="0" max="100" step="0.1"></label>
+            <label><span>Y (%)</span><input id="weapon-y" type="number" min="0" max="100" step="0.1"></label>
+          </div>
+          <label class="toggle-row">
+            <span>Mostrar imagem da arma</span>
+            <input id="weapon-show-image" type="checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Mostrar munição</span>
+            <input id="weapon-show-ammo" type="checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Mostrar nome</span>
+            <input id="weapon-show-name" type="checkbox">
+          </label>
+          <label>
+            <span>Opacidade</span>
+            <input id="weapon-opacity" type="range" min="0" max="100">
+          </label>
+          <label>
+            <span>Escala</span>
+            <input id="weapon-scale" type="range" min="60" max="150">
+          </label>
+        </section>
         <section class="editor-card">
           <h2>Logo</h2>
           <label class="toggle-row">
@@ -214,6 +275,14 @@
     </div>
   </div>
 
+  <script src="core/core.js"></script>
+  <script src="hud/speedometer/speedometer.js"></script>
+  <script src="hud/status/status.js"></script>
+  <script src="hud/voice/voice.js"></script>
+  <script src="hud/radio/radio.js"></script>
+  <script src="hud/logo/logo.js"></script>
+  <script src="hud/weapon/weapon.js"></script>
+  <script src="hud/editor/editor.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
