@@ -1,60 +1,61 @@
 (function () {
   "use strict";
 
-  function render(rawEntry, ctx) {
+  function clampPercent(value, fallback) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.max(0, Math.min(100, number));
+  }
+
+  function render(rawEntry, ctx = {}) {
     const {
       state,
+      iconMap,
+      escapeHTML,
       withElementDefaults,
       withCommsOptions,
       itemInlineStyle,
       getItemPositionClass,
       voiceLevelFromStatus,
-      iconMap,
-      escapeHTML,
     } = ctx;
 
-    const entry = withElementDefaults("voice", rawEntry || {});
-    const options = withCommsOptions(
-      state.config?.general?.comms_options || {},
-    );
-    const status = state.status || {};
+    if (
+      !state ||
+      !iconMap ||
+      typeof escapeHTML !== "function" ||
+      typeof withElementDefaults !== "function" ||
+      typeof withCommsOptions !== "function" ||
+      typeof itemInlineStyle !== "function" ||
+      typeof getItemPositionClass !== "function" ||
+      typeof voiceLevelFromStatus !== "function"
+    ) {
+      return "";
+    }
 
-    if (!entry.enabled) return "";
-
-    const speaking = status.talking === true;
-    const level = voiceLevelFromStatus(
-      status.voiceMode || status.voice || status.voiceLabel,
-    );
-    const label = status.voiceLabel || "Normal";
-    const subtitle = speaking ? "Falando" : "Em silêncio";
-
+    const key = "voice";
+    const entry = withElementDefaults(key, rawEntry);
+    const opts = withCommsOptions(key, entry.comms_options || {});
+    const icon = iconMap[entry.icon] || iconMap.mic;
     const positionClass = entry.free
-      ? "hud-item-free"
+      ? "hud-anchor-free"
       : getItemPositionClass(entry.position);
-
-    const activeBars = level === "low" ? 1 : level === "normal" ? 2 : 3;
+    const selected =
+      state.editorOpen && state.selectedElement === key ? "is-selected" : "";
+    const voice = voiceLevelFromStatus();
+    const speaking = Boolean(state.status.talking);
+    const talkingText = speaking ? "Falando" : "Em silêncio";
+    const idleOpacity = clampPercent(opts.inactive_opacity, 72) / 100;
 
     return `
-      <div
-        class="hud-item hud-comms hud-comms-voice voice-level-${escapeHTML(level)} ${speaking ? "is-speaking" : ""} ${positionClass}"
-        style="${itemInlineStyle(entry)}"
-        data-hud-item="voice"
-      >
-        <div class="comms-icon-wrap">
-          ${iconMap.mic || ""}
-        </div>
-
-        <div class="voice-meter" aria-hidden="true">
-          <span class="${activeBars >= 1 ? "active" : ""}"></span>
-          <span class="${activeBars >= 2 ? "active" : ""}"></span>
-          <span class="${activeBars >= 3 ? "active" : ""}"></span>
-        </div>
-
+      <button class="hud-comms hud-comms-voice voice-level-${voice.key} ${speaking ? "is-speaking" : ""} ${selected} ${positionClass}" data-hud-select="voice" title="Voz ${escapeHTML(voice.label)}" style="${itemInlineStyle(key, entry)};--comms-idle-opacity:${idleOpacity}">
+        <div class="comms-icon-wrap"><div class="hud-icon">${icon}</div></div>
+        <div class="voice-meter" aria-hidden="true">${[1, 2, 3].map((level) => `<span class="${level <= voice.level ? "active" : ""}"></span>`).join("")}</div>
         <div class="comms-copy">
-          <strong>Voz</strong>
-          <span>${escapeHTML(label)} • ${escapeHTML(subtitle)}</span>
+          ${opts.show_label ? "<strong>Voz</strong>" : ""}
+          ${opts.show_level_text ? `<small>${escapeHTML(voice.label)}</small>` : ""}
+          ${opts.show_talking_text ? `<em>${escapeHTML(talkingText)}</em>` : ""}
         </div>
-      </div>
+      </button>
     `;
   }
 

@@ -1,4 +1,5 @@
 local DebugVoice = false
+local DebugSeatbelt = false
 
 local HudState = {
   config = nil,
@@ -14,9 +15,14 @@ local HudState = {
 
 local VoiceRuntime = {
   radioTalking = false,
-  radioTalkingUntil = 0
+  radioTalkingUntil = 0,
+  voiceTalkingUntil = 0
 }
 
+local SeatbeltRuntime = {
+  enabled = false,
+  lastVehicle = 0
+}
 
 local WeaponHashToName = {
   [`WEAPON_PISTOL`] = 'weapon_pistol',
@@ -173,16 +179,49 @@ local function getPlayerMetadataValue(key, fallback)
 end
 
 local function getVoiceState()
-  local playerId = PlayerId()
-  local talking = NetworkIsPlayerTalking(playerId) == true
-
+  -- Debug: calcula separadamente para investigação
+  local mumbleExists = type(MumbleIsPlayerTalking) == 'function'
+  local mumbleTalking = false
+  local networkTalking = false
+  
+  if mumbleExists then
+    mumbleTalking = MumbleIsPlayerTalking(PlayerId()) == true
+  end
+  
+  networkTalking = NetworkIsPlayerTalking(PlayerId()) == true
+  
+  -- Prioridade real: Mumble se existir, senão Network
+  local isActuallyTalking = false
+  
+  if mumbleExists then
+    isActuallyTalking = mumbleTalking
+  else
+    isActuallyTalking = networkTalking
+  end
+  
+  -- Timeout que NUNCA fica preso
+  local now = GetGameTimer()
+  
+  if isActuallyTalking then
+    VoiceRuntime.voiceTalkingUntil = now + 200
+  elseif VoiceRuntime.voiceTalkingUntil < now then
+    VoiceRuntime.voiceTalkingUntil = 0
+  end
+  
+  local talking = isActuallyTalking or (VoiceRuntime.voiceTalkingUntil > now)
+  
+  -- Debug controlado
   if DebugVoice then
-    print(('[mz_hud voice] network=%s final=%s'):format(
-      tostring(talking),
+    print(("[mz_hud voice] mumbleExists=%s mumble=%s network=%s until=%s now=%s final=%s"):format(
+      tostring(mumbleExists),
+      tostring(mumbleTalking),
+      tostring(networkTalking),
+      tostring(VoiceRuntime.voiceTalkingUntil),
+      tostring(now),
       tostring(talking)
     ))
   end
-
+  
   local proximityState = LocalPlayer and LocalPlayer.state and LocalPlayer.state.proximity or nil
   local modeIndex = 2
 
@@ -299,12 +338,20 @@ local function getVehiclePayload()
   local speedometerConfig = HudState.config and HudState.config.speedometer or nil
 
   if vehicle == 0 or not speedometerConfig or speedometerConfig.enabled ~= true or not HudState.speedometerVisible then
+    SeatbeltRuntime.enabled = false
+    SeatbeltRuntime.lastVehicle = 0
     return {
       action = 'updateVehicle',
       vehicle = {
         visible = false
       }
     }
+  end
+
+  -- Detectar mudança de veículo e resetar cinto
+  if SeatbeltRuntime.lastVehicle ~= vehicle then
+    SeatbeltRuntime.lastVehicle = vehicle
+    SeatbeltRuntime.enabled = false
   end
 
   local speed = GetEntitySpeed(vehicle)
@@ -329,7 +376,7 @@ local function getVehiclePayload()
 
   local seatbeltStatus = false
   if speedometerConfig.show_seatbelt == true then
-    seatbeltStatus = GetPedConfigFlag(playerPed, 16, true) ~= 0
+    seatbeltStatus = SeatbeltRuntime.enabled == true
   end
 
   return {
@@ -662,8 +709,36 @@ RegisterCommand('togglespeed', function()
   })
 end, false)
 
+RegisterCommand('seatbelt', function()
+  local ped = PlayerPedId()
+  local vehicle = GetVehiclePedIsIn(ped, false)
+
+  if vehicle == 0 then
+    SeatbeltRuntime.enabled = false
+    SeatbeltRuntime.lastVehicle = 0
+    return
+  end
+
+  SeatbeltRuntime.enabled = not SeatbeltRuntime.enabled
+
+  if SeatbeltRuntime.enabled then
+    notify({
+      type = 'success',
+      title = 'Cinto',
+      message = 'Cinto colocado.'
+    })
+  else
+    notify({
+      type = 'inform',
+      title = 'Cinto',
+      message = 'Cinto removido.'
+    })
+  end
+end, false)
+
 RegisterKeyMapping('togglehud', 'Mostrar ou esconder HUD', 'keyboard', '')
 RegisterKeyMapping('togglespeed', 'Mostrar ou esconder velocimetro', 'keyboard', '')
+RegisterKeyMapping('seatbelt', 'Colocar/remover cinto de segurança', 'keyboard', 'G')
 
 CreateThread(function()
   while true do
