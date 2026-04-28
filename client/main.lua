@@ -21,7 +21,21 @@ local VoiceRuntime = {
 
 local SeatbeltRuntime = {
   enabled = false,
-  lastVehicle = 0
+  lastVehicle = 0,
+  lastSpeedKmh = 0,
+  lastCrashAt = 0
+}
+
+local SeatbeltCrashConfig = {
+  enabled = true,
+  minSpeedKmh = 65,
+  damageDeltaKmh = 38,
+  ejectDeltaKmh = 62,
+  strongEjectDeltaKmh = 85,
+  ejectChance = 70,
+  cooldownMs = 1800,
+  beltDamageReduction = 0.75,
+  maxDamage = 45
 }
 
 local WeaponHashToName = {
@@ -97,6 +111,93 @@ local WeaponHashToName = {
 
 local function getWeaponNameFromHash(hash)
   return WeaponHashToName[hash] or ('weapon_' .. tostring(hash))
+end
+
+local function applySeatbeltCrashEffect(playerPed, vehicle, deltaKmh, hadSeatbelt)
+  local health = GetEntityHealth(playerPed)
+  local damage = 0
+  local shouldEject = false
+  
+  if hadSeatbelt then
+    -- Com cinto: dano reduzido, nunca ejetar
+    if deltaKmh >= SeatbeltCrashConfig.damageDeltaKmh then
+      damage = math.floor(math.min(SeatbeltCrashConfig.maxDamage, deltaKmh * 0.35) * (1 - SeatbeltCrashConfig.beltDamageReduction))
+    end
+  else
+    -- Sem cinto: dano maior e risco de ejeção
+    if deltaKmh >= SeatbeltCrashConfig.damageDeltaKmh then
+      damage = math.floor(math.min(SeatbeltCrashConfig.maxDamage, deltaKmh * 0.55))
+      
+      -- Verificar ejeção obrigatória ou por chance
+      if deltaKmh >= SeatbeltCrashConfig.strongEjectDeltaKmh then
+        shouldEject = true
+      elseif deltaKmh >= SeatbeltCrashConfig.ejectDeltaKmh then
+        shouldEject = math.random(1, 100) <= SeatbeltCrashConfig.ejectChance
+      end
+    end
+  end
+  
+  -- Aplicar dano
+  if damage > 0 then
+    local newHealth = math.max(101, health - damage)
+    SetEntityHealth(playerPed, newHealth)
+  end
+  
+  -- Ejetar se necessário
+  if shouldEject then
+    local coords = GetEntityCoords(playerPed)
+    local velocity = GetEntityVelocity(vehicle)
+    
+    TaskLeaveVehicle(playerPed, vehicle, 4160)
+    Wait(50)
+    SetEntityCoords(playerPed, coords.x, coords.y, coords.z + 0.5, true, true, true, false)
+    SetPedToRagdoll(playerPed, 3000, 3000, 0, false, false, false)
+    SetEntityVelocity(playerPed, velocity.x * 1.8, velocity.y * 1.8, velocity.z + 2.0)
+    
+    notify({
+      type = 'error',
+      title = 'Colisão',
+      message = 'Você foi arremessado por estar sem cinto.'
+    })
+  elseif damage > 0 and not hadSeatbelt then
+    notify({
+      type = 'warning',
+      title = 'Colisão',
+      message = 'Impacto forte sem cinto.'
+    })
+  end
+end
+
+local function updateSeatbeltCrash(vehicle, playerPed)
+  if SeatbeltCrashConfig.enabled ~= true then
+    return
+  end
+  
+  if vehicle == 0 then
+    SeatbeltRuntime.lastSpeedKmh = 0
+    return
+  end
+  
+  -- Focar no motorista por enquanto
+  if GetPedInVehicleSeat(vehicle, -1) ~= playerPed then
+    return
+  end
+  
+  local currentSpeedKmh = GetEntitySpeed(vehicle) * 3.6
+  local deltaKmh = SeatbeltRuntime.lastSpeedKmh - currentSpeedKmh
+  local now = GetGameTimer()
+  
+  -- Verificar se teve queda de velocidade significativa
+  if SeatbeltRuntime.lastSpeedKmh >= SeatbeltCrashConfig.minSpeedKmh and
+     deltaKmh >= SeatbeltCrashConfig.damageDeltaKmh and
+     (now - SeatbeltRuntime.lastCrashAt) >= SeatbeltCrashConfig.cooldownMs then
+    
+    applySeatbeltCrashEffect(playerPed, vehicle, deltaKmh, SeatbeltRuntime.enabled == true)
+    SeatbeltRuntime.lastCrashAt = now
+  end
+  
+  -- Sempre atualizar velocidade atual
+  SeatbeltRuntime.lastSpeedKmh = currentSpeedKmh
 end
 
 
@@ -352,7 +453,12 @@ local function getVehiclePayload()
   if SeatbeltRuntime.lastVehicle ~= vehicle then
     SeatbeltRuntime.lastVehicle = vehicle
     SeatbeltRuntime.enabled = false
+    SeatbeltRuntime.lastSpeedKmh = 0
+    SeatbeltRuntime.lastCrashAt = 0
   end
+
+  -- Verificar colisão sem cinto
+  updateSeatbeltCrash(vehicle, playerPed)
 
   local speed = GetEntitySpeed(vehicle)
   local speedValue = speed * 3.6
@@ -716,6 +822,8 @@ RegisterCommand('seatbelt', function()
   if vehicle == 0 then
     SeatbeltRuntime.enabled = false
     SeatbeltRuntime.lastVehicle = 0
+    SeatbeltRuntime.lastSpeedKmh = 0
+    SeatbeltRuntime.lastCrashAt = 0
     return
   end
 
