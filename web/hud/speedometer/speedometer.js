@@ -1,12 +1,15 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const iconAssets = {
     fuel: "./assets/icons/vehicle/default/fuel.svg",
     belt: "./assets/icons/vehicle/default/belt.svg",
     unbelt: "./assets/icons/vehicle/default/unbelt.svg",
-    light: "./assets/icons/vehicle/default/lights.svg",
+    light: "./assets/icons/vehicle/default/light-spot.svg",
+    lightHigh: "./assets/icons/vehicle/default/light-spot-2.svg",
+    lightOff: "./assets/icons/vehicle/default/light-spot-off.svg",
     engine: "./assets/icons/vehicle/default/engine.svg",
+    turn: "./assets/icons/vehicle/default/turn.svg",
     speed: "./assets/icons/vehicle/default/speed.svg",
     rpm: "./assets/icons/vehicle/default/rpm.svg",
     gear: "./assets/icons/vehicle/default/gear.svg",
@@ -23,10 +26,15 @@
   }
 
   function indicatorIcons(speedometer, state) {
+    const engineOn = Boolean(state.vehicle.engine);
+    const lightState = state.vehicle.lightsState || (state.vehicle.lightsHigh ? "high" : state.vehicle.lights ? "on" : "off");
+    const lightIcon = lightState === "high" ? "lightHigh" : lightState === "on" ? "light" : "lightOff";
+    const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
+
     return `<div class="speedometer-indicators">
-      ${speedometer.show_seatbelt && !state.vehicle.seatbelt ? `<span class="speedometer-indicator danger" title="Cinto">${icon("belt")}</span>` : ""}
-      ${speedometer.show_lights && state.vehicle.lights ? `<span class="speedometer-indicator" title="Faróis">${icon("light")}</span>` : ""}
-      ${speedometer.show_engine && !state.vehicle.engine ? `<span class="speedometer-indicator danger" title="Motor">${icon("engine")}</span>` : ""}
+      ${speedometer.show_seatbelt ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt")}</span>` : ""}
+      ${speedometer.show_lights ? `<span class="speedometer-indicator ${lightClass}" title="Faróis">${icon(lightIcon)}</span>` : ""}
+      ${speedometer.show_engine ? `<span class="speedometer-indicator ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("turn")}</span>` : ""}
     </div>`;
   }
 
@@ -58,14 +66,17 @@
     const nextGear = gear === "R" ? "N" : gear === "N" ? "1" : String((Number(gear) || 1) + 1);
     const leftActive = Boolean(state.vehicle.indicatorLeft);
     const rightActive = Boolean(state.vehicle.indicatorRight);
-    const lightsActive = Boolean(state.vehicle.lights);
+    const engineOn = Boolean(state.vehicle.engine);
+    const lightState = state.vehicle.lightsState || (state.vehicle.lightsHigh ? "high" : state.vehicle.lights ? "on" : "off");
+    const lightIcon = lightState === "high" ? "lightHigh" : lightState === "on" ? "light" : "lightOff";
+    const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
     const beltIcon = state.vehicle.seatbelt ? "belt" : "unbelt";
     const beltClass = state.vehicle.seatbelt ? "is-active" : "is-danger";
     const engineClass = state.vehicle.engine ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
 
     return `<div class="speedometer-panel speedometer-hudzip">
       ${speedometer.show_speed ? `<svg class="hudzip-speed-arc" viewBox="0 0 64 64" aria-hidden="true"><circle class="hudzip-speed-track" r="20" cx="32" cy="32"></circle><circle class="hudzip-speed-fill" r="20" cx="32" cy="32" style="stroke-dashoffset:${speedArc}"></circle></svg>` : ""}
-      ${speedometer.show_fuel ? `<div class="hudzip-side-circle hudzip-fuel ${fuelLowClass}" title="Combustível"><svg class="hudzip-status-svg" viewBox="0 0 50 50"><circle class="hudzip-circle-back" r="18" cx="25" cy="25"></circle><circle class="hudzip-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${fuelArc}"></circle></svg><span class="hudzip-side-value">${fuel}<b>L</b></span><span class="hudzip-side-icon">${icon("fuel")}</span></div>` : ""}
+      ${speedometer.show_fuel ? `<div class="hudzip-side-circle hudzip-fuel ${fuelLowClass}" title="CombustÃ­vel"><svg class="hudzip-status-svg" viewBox="0 0 50 50"><circle class="hudzip-circle-back" r="18" cx="25" cy="25"></circle><circle class="hudzip-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${fuelArc}"></circle></svg><span class="hudzip-side-value">${fuel}<b>L</b></span><span class="hudzip-side-icon">${icon("fuel")}</span></div>` : ""}
       ${speedometer.show_engine ? `<div class="hudzip-side-circle hudzip-engine-circle ${engineClass}" title="Motor"><svg class="hudzip-status-svg" viewBox="0 0 50 50"><circle class="hudzip-circle-back" r="18" cx="25" cy="25"></circle><circle class="hudzip-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${engineArc}"></circle></svg><span class="hudzip-side-icon">${icon("engine")}</span></div>` : ""}
       ${speedometer.show_gear ? `<div class="hudzip-gear"><small>${escapeHTML(previousGear)}</small><div>${escapeHTML(gear)}</div><small>${escapeHTML(nextGear)}</small></div>` : ""}
       ${speedometer.show_rpm ? `<div class="hudzip-rpm"><strong>RPM</strong><div class="hudzip-rpm-leds">${Array.from({ length: 10 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 10) ? "active" : ""} ${i > 7 ? "hot" : ""}"></span>`).join("")}</div></div>` : ""}
@@ -73,7 +84,8 @@
       <div class="hudzip-car-info">
         ${speedometer.show_lights ? `<span class="hudzip-arrows"><img class="hudzip-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconAssets.arrowActive : iconAssets.arrow}" alt="Seta esquerda" style="transform:scaleX(-1)"><img class="hudzip-arrow ${rightActive ? "is-active" : ""}" src="${rightActive ? iconAssets.arrowActive : iconAssets.arrow}" alt="Seta direita"></span>` : ""}
         ${speedometer.show_seatbelt ? `<span class="hudzip-info-icon ${beltClass}" title="Cinto">${icon(beltIcon)}</span>` : ""}
-        ${speedometer.show_lights ? `<span class="hudzip-info-icon ${lightsActive ? "is-active" : ""}" title="Faróis">${icon("light")}</span>` : ""}
+        ${speedometer.show_lights ? `<span class="hudzip-info-icon ${lightClass}" title="Faróis">${icon(lightIcon)}</span>` : ""}
+        ${speedometer.show_engine ? `<span class="hudzip-info-icon ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("turn")}</span>` : ""}
       </div>
     </div>`;
   }

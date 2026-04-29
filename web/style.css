@@ -741,6 +741,22 @@ body.hud-initializing #editor-overlay {
   filter: drop-shadow(0 0 5px color-mix(in srgb, currentColor 45%, transparent));
 }
 
+.speedometer-indicator.is-active {
+  color: var(--speed-secondary);
+  opacity: 1;
+}
+
+.speedometer-indicator.is-high {
+  color: var(--speed-primary);
+  opacity: 1;
+}
+
+.speedometer-indicator.is-off {
+  color: var(--speed-primary-soft);
+  opacity: 0.46;
+  filter: none;
+}
+
 .speedometer-minimal {
   display: flex;
   align-items: center;
@@ -1026,4 +1042,3 @@ body.hud-initializing #editor-overlay {
 
 /* Modelo hudzip dos status movido para web/hud/status/status.css */
 /* CSS do modelo HUD.zip movido para web/hud/speedometer/speedometer.css */
-

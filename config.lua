@@ -24,6 +24,14 @@ Config.Visibility = {
   hide_gta_hud = true
 }
 
+Config.Voice = {
+  -- O pma-voice nao emite evento de fala local para a HUD. Quando as natives
+  -- nao retornarem true, este fallback usa controles comuns de push-to-talk.
+  ptt_fallback = true,
+  ptt_controls = { 249 },
+  talking_hold_ms = 650
+}
+
 Config.DefaultHUD = {
   general = {
     show_minimap = true,

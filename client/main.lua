@@ -16,14 +16,16 @@ local HudState = {
 local VoiceRuntime = {
   radioTalking = false,
   radioTalkingUntil = 0,
-  voiceTalkingUntil = 0
+  voiceTalkingUntil = 0,
+  modeIndex = nil
 }
 
 local SeatbeltRuntime = {
   enabled = false,
   lastVehicle = 0,
   lastSpeedKmh = 0,
-  lastCrashAt = 0
+  lastCrashAt = 0,
+  lastExitBlockNotify = 0
 }
 
 local SeatbeltCrashConfig = {
@@ -37,6 +39,16 @@ local SeatbeltCrashConfig = {
   beltDamageReduction = 0.75,
   maxDamage = 45
 }
+
+local notify
+
+local function resetSeatbeltRuntime(vehicle)
+  SeatbeltRuntime.enabled = false
+  SeatbeltRuntime.lastVehicle = vehicle or 0
+  SeatbeltRuntime.lastSpeedKmh = 0
+  SeatbeltRuntime.lastCrashAt = 0
+  SeatbeltRuntime.lastExitBlockNotify = 0
+end
 
 local WeaponHashToName = {
   [`WEAPON_PISTOL`] = 'weapon_pistol',
@@ -220,6 +232,10 @@ RegisterNetEvent('pma-voice:setPlayerRadio', function()
   setRadioTalkingState(false)
 end)
 
+RegisterNetEvent('pma-voice:setTalkingMode', function(mode)
+  VoiceRuntime.modeIndex = tonumber(mode) or VoiceRuntime.modeIndex
+end)
+
 local function clamp(value, minValue, maxValue)
   if value < minValue then
     return minValue
@@ -235,7 +251,7 @@ local function getPolling(name, fallback)
   return tonumber(polling[name] or fallback) or fallback
 end
 
-local function notify(payload)
+notify = function(payload)
   local message = payload or {}
   local title = tostring(message.title or 'HUD')
   local text = tostring(message.message or message.description or '')
@@ -279,32 +295,71 @@ local function getPlayerMetadataValue(key, fallback)
   return clamp(math.floor(numeric), 0, 100)
 end
 
+local function isVoicePttPressed()
+  local voiceConfig = Config.Voice or {}
+  if voiceConfig.ptt_fallback == false then
+    return false
+  end
+
+  local controls = voiceConfig.ptt_controls
+  if type(controls) ~= 'table' then
+    controls = { 249 }
+  end
+
+  for _, control in ipairs(controls) do
+    local controlId = tonumber(control)
+    if controlId and (
+      IsControlPressed(0, controlId) or
+      IsDisabledControlPressed(0, controlId) or
+      IsControlPressed(1, controlId) or
+      IsDisabledControlPressed(1, controlId) or
+      IsControlPressed(2, controlId) or
+      IsDisabledControlPressed(2, controlId)
+    ) then
+      return true
+    end
+  end
+
+  return false
+end
+
 local function getVoiceState()
   -- Debug: calcula separadamente para investigação
   local mumbleExists = type(MumbleIsPlayerTalking) == 'function'
+  local networkExists = type(NetworkIsPlayerTalking) == 'function'
   local mumbleTalking = false
   local networkTalking = false
+  local stateTalking = false
+  local pttTalking = false
+  local playerState = LocalPlayer and LocalPlayer.state or nil
   
   if mumbleExists then
     mumbleTalking = MumbleIsPlayerTalking(PlayerId()) == true
   end
   
-  networkTalking = NetworkIsPlayerTalking(PlayerId()) == true
+  if networkExists then
+    networkTalking = NetworkIsPlayerTalking(PlayerId()) == true
+  end
+
+  if playerState then
+    stateTalking =
+      playerState.talking == true or
+      playerState.isTalking == true or
+      playerState.voiceTalking == true or
+      playerState.proximityTalking == true or
+      playerState.mumbleTalking == true
+  end
   
   -- Prioridade real: Mumble se existir, senão Network
-  local isActuallyTalking = false
-  
-  if mumbleExists then
-    isActuallyTalking = mumbleTalking
-  else
-    isActuallyTalking = networkTalking
-  end
+  pttTalking = isVoicePttPressed()
+
+  local isActuallyTalking = mumbleTalking or networkTalking or stateTalking or pttTalking
   
   -- Timeout que NUNCA fica preso
   local now = GetGameTimer()
   
   if isActuallyTalking then
-    VoiceRuntime.voiceTalkingUntil = now + 200
+    VoiceRuntime.voiceTalkingUntil = now + (tonumber(Config.Voice and Config.Voice.talking_hold_ms) or 650)
   elseif VoiceRuntime.voiceTalkingUntil < now then
     VoiceRuntime.voiceTalkingUntil = 0
   end
@@ -313,10 +368,12 @@ local function getVoiceState()
   
   -- Debug controlado
   if DebugVoice then
-    print(("[mz_hud voice] mumbleExists=%s mumble=%s network=%s until=%s now=%s final=%s"):format(
+    print(("[mz_hud voice] mumbleExists=%s mumble=%s network=%s state=%s ptt=%s until=%s now=%s final=%s"):format(
       tostring(mumbleExists),
       tostring(mumbleTalking),
       tostring(networkTalking),
+      tostring(stateTalking),
+      tostring(pttTalking),
       tostring(VoiceRuntime.voiceTalkingUntil),
       tostring(now),
       tostring(talking)
@@ -324,7 +381,7 @@ local function getVoiceState()
   end
   
   local proximityState = LocalPlayer and LocalPlayer.state and LocalPlayer.state.proximity or nil
-  local modeIndex = 2
+  local modeIndex = tonumber(VoiceRuntime.modeIndex) or 2
 
   if type(proximityState) == 'table' then
     modeIndex = tonumber(proximityState.index or proximityState.mode or proximityState.level or modeIndex) or modeIndex
@@ -438,9 +495,17 @@ local function getVehiclePayload()
   local vehicle = GetVehiclePedIsIn(playerPed, false)
   local speedometerConfig = HudState.config and HudState.config.speedometer or nil
 
-  if vehicle == 0 or not speedometerConfig or speedometerConfig.enabled ~= true or not HudState.speedometerVisible then
-    SeatbeltRuntime.enabled = false
-    SeatbeltRuntime.lastVehicle = 0
+  if vehicle == 0 then
+    resetSeatbeltRuntime(0)
+    return {
+      action = 'updateVehicle',
+      vehicle = {
+        visible = false
+      }
+    }
+  end
+
+  if not speedometerConfig or speedometerConfig.enabled ~= true or not HudState.speedometerVisible then
     return {
       action = 'updateVehicle',
       vehicle = {
@@ -451,10 +516,7 @@ local function getVehiclePayload()
 
   -- Detectar mudança de veículo e resetar cinto
   if SeatbeltRuntime.lastVehicle ~= vehicle then
-    SeatbeltRuntime.lastVehicle = vehicle
-    SeatbeltRuntime.enabled = false
-    SeatbeltRuntime.lastSpeedKmh = 0
-    SeatbeltRuntime.lastCrashAt = 0
+    resetSeatbeltRuntime(vehicle)
   end
 
   -- Verificar colisão sem cinto
@@ -466,7 +528,9 @@ local function getVehiclePayload()
     speedValue = speed * 2.236936
   end
 
-  local lightsOn, highbeamsOn = GetVehicleLightsState(vehicle)
+  local _, lightsOn, highbeamsOn = GetVehicleLightsState(vehicle)
+  local lightsActive = lightsOn == true or lightsOn == 1
+  local highbeamsActive = highbeamsOn == true or highbeamsOn == 1
   local indicatorState = GetVehicleIndicatorLights(vehicle)
   local indicatorLeft = indicatorState == 1 or indicatorState == 3
   local indicatorRight = indicatorState == 2 or indicatorState == 3
@@ -495,7 +559,9 @@ local function getVehiclePayload()
       fuel = clamp(math.floor(GetVehicleFuelLevel(vehicle) or 0.0), 0, 100),
       gear = gearLabel,
       seatbelt = seatbeltStatus,
-      lights = (lightsOn == 1 or highbeamsOn == 1),
+      lights = lightsActive or highbeamsActive,
+      lightsHigh = highbeamsActive,
+      lightsState = highbeamsActive and 'high' or (lightsActive and 'on' or 'off'),
       indicatorLeft = indicatorLeft,
       indicatorRight = indicatorRight,
       engine = GetIsVehicleEngineRunning(vehicle),
@@ -820,11 +886,12 @@ RegisterCommand('seatbelt', function()
   local vehicle = GetVehiclePedIsIn(ped, false)
 
   if vehicle == 0 then
-    SeatbeltRuntime.enabled = false
-    SeatbeltRuntime.lastVehicle = 0
-    SeatbeltRuntime.lastSpeedKmh = 0
-    SeatbeltRuntime.lastCrashAt = 0
+    resetSeatbeltRuntime(0)
     return
+  end
+
+  if SeatbeltRuntime.lastVehicle ~= vehicle then
+    resetSeatbeltRuntime(vehicle)
   end
 
   SeatbeltRuntime.enabled = not SeatbeltRuntime.enabled
@@ -842,6 +909,15 @@ RegisterCommand('seatbelt', function()
       message = 'Cinto removido.'
     })
   end
+end, false)
+
+RegisterCommand('mzhud_voice_debug', function()
+  DebugVoice = not DebugVoice
+  notify({
+    type = DebugVoice and 'success' or 'inform',
+    title = 'HUD Voz',
+    message = DebugVoice and 'Debug de voz ativado no F8.' or 'Debug de voz desativado.'
+  })
 end, false)
 
 RegisterKeyMapping('togglehud', 'Mostrar ou esconder HUD', 'keyboard', '')
@@ -865,6 +941,43 @@ CreateThread(function()
     end
 
     Wait(getPolling('vehicle_ms', 100))
+  end
+end)
+
+CreateThread(function()
+  while true do
+    if SeatbeltRuntime.enabled == true then
+      local ped = PlayerPedId()
+      local vehicle = GetVehiclePedIsIn(ped, false)
+
+      if vehicle == 0 then
+        resetSeatbeltRuntime(0)
+      else
+        if SeatbeltRuntime.lastVehicle ~= 0 and SeatbeltRuntime.lastVehicle ~= vehicle then
+          resetSeatbeltRuntime(vehicle)
+        else
+          SeatbeltRuntime.lastVehicle = vehicle
+          DisableControlAction(0, 75, true)
+          DisableControlAction(27, 75, true)
+
+          if IsDisabledControlJustPressed(0, 75) or IsDisabledControlJustPressed(27, 75) then
+            local now = GetGameTimer()
+            if (now - SeatbeltRuntime.lastExitBlockNotify) > 1500 then
+              SeatbeltRuntime.lastExitBlockNotify = now
+              notify({
+                type = 'warning',
+                title = 'Cinto',
+                message = 'Remova o cinto para sair do veiculo.'
+              })
+            end
+          end
+        end
+      end
+
+      Wait(0)
+    else
+      Wait(300)
+    end
   end
 end)
 

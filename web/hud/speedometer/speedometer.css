@@ -104,10 +104,16 @@
 
 .hudzip-circle-fill {
   stroke: currentColor;
+  filter: none;
   transition:
     stroke-dashoffset 0.22s linear,
     stroke 0.2s ease,
     color 0.2s ease;
+}
+
+.speedometer-hudzip .hudzip-fuel .hudzip-circle-fill,
+.speedometer-hudzip .hudzip-engine-circle .hudzip-circle-fill {
+  filter: none !important;
 }
 
 /* Estados do motor */
@@ -327,6 +333,16 @@
 .hudzip-info-icon.is-active {
   opacity: 1;
   color: var(--speed-secondary, #22c55e);
+}
+
+.hudzip-info-icon.is-high {
+  opacity: 1;
+  color: var(--speed-primary, #ffffff);
+}
+
+.hudzip-info-icon.is-off {
+  opacity: 0.42;
+  color: rgba(255, 255, 255, 0.48);
 }
 
 .hudzip-info-icon.is-danger {
