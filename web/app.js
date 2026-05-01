@@ -29,6 +29,7 @@ const state = {
     fuel: 72,
     gear: "4",
     seatbelt: true,
+    seatbeltAvailable: true,
     lights: true,
     engine: true,
   },

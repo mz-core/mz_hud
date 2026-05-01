@@ -50,6 +50,25 @@ local function resetSeatbeltRuntime(vehicle)
   SeatbeltRuntime.lastExitBlockNotify = 0
 end
 
+local function IsSeatbeltVehicle(vehicle)
+  if not vehicle or vehicle == 0 then
+    return false
+  end
+
+  local class = GetVehicleClass(vehicle)
+
+  local blockedClasses = {
+    [8] = true,   -- motos
+    [13] = true,  -- bicicletas
+    [14] = true,  -- barcos
+    [15] = true,  -- helicopteros
+    [16] = true,  -- avioes
+    [21] = true   -- trens
+  }
+
+  return not blockedClasses[class]
+end
+
 local WeaponHashToName = {
   [`WEAPON_PISTOL`] = 'weapon_pistol',
   [`WEAPON_PISTOL_MK2`] = 'weapon_pistol_mk2',
@@ -186,6 +205,12 @@ local function updateSeatbeltCrash(vehicle, playerPed)
   end
   
   if vehicle == 0 then
+    SeatbeltRuntime.lastSpeedKmh = 0
+    return
+  end
+
+  if not IsSeatbeltVehicle(vehicle) then
+    SeatbeltRuntime.enabled = false
     SeatbeltRuntime.lastSpeedKmh = 0
     return
   end
@@ -500,7 +525,9 @@ local function getVehiclePayload()
     return {
       action = 'updateVehicle',
       vehicle = {
-        visible = false
+        visible = false,
+        seatbelt = false,
+        seatbeltAvailable = false
       }
     }
   end
@@ -509,7 +536,9 @@ local function getVehiclePayload()
     return {
       action = 'updateVehicle',
       vehicle = {
-        visible = false
+        visible = false,
+        seatbelt = false,
+        seatbeltAvailable = false
       }
     }
   end
@@ -520,7 +549,15 @@ local function getVehiclePayload()
   end
 
   -- Verificar colisão sem cinto
-  updateSeatbeltCrash(vehicle, playerPed)
+  local seatbeltAvailable = IsSeatbeltVehicle(vehicle)
+  if not seatbeltAvailable then
+    SeatbeltRuntime.enabled = false
+    SeatbeltRuntime.lastSpeedKmh = 0
+  end
+
+  if seatbeltAvailable then
+    updateSeatbeltCrash(vehicle, playerPed)
+  end
 
   local speed = GetEntitySpeed(vehicle)
   local speedValue = speed * 3.6
@@ -545,7 +582,7 @@ local function getVehiclePayload()
   end
 
   local seatbeltStatus = false
-  if speedometerConfig.show_seatbelt == true then
+  if seatbeltAvailable and speedometerConfig.show_seatbelt == true then
     seatbeltStatus = SeatbeltRuntime.enabled == true
   end
 
@@ -559,6 +596,7 @@ local function getVehiclePayload()
       fuel = clamp(math.floor(GetVehicleFuelLevel(vehicle) or 0.0), 0, 100),
       gear = gearLabel,
       seatbelt = seatbeltStatus,
+      seatbeltAvailable = seatbeltAvailable,
       lights = lightsActive or highbeamsActive,
       lightsHigh = highbeamsActive,
       lightsState = highbeamsActive and 'high' or (lightsActive and 'on' or 'off'),
@@ -894,6 +932,11 @@ RegisterCommand('seatbelt', function()
     resetSeatbeltRuntime(vehicle)
   end
 
+  if not IsSeatbeltVehicle(vehicle) then
+    resetSeatbeltRuntime(vehicle)
+    return
+  end
+
   SeatbeltRuntime.enabled = not SeatbeltRuntime.enabled
 
   if SeatbeltRuntime.enabled then
@@ -952,6 +995,8 @@ CreateThread(function()
 
       if vehicle == 0 then
         resetSeatbeltRuntime(0)
+      elseif not IsSeatbeltVehicle(vehicle) then
+        resetSeatbeltRuntime(vehicle)
       else
         if SeatbeltRuntime.lastVehicle ~= 0 and SeatbeltRuntime.lastVehicle ~= vehicle then
           resetSeatbeltRuntime(vehicle)

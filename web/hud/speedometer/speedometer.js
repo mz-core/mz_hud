@@ -30,9 +30,10 @@
     const lightState = state.vehicle.lightsState || (state.vehicle.lightsHigh ? "high" : state.vehicle.lights ? "on" : "off");
     const lightIcon = lightState === "high" ? "lightHigh" : lightState === "on" ? "light" : "lightOff";
     const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
+    const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
 
     return `<div class="speedometer-indicators">
-      ${speedometer.show_seatbelt ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt")}</span>` : ""}
+      ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt")}</span>` : ""}
       ${speedometer.show_lights ? `<span class="speedometer-indicator ${lightClass}" title="Faróis">${icon(lightIcon)}</span>` : ""}
       ${speedometer.show_engine ? `<span class="speedometer-indicator ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("turn")}</span>` : ""}
     </div>`;
@@ -72,6 +73,7 @@
     const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
     const beltIcon = state.vehicle.seatbelt ? "belt" : "unbelt";
     const beltClass = state.vehicle.seatbelt ? "is-active" : "is-danger";
+    const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
     const engineClass = state.vehicle.engine ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
 
     return `<div class="speedometer-panel speedometer-hudzip">
@@ -83,7 +85,7 @@
       ${speedometer.show_speed ? `<h1>${renderSpeedDigits(speed)}</h1><em>${escapeHTML(speedometer.unit === "mph" ? "MPH" : "KM")}</em>` : ""}
       <div class="hudzip-car-info">
         ${speedometer.show_lights ? `<span class="hudzip-arrows"><img class="hudzip-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconAssets.arrowActive : iconAssets.arrow}" alt="Seta esquerda" style="transform:scaleX(-1)"><img class="hudzip-arrow ${rightActive ? "is-active" : ""}" src="${rightActive ? iconAssets.arrowActive : iconAssets.arrow}" alt="Seta direita"></span>` : ""}
-        ${speedometer.show_seatbelt ? `<span class="hudzip-info-icon ${beltClass}" title="Cinto">${icon(beltIcon)}</span>` : ""}
+        ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="hudzip-info-icon ${beltClass}" title="Cinto">${icon(beltIcon)}</span>` : ""}
         ${speedometer.show_lights ? `<span class="hudzip-info-icon ${lightClass}" title="Faróis">${icon(lightIcon)}</span>` : ""}
         ${speedometer.show_engine ? `<span class="hudzip-info-icon ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("turn")}</span>` : ""}
       </div>
