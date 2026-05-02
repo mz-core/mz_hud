@@ -20,6 +20,18 @@ local ALLOWED_SPEED_POSITIONS = ALLOWED_POSITIONS
 
 local ALLOWED_WEAPON_POSITIONS = ALLOWED_POSITIONS
 
+local ALLOWED_CHAT_PRESETS = {
+  ['left-top'] = true,
+  ['left-center'] = true,
+  ['left-bottom'] = true,
+  ['center-top'] = true,
+  center = true,
+  ['center-bottom'] = true,
+  ['right-top'] = true,
+  ['right-center'] = true,
+  ['right-bottom'] = true
+}
+
 local ALLOWED_MINIMAP_STYLES = {
   circle = true,
   square = true,
@@ -239,12 +251,28 @@ local function sanitizeStatusGroup(defaults, incoming)
   }
 end
 
+local function sanitizeChatConfig(defaults, incoming)
+  local defaultChat = defaults.chat or {}
+  local chat = type(incoming) == 'table' and incoming or {}
+
+  return {
+    enabled = sanitizeBool(chat.enabled, defaultBool(defaultChat.enabled, true)),
+    preset = sanitizeEnum(chat.preset, ALLOWED_CHAT_PRESETS, defaultChat.preset or 'left-top'),
+    free = sanitizeBool(chat.free, defaultBool(defaultChat.free, false)),
+    x = clampNumber(chat.x, 0, 100, defaultChat.x or 2),
+    y = clampNumber(chat.y, 0, 100, defaultChat.y or 3),
+    scale = clampNumber(chat.scale, 0.5, 1.8, defaultChat.scale or 1.0),
+    opacity = clampNumber(chat.opacity, 0, 1, defaultChat.opacity or 1.0)
+  }
+end
+
 local function sanitizeHudConfig(incoming)
   local defaults = getDefaults()
   local general = type(incoming) == 'table' and incoming.general or {}
   local logo = type(incoming) == 'table' and incoming.logo or {}
   local speedometer = type(incoming) == 'table' and incoming.speedometer or {}
   local weapon = type(incoming) == 'table' and incoming.weapon or {}
+  local chat = type(incoming) == 'table' and incoming.chat or {}
 
   return {
     general = {
@@ -303,6 +331,7 @@ local function sanitizeHudConfig(incoming)
       opacity = clampNumber(weapon.opacity, 0, 100, defaults.weapon and defaults.weapon.opacity or 92),
       scale = clampNumber(weapon.scale, 60, 150, defaults.weapon and defaults.weapon.scale or 100)
     },
+    chat = sanitizeChatConfig(defaults, chat),
     elements = sanitizeElements(defaults, type(incoming) == 'table' and incoming.elements or nil)
   }
 end
@@ -368,7 +397,7 @@ lib.callback.register('mz_hud:server:getBootstrap', function(source)
   }
 end)
 
-RegisterNetEvent('mz_hud:server:saveConfig', function(payload)
+local function saveConfigForSource(source, payload)
   local source = source
   if not hasAdminAccess(source) then
     notifyClient(source, {
@@ -388,9 +417,17 @@ RegisterNetEvent('mz_hud:server:saveConfig', function(payload)
     title = 'HUD',
     message = 'Configuracao da HUD aplicada para todos.'
   })
+end
+
+RegisterNetEvent('mz_hud:server:saveConfig', function(payload)
+  saveConfigForSource(source, payload)
 end)
 
-RegisterNetEvent('mz_hud:server:resetConfig', function()
+RegisterNetEvent('mz_hud:server:saveSettings', function(payload)
+  saveConfigForSource(source, payload)
+end)
+
+RegisterNetEvent('mz_hud:server:resetConfig', function(payload)
   local source = source
   if not hasAdminAccess(source) then
     notifyClient(source, {
@@ -401,14 +438,21 @@ RegisterNetEvent('mz_hud:server:resetConfig', function()
     return
   end
 
-  RuntimeConfig = getDefaults()
+  local module = type(payload) == 'table' and payload.module or nil
+  if module == 'chat' then
+    local defaults = getDefaults()
+    RuntimeConfig = sanitizeHudConfig(RuntimeConfig or defaults)
+    RuntimeConfig.chat = deepCopy(defaults.chat or {})
+  else
+    RuntimeConfig = getDefaults()
+  end
   saveRuntimeConfig()
   broadcastConfig(-1)
 
   notifyClient(source, {
     type = 'success',
     title = 'HUD',
-    message = 'HUD resetada para o padrao.'
+    message = module == 'chat' and 'Chat resetado para o padrao.' or 'HUD resetada para o padrao.'
   })
 end)
 

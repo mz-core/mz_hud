@@ -229,6 +229,37 @@
             <input id="weapon-scale" type="range" min="60" max="150">
           </label>
         </section>
+        <section class="editor-card chat-editor-card">
+          <div class="editor-card-title-row">
+            <h2>Chat</h2>
+            <button type="button" class="ghost-button compact-button" data-select-element="chat">Selecionar</button>
+          </div>
+          <p class="editor-help">Configura o layout enviado para o mz_chat. O chat padrao do FiveM nao e alterado por este editor.</p>
+          <label class="toggle-row">
+            <span>Ativar layout do chat</span>
+            <input id="chat-enabled" type="checkbox">
+          </label>
+          <label>
+            <span>Preset</span>
+            <select id="chat-preset"></select>
+          </label>
+          <label class="toggle-row">
+            <span>Posicao livre em porcentagem</span>
+            <input id="chat-free" type="checkbox">
+          </label>
+          <div class="editor-mini-grid">
+            <label><span>X (%)</span><input id="chat-x" type="number" min="0" max="100" step="0.1"></label>
+            <label><span>Y (%)</span><input id="chat-y" type="number" min="0" max="100" step="0.1"></label>
+          </div>
+          <label>
+            <span>Escala</span>
+            <input id="chat-scale" type="range" min="0.5" max="1.8" step="0.05">
+          </label>
+          <label>
+            <span>Opacidade</span>
+            <input id="chat-opacity" type="range" min="0" max="1" step="0.05">
+          </label>
+        </section>
         <section class="editor-card">
           <h2>Logo</h2>
           <label class="toggle-row">

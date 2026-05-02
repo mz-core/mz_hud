@@ -17,7 +17,9 @@
       withStatusGroupDefaults,
       withSpeedometerDefaults,
       withWeaponDefaults,
+      withChatDefaults,
       renderHud,
+      applyChatLayoutPreview,
     } = ctx;
 
 function setFormValue(id, value) {
@@ -283,6 +285,15 @@ function populateEditor(config) {
   setFormValue("weapon-opacity", config.weapon.opacity);
   setFormValue("weapon-scale", config.weapon.scale);
 
+  config.chat = withChatDefaults(config.chat || {});
+  setFormValue("chat-enabled", config.chat.enabled);
+  setFormValue("chat-preset", config.chat.preset);
+  setFormValue("chat-free", config.chat.free);
+  setFormValue("chat-x", config.chat.x);
+  setFormValue("chat-y", config.chat.y);
+  setFormValue("chat-scale", config.chat.scale);
+  setFormValue("chat-opacity", config.chat.opacity);
+
   setFormValue("logo-enabled", config.logo.enabled);
   setFormValue("logo-image-url", config.logo.image_url);
   setFormValue("logo-position", config.logo.position);
@@ -403,6 +414,15 @@ function collectConfig() {
       opacity: Number(document.getElementById("weapon-opacity")?.value ?? 94),
       scale: Number(document.getElementById("weapon-scale")?.value ?? 100),
     },
+    chat: {
+      enabled: document.getElementById("chat-enabled")?.checked ?? true,
+      preset: document.getElementById("chat-preset")?.value || "left-top",
+      free: document.getElementById("chat-free")?.checked ?? false,
+      x: Number(document.getElementById("chat-x")?.value ?? 2),
+      y: Number(document.getElementById("chat-y")?.value ?? 3),
+      scale: Number(document.getElementById("chat-scale")?.value ?? 1),
+      opacity: Number(document.getElementById("chat-opacity")?.value ?? 1),
+    },
     logo: {
       enabled: document.getElementById("logo-enabled").checked,
       image_url: document.getElementById("logo-image-url").value.trim(),
@@ -422,6 +442,9 @@ function applyEditorPreview() {
   state.config = collectConfig();
   state.vehicle.visible = true;
   renderHud();
+  if (typeof applyChatLayoutPreview === "function") {
+    applyChatLayoutPreview(state.config.chat);
+  }
 }
 
 function openEditor(config) {

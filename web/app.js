@@ -71,6 +71,7 @@ const {
   speedometerThemes,
   applyMinimapQuickPosition,
   applyStatusGroupQuickPosition,
+  applyChatQuickPosition,
   iconMap,
   escapeHTML,
   deepClone,
@@ -87,6 +88,7 @@ const {
   withElementDefaults,
   withSpeedometerDefaults,
   withWeaponDefaults,
+  withChatDefaults,
   normalizeConfig,
   getWeaponPositionClass,
   weaponImagePath,
@@ -107,6 +109,11 @@ function nui(action, data = {}) {
   })
     .then((response) => response.json())
     .catch(() => ({ ok: false }));
+}
+
+function applyChatLayoutPreview(config) {
+  if (!config) return;
+  nui("applyChatLayout", { config });
 }
 
 function markUIReady() {
@@ -321,7 +328,9 @@ function getEditorModule() {
       withStatusGroupDefaults,
       withSpeedometerDefaults,
       withWeaponDefaults,
+      withChatDefaults,
       renderHud,
+      applyChatLayoutPreview,
     });
   }
   return editorModule;
@@ -368,7 +377,12 @@ function bindActions() {
   dom.saveConfig.addEventListener("click", () =>
     nui("saveConfig", { config: collectConfig() }),
   );
-  dom.resetConfig.addEventListener("click", () => nui("resetConfig"));
+  dom.resetConfig.addEventListener("click", () =>
+    nui(
+      "resetConfig",
+      state.selectedElement === "chat" ? { module: "chat" } : {},
+    ),
+  );
   dom.previewNotify.addEventListener("click", () =>
     nui("notifyPreview", {
       type: "inform",
@@ -378,6 +392,9 @@ function bindActions() {
 
   dom.editorOverlay.addEventListener("input", (event) => {
     const target = event.target;
+    if (target?.closest?.(".chat-editor-card")) {
+      state.selectedElement = "chat";
+    }
     if (target?.dataset?.field === "color") {
       const text = target
         .closest(".element-card")
@@ -396,16 +413,25 @@ function bindActions() {
 
   dom.editorOverlay.addEventListener("change", (event) => {
     const target = event.target;
+    if (target?.closest?.(".chat-editor-card")) {
+      state.selectedElement = "chat";
+    }
     if (target && target.id === "general-hud-position") {
       applyMinimapQuickPosition(target.value);
     }
     if (target && target.id === "status-group-position") {
       applyStatusGroupQuickPosition(target.value);
     }
+    if (target && target.id === "chat-preset") {
+      applyChatQuickPosition(target.value);
+    }
     applyEditorPreview();
   });
 
   dom.editorOverlay.addEventListener("click", (event) => {
+    if (event.target.closest(".chat-editor-card")) {
+      state.selectedElement = "chat";
+    }
     const elementButton = event.target.closest("[data-select-element]");
     if (elementButton) {
       state.selectedElement = elementButton.dataset.selectElement;
@@ -465,6 +491,7 @@ function handleMessage(event) {
   const data = event.data || {};
   if (data.action === "bootstrap") {
     state.config = normalizeConfig(data.config);
+    applyChatLayoutPreview(state.config.chat);
     state.canManage = Boolean(data.canManage);
     state.hudVisible = data.hudVisible !== false;
     state.speedometerVisible = data.speedometerVisible !== false;
@@ -474,6 +501,7 @@ function handleMessage(event) {
   }
   if (data.action === "applyConfig") {
     state.config = normalizeConfig(data.config);
+    applyChatLayoutPreview(state.config.chat);
     renderHud();
     return;
   }
@@ -514,6 +542,7 @@ function handleMessage(event) {
   }
   if (data.action === "openEditor") {
     state.config = normalizeConfig(data.config || state.config);
+    applyChatLayoutPreview(state.config.chat);
     state.canManage = Boolean(data.canManage ?? state.canManage);
     openEditor(state.config);
     return;

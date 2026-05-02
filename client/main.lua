@@ -302,6 +302,33 @@ local function sendUI(payload)
   SendNUIMessage(payload)
 end
 
+local function dispatchChatLayout(config)
+  if type(config) ~= 'table' then
+    return
+  end
+
+  if GetResourceState('mz_chat') ~= 'started' then
+    return
+  end
+
+  local ok, err = pcall(function()
+    exports['mz_chat']:ApplyLayout(config)
+  end)
+
+  if not ok then
+    print(('[mz_hud] falha ao aplicar layout no mz_chat: %s'):format(tostring(err)))
+  end
+end
+
+local function applyChatLayout(config)
+  if type(config) ~= 'table' then
+    return
+  end
+
+  TriggerEvent('mz_hud:client:chatLayoutChanged', config)
+  dispatchChatLayout(config)
+end
+
 local function getPlayerMetadataValue(key, fallback)
   local metadata = HudState.coreHUDState and HudState.coreHUDState.metadata or {}
   local value = metadata and metadata[key]
@@ -812,6 +839,12 @@ RegisterNetEvent('mz_hud:client:notify', function(payload)
   notify(payload)
 end)
 
+AddEventHandler('onClientResourceStart', function(resourceName)
+  if resourceName == 'mz_chat' and HudState.config then
+    applyChatLayout(HudState.config.chat)
+  end
+end)
+
 RegisterNetEvent('mz_core:client:hudStateUpdated', function(hudState)
   if type(hudState) == 'table' then
     HudState.coreHUDState = {
@@ -823,6 +856,7 @@ end)
 RegisterNetEvent('mz_hud:client:applyConfig', function(config)
   HudState.config = config
   applyMinimapSettings(true)
+  applyChatLayout(HudState.config and HudState.config.chat or nil)
 
   sendUI({
     action = 'applyConfig',
@@ -855,6 +889,7 @@ RegisterNUICallback('ready', function(_, cb)
   HudState.coreHUDState = exports['mz_core']:GetHUDState() or HudState.coreHUDState
 
   applyMinimapSettings(true)
+  applyChatLayout(HudState.config and HudState.config.chat or nil)
 
   sendUI({
     action = 'bootstrap',
@@ -878,19 +913,25 @@ RegisterNUICallback('saveConfig', function(data, cb)
     return
   end
 
-  TriggerServerEvent('mz_hud:server:saveConfig', data and data.config or {})
+  TriggerServerEvent('mz_hud:server:saveSettings', data and data.config or {})
+  applyChatLayout(data and data.config and data.config.chat or nil)
   closeEditor()
   cb({ ok = true })
 end)
 
-RegisterNUICallback('resetConfig', function(_, cb)
+RegisterNUICallback('resetConfig', function(data, cb)
   if HudState.canManage ~= true then
     cb({ ok = false, error = 'forbidden' })
     return
   end
 
-  TriggerServerEvent('mz_hud:server:resetConfig')
+  TriggerServerEvent('mz_hud:server:resetConfig', data or {})
   closeEditor()
+  cb({ ok = true })
+end)
+
+RegisterNUICallback('applyChatLayout', function(data, cb)
+  applyChatLayout(data and data.config or nil)
   cb({ ok = true })
 end)
 

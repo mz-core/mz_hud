@@ -89,6 +89,15 @@ Config.DefaultHUD = {
     opacity = 92,
     scale = 100
   },
+  chat = {
+    enabled = true,
+    preset = 'left-top',
+    free = false,
+    x = 2,
+    y = 3,
+    scale = 1.0,
+    opacity = 1.0
+  },
   elements = {
     health = {
       enabled = true,

@@ -145,6 +145,12 @@
   background-color: var(--editor-bg-hover);
 }
 
+.compact-button {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
 /* Área rolável do editor. */
 .editor-grid {
   flex: 1 1 auto;
@@ -206,6 +212,18 @@
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.editor-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.editor-card-title-row h2 {
+  margin: 0;
 }
 
 .editor-card label,

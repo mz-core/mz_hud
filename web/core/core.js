@@ -46,6 +46,17 @@
       "top-center",
       "top-right",
     ],
+    chatPreset: [
+      "left-top",
+      "left-center",
+      "left-bottom",
+      "center-top",
+      "center",
+      "center-bottom",
+      "right-top",
+      "right-center",
+      "right-bottom",
+    ],
     icon: [
       "heart",
       "shield",
@@ -81,6 +92,14 @@
     "top-left": "Esquerda superior",
     "top-center": "Centro superior",
     "top-right": "Direita superior",
+    "left-top": "Esquerda superior",
+    "left-center": "Esquerda centro",
+    "left-bottom": "Esquerda inferior",
+    "center-top": "Centro superior",
+    "center-bottom": "Centro inferior",
+    "right-top": "Direita superior",
+    "right-center": "Direita centro",
+    "right-bottom": "Direita inferior",
     circle: "Círculo",
     bar: "Barra",
     square: "Quadrado",
@@ -175,6 +194,18 @@
     "top-right": { x: 92, y: 6 },
   };
 
+  const chatQuickPosition = {
+    "left-top": { x: 2, y: 3 },
+    "left-center": { x: 2, y: 50 },
+    "left-bottom": { x: 2, y: 82 },
+    "center-top": { x: 50, y: 3 },
+    center: { x: 50, y: 50 },
+    "center-bottom": { x: 50, y: 82 },
+    "right-top": { x: 98, y: 3 },
+    "right-center": { x: 98, y: 50 },
+    "right-bottom": { x: 98, y: 82 },
+  };
+
   function applyMinimapQuickPosition(position) {
     const preset = minimapQuickPosition[position];
     if (!preset) return;
@@ -193,6 +224,17 @@
     if (free) free.checked = false;
     if (x) x.value = preset.x;
     if (y) y.value = preset.y;
+  }
+
+  function applyChatQuickPosition(preset) {
+    const position = chatQuickPosition[preset];
+    if (!position) return;
+    const free = document.getElementById("chat-free");
+    const x = document.getElementById("chat-x");
+    const y = document.getElementById("chat-y");
+    if (free) free.checked = false;
+    if (x) x.value = position.x;
+    if (y) y.value = position.y;
   }
 
   const iconAssets = {
@@ -275,6 +317,10 @@
     setSelectOptions(
       document.getElementById("weapon-position"),
       selectOptions.speedometerPosition,
+    );
+    setSelectOptions(
+      document.getElementById("chat-preset"),
+      selectOptions.chatPreset,
     );
   }
 
@@ -478,6 +524,18 @@
     };
   }
 
+  function withChatDefaults(chat = {}) {
+    return {
+      enabled: chat.enabled !== undefined ? Boolean(chat.enabled) : true,
+      preset: chat.preset || "left-top",
+      free: chat.free !== undefined ? Boolean(chat.free) : false,
+      x: Number(chat.x ?? 2),
+      y: Number(chat.y ?? 3),
+      scale: Number(chat.scale ?? 1.0),
+      opacity: Number(chat.opacity ?? 1.0),
+    };
+  }
+
   function normalizeConfig(config) {
     if (!config) return config;
     const normalized = deepClone(config);
@@ -489,6 +547,7 @@
       normalized.speedometer || {},
     );
     normalized.weapon = withWeaponDefaults(normalized.weapon || {});
+    normalized.chat = withChatDefaults(normalized.chat || {});
     normalized.elements = normalized.elements || {};
     Object.keys(normalized.elements).forEach((key) => {
       normalized.elements[key] = withElementDefaults(
@@ -527,8 +586,10 @@
     speedometerThemes,
     minimapQuickPosition,
     statusGroupQuickPosition,
+    chatQuickPosition,
     applyMinimapQuickPosition,
     applyStatusGroupQuickPosition,
+    applyChatQuickPosition,
     iconAssets,
     iconMap,
     escapeHTML,
@@ -550,6 +611,7 @@
     withElementDefaults,
     withSpeedometerDefaults,
     withWeaponDefaults,
+    withChatDefaults,
     normalizeConfig,
     getWeaponPositionClass,
     weaponImagePath,
