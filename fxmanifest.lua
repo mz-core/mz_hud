@@ -3,7 +3,7 @@ game 'gta5'
 lua54 'yes'
 
 name 'mz_hud'
-author 'MZ Core'
+author 'Mazus'
 description 'HUD modular do MZ Core com editor, status, logo, voz, radio, arma, minimapa e velocimetro.'
 version '1.0.0'
 
