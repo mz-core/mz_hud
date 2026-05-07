@@ -302,6 +302,93 @@ local function sendUI(payload)
   SendNUIMessage(payload)
 end
 
+local NuiPayloadCache = {}
+
+local NuiPayloadForceInterval = {
+  updateStatus = 1200,
+  updateVehicle = 500,
+  updateWeapon = 1000,
+  updateVoice = 1500,
+  updateRadio = 1500,
+  updateLogo = 1500,
+  setVisible = 1000
+}
+
+local function buildPayloadSignature(value)
+  local valueType = type(value)
+
+  if valueType == 'table' then
+    local keys = {}
+    for key in pairs(value) do
+      keys[#keys + 1] = key
+    end
+
+    table.sort(keys, function(left, right)
+      return tostring(left) < tostring(right)
+    end)
+
+    local parts = {}
+    for _, key in ipairs(keys) do
+      parts[#parts + 1] = tostring(key) .. '=' .. buildPayloadSignature(value[key])
+    end
+
+    return '{' .. table.concat(parts, ',') .. '}'
+  end
+
+  if valueType == 'number' then
+    return tostring(math.floor(value * 100 + 0.5) / 100)
+  end
+
+  return tostring(value)
+end
+
+local function clearNuiPayloadCache()
+  NuiPayloadCache = {}
+end
+
+local function shouldSendHudPayload(action, payload, forceIntervalMs)
+  if type(action) ~= 'string' or action == '' then
+    return true
+  end
+
+  local now = GetGameTimer()
+  local signature = buildPayloadSignature(payload)
+  local cache = NuiPayloadCache[action]
+  local interval = tonumber(forceIntervalMs or NuiPayloadForceInterval[action] or 1000) or 1000
+
+  if not cache then
+    NuiPayloadCache[action] = {
+      signature = signature,
+      sentAt = now
+    }
+    return true
+  end
+
+  if cache.signature ~= signature or (now - cache.sentAt) >= interval then
+    cache.signature = signature
+    cache.sentAt = now
+    return true
+  end
+
+  return false
+end
+
+local function sendHudMessageIfChanged(payload, options)
+  if type(payload) ~= 'table' then
+    return false
+  end
+
+  local action = tostring(payload.action or '')
+  local interval = type(options) == 'table' and options.forceIntervalMs or nil
+
+  if shouldSendHudPayload(action, payload, interval) then
+    sendUI(payload)
+    return true
+  end
+
+  return false
+end
+
 local function dispatchChatLayout(config)
   if type(config) ~= 'table' then
     return
@@ -855,6 +942,7 @@ end)
 
 RegisterNetEvent('mz_hud:client:applyConfig', function(config)
   HudState.config = config
+  clearNuiPayloadCache()
   applyMinimapSettings(true)
   applyChatLayout(HudState.config and HudState.config.chat or nil)
 
@@ -887,6 +975,7 @@ RegisterNUICallback('ready', function(_, cb)
   HudState.canManage = bootstrap and bootstrap.can_manage == true or false
   HudState.bootstrapDone = true
   HudState.coreHUDState = exports['mz_core']:GetHUDState() or HudState.coreHUDState
+  clearNuiPayloadCache()
 
   applyMinimapSettings(true)
   applyChatLayout(HudState.config and HudState.config.chat or nil)
@@ -1057,7 +1146,7 @@ RegisterKeyMapping('seatbelt', 'Colocar/remover cinto de segurança', 'keyboard'
 CreateThread(function()
   while true do
     if HudState.bootstrapDone and HudState.config and HudState.hudVisible then
-      sendUI(getStatusPayload())
+      sendHudMessageIfChanged(getStatusPayload(), { forceIntervalMs = 1200 })
     end
 
     Wait(getPolling('hud_ms', 200))
@@ -1067,7 +1156,7 @@ end)
 CreateThread(function()
   while true do
     if HudState.bootstrapDone and HudState.config then
-      sendUI(getVehiclePayload())
+      sendHudMessageIfChanged(getVehiclePayload(), { forceIntervalMs = 500 })
     end
 
     Wait(getPolling('vehicle_ms', 100))
@@ -1116,7 +1205,7 @@ end)
 CreateThread(function()
   while true do
     if HudState.bootstrapDone and HudState.config then
-      sendUI(getWeaponPayload())
+      sendHudMessageIfChanged(getWeaponPayload(), { forceIntervalMs = 1000 })
     end
 
     Wait(getPolling('weapon_ms', 200))
