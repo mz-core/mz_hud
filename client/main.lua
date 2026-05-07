@@ -28,6 +28,13 @@ local SeatbeltRuntime = {
   lastExitBlockNotify = 0
 }
 
+local CoreWeaponHudState = {
+  known = false,
+  equipped = false
+}
+local CoreWeaponStateLastAt = 0
+local LastWeaponHudDebugAt = 0
+
 local SeatbeltCrashConfig = {
   enabled = true,
   minSpeedKmh = 65,
@@ -142,6 +149,76 @@ local WeaponHashToName = {
 
 local function getWeaponNameFromHash(hash)
   return WeaponHashToName[hash] or ('weapon_' .. tostring(hash))
+end
+
+local function getWeaponHashFromName(weaponName)
+  weaponName = tostring(weaponName or ''):upper():gsub('^%s+', ''):gsub('%s+$', '')
+  if weaponName == '' then
+    return nil
+  end
+
+  local getHashKey = rawget(_G, 'GetHashKey')
+  if type(getHashKey) == 'function' then
+    local ok, result = pcall(function()
+      return getHashKey(weaponName)
+    end)
+
+    if ok and result then
+      return result
+    end
+  end
+
+  local ok, result = pcall(function()
+    return joaat(weaponName)
+  end)
+
+  if ok and result then
+    return result
+  end
+
+  return nil
+end
+
+local function getWeaponClipAmmo(ped, weaponHash)
+  if not ped or not weaponHash then
+    return 0, false
+  end
+
+  local ok, clip = GetAmmoInClip(ped, weaponHash)
+  if ok == true and type(clip) == 'number' then
+    return math.max(math.floor(clip), 0), true
+  end
+
+  if type(ok) == 'number' then
+    return math.max(math.floor(ok), 0), true
+  end
+
+  return 0, false
+end
+
+local function getWeaponHudClipAmmo(ped, weaponHash, totalAmmo, clipSize, preferredClip)
+  totalAmmo = math.max(0, math.floor(tonumber(totalAmmo) or 0))
+  clipSize = math.max(0, math.floor(tonumber(clipSize) or 0))
+
+  local nativeClip, nativeOk = getWeaponClipAmmo(ped, weaponHash)
+  if nativeOk and not (nativeClip == 0 and totalAmmo > 0) then
+    return nativeClip, true
+  end
+
+  local coreClip = tonumber(preferredClip)
+  if coreClip and coreClip > 0 then
+    return math.min(math.floor(coreClip), totalAmmo), false
+  end
+
+  if totalAmmo > 0 and clipSize > 0 then
+    return math.min(totalAmmo, clipSize), false
+  end
+
+  if totalAmmo > 0 then
+    return math.min(totalAmmo, 30), false
+  end
+
+  return 0, nativeOk == true
 end
 
 local function applySeatbeltCrashEffect(playerPed, vehicle, deltaKmh, hadSeatbelt)
@@ -733,6 +810,77 @@ local function getWeaponPayload()
     }
   end
 
+  if CoreWeaponHudState.known == true then
+    if CoreWeaponHudState.equipped ~= true then
+      return {
+        action = 'updateWeapon',
+        weapon = { visible = false }
+      }
+    end
+
+    local weaponHash = tonumber(CoreWeaponHudState.weaponHash) or getWeaponHashFromName(CoreWeaponHudState.weapon)
+    local totalAmmo = tonumber(CoreWeaponHudState.ammo)
+    totalAmmo = math.max(0, math.floor(tonumber(totalAmmo) or 0))
+    local clipSize = tonumber(CoreWeaponHudState.clipSize) or 0
+    local clipAmmo = tonumber(CoreWeaponHudState.clipAmmo)
+    local reserveAmmo = tonumber(CoreWeaponHudState.reserveAmmo)
+    if clipAmmo ~= nil and reserveAmmo ~= nil then
+      clipAmmo = math.max(0, math.floor(clipAmmo))
+      reserveAmmo = math.max(0, math.floor(reserveAmmo))
+    else
+      if totalAmmo > 0 and clipSize > 0 then
+        clipAmmo = math.min(totalAmmo, clipSize)
+      elseif totalAmmo > 0 then
+        clipAmmo = math.min(totalAmmo, 30)
+      else
+        clipAmmo = 0
+      end
+      reserveAmmo = math.max(totalAmmo - clipAmmo, 0)
+    end
+
+    local itemName = tostring(CoreWeaponHudState.item or '')
+    if itemName == '' and weaponHash then
+      itemName = getWeaponNameFromHash(weaponHash)
+    end
+
+    local ammoText = tostring(CoreWeaponHudState.ammoText or '')
+    if ammoText == '' then
+      ammoText = ('%d / %d'):format(clipAmmo, reserveAmmo)
+    end
+    if Config and Config.Debug == true and (GetGameTimer() - LastWeaponHudDebugAt) >= 1000 then
+      LastWeaponHudDebugAt = GetGameTimer()
+      print(('[mz_hud][weapon] weapon=%s hash=%s total=%s clipSize=%s clip=%s nativeOk=%s reserve=%s text=%s'):format(
+        tostring(CoreWeaponHudState.weapon or ''),
+        tostring(weaponHash or ''),
+        tostring(totalAmmo),
+        tostring(clipSize),
+        tostring(clipAmmo),
+        'core',
+        tostring(reserveAmmo),
+        ammoText
+      ))
+    end
+
+    return {
+      action = 'updateWeapon',
+      weapon = {
+        visible = true,
+        name = itemName ~= '' and itemName or 'weapon',
+        label = CoreWeaponHudState.label,
+        weapon = CoreWeaponHudState.weapon,
+        hash = weaponHash and tostring(weaponHash) or tostring(CoreWeaponHudState.weaponHash or ''),
+        clip = clipAmmo,
+        reserve = reserveAmmo,
+        clipAmmo = clipAmmo,
+        reserveAmmo = reserveAmmo,
+        totalAmmo = totalAmmo,
+        maxAmmo = tonumber(CoreWeaponHudState.maxAmmo) or nil,
+        clipSize = clipSize > 0 and clipSize or nil,
+        ammoText = ammoText
+      }
+    }
+  end
+
   local ped = PlayerPedId()
   local weaponHash = GetSelectedPedWeapon(ped)
 
@@ -743,16 +891,17 @@ local function getWeaponPayload()
     }
   end
 
-  local ok, ammoInClip = GetAmmoInClip(ped, weaponHash)
-  if ok ~= true then
-    ammoInClip = 0
-  end
-
   local totalAmmo = GetAmmoInPedWeapon(ped, weaponHash) or 0
+  totalAmmo = math.max(0, math.floor(tonumber(totalAmmo) or 0))
+  local ammoInClip = getWeaponHudClipAmmo(ped, weaponHash, totalAmmo, 0, nil)
   local reserveAmmo = totalAmmo - (ammoInClip or 0)
   if reserveAmmo < 0 then
     reserveAmmo = 0
   end
+
+  ammoInClip = math.max(0, math.floor(tonumber(ammoInClip) or 0))
+  reserveAmmo = math.max(0, math.floor(tonumber(reserveAmmo) or 0))
+  local ammoText = ('%d / %d'):format(ammoInClip, reserveAmmo)
 
   return {
     action = 'updateWeapon',
@@ -760,8 +909,12 @@ local function getWeaponPayload()
       visible = true,
       name = getWeaponNameFromHash(weaponHash),
       hash = tostring(weaponHash),
-      clip = ammoInClip or 0,
-      reserve = reserveAmmo
+      clip = ammoInClip,
+      reserve = reserveAmmo,
+      clipAmmo = ammoInClip,
+      reserveAmmo = reserveAmmo,
+      totalAmmo = totalAmmo,
+      ammoText = ammoText
     }
   }
 end
@@ -937,6 +1090,20 @@ RegisterNetEvent('mz_core:client:hudStateUpdated', function(hudState)
     HudState.coreHUDState = {
       metadata = type(hudState.metadata) == 'table' and hudState.metadata or {}
     }
+  end
+end)
+
+AddEventHandler('mz_core:client:weaponHudState', function(payload)
+  payload = type(payload) == 'table' and payload or {}
+  CoreWeaponHudState = payload
+  CoreWeaponHudState.known = true
+  CoreWeaponStateLastAt = GetGameTimer()
+
+  if CoreWeaponHudState.equipped ~= true then
+    sendHudMessageIfChanged({
+      action = 'updateWeapon',
+      weapon = { visible = false }
+    }, { forceIntervalMs = 0 })
   end
 end)
 

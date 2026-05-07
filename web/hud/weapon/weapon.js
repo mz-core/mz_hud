@@ -70,15 +70,20 @@
 
     const name = state.weapon?.name || "weapon_unarmed";
     const image = weaponImagePath(name, config.image_model);
-    const clip = Number(state.weapon?.clip || 0);
-    const reserve = Number(state.weapon?.reserve || 0);
+    const clip = Number(state.weapon?.clipAmmo ?? state.weapon?.clip ?? 0);
+    const reserve = Number(state.weapon?.reserveAmmo ?? state.weapon?.reserve ?? 0);
+    const ammoText = state.weapon?.ammoText || `${clip} / ${reserve}`;
+    const label = state.weapon?.label || prettyWeaponName(name);
+    const ammoParts = String(ammoText).split("/");
+    const clipText = (ammoParts[0] || String(clip)).trim();
+    const reserveText = (ammoParts.slice(1).join("/") || String(reserve)).trim();
 
     weaponHud.innerHTML = `
       <div class="weapon-card weapon-comms-card" data-hud-select="weapon">
         ${config.show_image ? `<img class="weapon-image" src="${image}" alt="" onerror="this.style.display='none'">` : `<div class="weapon-placeholder">${speedometerIcon("weapon")}</div>`}
         <div class="weapon-info">
-          ${config.show_name ? `<strong>${escapeHTML(prettyWeaponName(name))}</strong>` : ""}
-          ${config.show_ammo ? `<div class="weapon-ammo">${speedometerIcon("ammo")}<span>${clip}</span><em>/ ${reserve}</em></div>` : ""}
+          ${config.show_name ? `<strong>${escapeHTML(label)}</strong>` : ""}
+          ${config.show_ammo ? `<div class="weapon-ammo">${speedometerIcon("ammo")}<span>${escapeHTML(clipText)}</span><em>/ ${escapeHTML(reserveText)}</em></div>` : ""}
         </div>
       </div>`;
   }
