@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "description": "Catalogo opcional de icones da mz_hud. Voce pode adicionar icones por manifesto ou apenas colocar arquivos seguindo o padrao de pastas/nome.",
+  "auto_probe": {
+    "enabled": true,
+    "max_index": 12,
+    "extensions": ["svg", "png", "webp"]
+  },
+  "status": {},
+  "vehicle": {},
+  "comms": {}
+}

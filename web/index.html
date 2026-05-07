@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>mz_hud</title>
+  <link rel="stylesheet" href="shared/variables.css">
+  <link rel="stylesheet" href="shared/animations.css">
+  <link rel="stylesheet" href="shared/helpers.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="hud/status/status.css">
   <link rel="stylesheet" href="hud/voice/voice.css">
@@ -27,7 +30,12 @@
         <div>
           <p class="eyebrow">mz_hud</p>
           <h1>Editor Global da HUD</h1>
-          <p class="subcopy">O que voce salvar aqui vai para todos os players.</p>
+          <p class="subcopy">Editor administrativo para definir o visual global do servidor. O player comum apenas recebe o padrão salvo aqui.</p>
+          <div class="editor-meta-row" aria-label="Informações do editor">
+            <span>Global</span>
+            <span>/mzhud</span>
+            <span>group.mz_owner</span>
+          </div>
         </div>
 
         <div class="editor-actions">
@@ -39,8 +47,38 @@
       </div>
 
       <div class="editor-grid">
+        <section class="editor-card editor-notice-card" aria-label="Aviso importante">
+          <h2>Modo servidor</h2>
+          <p class="editor-help strong-help">Tudo que for salvo neste painel vira configuração global da <strong>mz_hud</strong> e será aplicado para todos os jogadores conectados.</p>
+          <div class="editor-notice-list">
+            <span>Salvar grava em <strong>data/runtime_config.json</strong></span>
+            <span>Resetar volta para o padrão do <strong>config.lua</strong></span>
+            <span>Use presets pelo painel ou pelo comando <strong>/mzhud_preset</strong></span>
+          </div>
+        </section>
+
+        <section class="editor-card editor-preset-card" aria-label="Presets globais">
+          <div class="editor-card-title-row">
+            <h2>Presets globais</h2>
+            <button id="preset-manager-refresh" type="button" class="ghost-button compact-button">Atualizar</button>
+          </div>
+          <p class="editor-help section-help">Aplique um visual pronto direto no editor. O servidor cria backup automático antes de aplicar quando essa opção estiver ativa no config.lua.</p>
+          <div class="preset-manager-head">
+            <span id="preset-active-label">Atual: carregando...</span>
+            <span id="preset-backup-summary">Backups: carregando...</span>
+          </div>
+          <div id="preset-manager-list" class="preset-manager-list">
+            <div class="preset-empty-state">Carregando presets...</div>
+          </div>
+          <div class="preset-manager-actions">
+            <button id="preset-manager-backup" type="button" class="ghost-button">Criar backup atual</button>
+          </div>
+          <p id="preset-manager-status" class="preset-manager-status" data-type="info">Aguardando abertura do editor.</p>
+        </section>
+
         <section class="editor-card">
           <h2>Geral</h2>
+          <p class="editor-help section-help">Configura base global, minimapa e opacidade geral. Evite usar isso como ajuste fino de cada módulo.</p>
           <label>
             <span>Posição rápida do mapa</span>
             <select id="general-hud-position"></select>
@@ -78,6 +116,7 @@
 
         <section class="editor-card">
           <h2>HUD de status</h2>
+          <p class="editor-help section-help">Controla o grupo principal de vida, colete, fome, sede e outros status. O estilo individual dos itens fica na seção Elementos.</p>
           <label class="toggle-row">
             <span>Agrupar fome, sede, vida e afins</span>
             <input id="status-group-enabled" type="checkbox">
@@ -106,7 +145,8 @@
         </section>
 
         <section class="editor-card">
-          <h2>Velocimetro</h2>
+          <h2>Velocímetro</h2>
+          <p class="editor-help section-help">Define o modelo global do velocímetro. Os estilos oficiais estão documentados em docs/STYLES_CATALOG.md.</p>
           <label class="toggle-row">
             <span>Ativado</span>
             <input id="speedometer-enabled" type="checkbox">
@@ -127,6 +167,14 @@
             <span>Modelo</span>
             <select id="speedometer-style"></select>
           </label>
+          <div class="style-reference-box">
+            <span><strong>digital</strong> simples</span>
+            <span><strong>analog</strong> circular</span>
+            <span><strong>minimal</strong> limpo</span>
+            <span><strong>racing</strong> esportivo</span>
+            <span><strong>classic</strong> RP</span>
+            <span><strong>apex</strong> especial</span>
+          </div>
           <label>
             <span>Unidade</span>
             <select id="speedometer-unit"></select>
@@ -169,9 +217,27 @@
           </label>
         </section>
 
+        <section class="editor-card speedometer-icons-card">
+          <h2>Ícones do velocímetro</h2>
+          <p class="editor-help">Escolha apenas o desenho dos ícones. O formato/tamanho continua vindo do modelo visual do velocímetro.</p>
+          <div class="editor-mini-grid speedometer-icon-grid">
+            <label><span>Combustível</span><select id="speedometer-icon-fuel"></select></label>
+            <label><span>Motor</span><select id="speedometer-icon-engine"></select></label>
+            <label><span>Motor ligado</span><select id="speedometer-icon-engine-indicator"></select></label>
+            <label><span>Cinto colocado</span><select id="speedometer-icon-belt"></select></label>
+            <label><span>Cinto removido</span><select id="speedometer-icon-unbelt"></select></label>
+            <label><span>Farol baixo</span><select id="speedometer-icon-light"></select></label>
+            <label><span>Farol alto</span><select id="speedometer-icon-light-high"></select></label>
+            <label><span>Farol apagado</span><select id="speedometer-icon-light-off"></select></label>
+            <label><span>Seta</span><select id="speedometer-icon-arrow"></select></label>
+            <label><span>Seta ativa</span><select id="speedometer-icon-arrow-active"></select></label>
+          </div>
+          <p class="editor-help">Para adicionar novos: coloque arquivos como <strong>web/assets/icons/vehicle/fuel/fuel_1.svg</strong>. A HUD detecta automaticamente nomes sequenciais.</p>
+        </section>
+
         <section class="editor-card speedometer-visual-card">
           <h2>Visual do velocímetro</h2>
-          <p class="editor-help">Cores e modelos inspirados no exemplo, sem alterar as demais partes da HUD.</p>
+          <p class="editor-help">Cores rápidas para o velocímetro atual. Isso não troca o sistema de style e não altera as demais partes da HUD.</p>
           <div class="speed-theme-grid">
             <button type="button" data-speed-theme="blue"><span style="--swatch:#3b82f6"></span><strong>Azul</strong></button>
             <button type="button" data-speed-theme="red"><span style="--swatch:#ef4444"></span><strong>Vermelho</strong></button>
@@ -262,6 +328,7 @@
         </section>
         <section class="editor-card">
           <h2>Logo</h2>
+          <p class="editor-help section-help">Imagem global de identidade do servidor/framework. Mantenha fundo transparente para evitar retângulo atrás da logo.</p>
           <label class="toggle-row">
             <span>Ativar logo</span>
             <input id="logo-enabled" type="checkbox">
@@ -294,18 +361,32 @@
 
         <section class="editor-card span-two voice-editor-card">
           <h2>Voz e Rádio</h2>
-          <p class="editor-help">Esta aba controla somente os indicadores de voz e rádio. Ela não mexe na HUD de status, mapa, logo ou velocímetro.</p>
+          <p class="editor-help">Controla somente os indicadores de voz e rádio. Não mexe na HUD de status, mapa, logo ou velocímetro.</p>
           <div id="voice-editor" class="elements-editor voice-editor"></div>
         </section>
 
         <section class="editor-card span-two">
           <h2>Elementos</h2>
+          <p class="editor-help section-help">Aqui ficam os itens individuais de status. Use esta área para escolher ícone, estilo, cor, posição e se o item acompanha o grupo.</p>
+          <div class="style-reference-box status-style-reference">
+            <span><strong>circle</strong> circular</span>
+            <span><strong>bar</strong> barra</span>
+            <span><strong>square</strong> quadrado</span>
+            <span><strong>pill</strong> pílula</span>
+            <span><strong>apex</strong> especial</span>
+          </div>
           <div id="elements-editor" class="elements-editor"></div>
         </section>
       </div>
     </div>
   </div>
 
+  <script src="core/constants.js"></script>
+  <script src="core/utils.js"></script>
+  <script src="core/positions.js"></script>
+  <script src="core/icons.js"></script>
+  <script src="core/defaults.js"></script>
+  <script src="core/weapons.js"></script>
   <script src="core/core.js"></script>
   <script src="hud/speedometer/speedometer.js"></script>
   <script src="hud/status/status.js"></script>
@@ -313,7 +394,16 @@
   <script src="hud/radio/radio.js"></script>
   <script src="hud/logo/logo.js"></script>
   <script src="hud/weapon/weapon.js"></script>
+  <script src="hud/editor/form.js"></script>
+  <script src="hud/editor/elements.js"></script>
+  <script src="hud/editor/lifecycle.js"></script>
   <script src="hud/editor/editor.js"></script>
+  <script src="hud/editor/presets.js"></script>
+  <script src="app/state.js"></script>
+  <script src="app/nui.js"></script>
+  <script src="app/render.js"></script>
+  <script src="app/editor_bridge.js"></script>
+  <script src="app/events.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

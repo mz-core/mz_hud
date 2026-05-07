@@ -1,3 +1,17 @@
+--[[
+  ARQUIVO LEGADO / NÃO USADO
+
+  Este arquivo foi mantido apenas para histórico.
+  Ele NÃO é carregado pelo fxmanifest.lua e NÃO deve ser usado
+  como fonte ativa de configuração da mz_hud.
+
+  Configuração ativa:
+    - config.lua
+    - data/runtime_config.json, quando salvo pelo editor /mzhud
+
+  Evite editar este arquivo para configurar a HUD.
+]]
+
 Config = Config or {}
 
 Config.Admin = {
@@ -51,7 +65,7 @@ Config.DefaultHUD = {
     free = false,
     x = 88,
     y = 82,
-    style = 'digital', -- digital | analog | minimal | racing | classic | hudzip
+    style = 'digital', -- digital | analog | minimal | racing | classic | apex
     unit = 'kmh',
     show_speed = true,
     show_rpm = true,
@@ -86,7 +100,7 @@ Config.DefaultHUD = {
       enabled = true,
       label = 'Vida',
       icon = 'heart',
-      style = 'circle', -- circle | bar | square | pill | hudzip
+      style = 'circle', -- circle | bar | square | pill | apex
       color = '#ef4444',
       opacity = 100,
       position = 'bottom-center',

@@ -24,6 +24,9 @@ server_scripts {
 
 files {
   'web/index.html',
+  'web/shared/variables.css',
+  'web/shared/animations.css',
+  'web/shared/helpers.css',
   'web/style.css',
   'web/hud/speedometer/speedometer.css',
   'web/hud/status/status.css',
@@ -32,6 +35,12 @@ files {
   'web/hud/logo/logo.css',
   'web/hud/weapon/weapon.css',
   'web/hud/editor/editor.css',
+  'web/core/constants.js',
+  'web/core/utils.js',
+  'web/core/positions.js',
+  'web/core/icons.js',
+  'web/core/defaults.js',
+  'web/core/weapons.js',
   'web/core/core.js',
   'web/hud/speedometer/speedometer.js',
   'web/hud/status/status.js',
@@ -39,10 +48,20 @@ files {
   'web/hud/radio/radio.js',
   'web/hud/logo/logo.js',
   'web/hud/weapon/weapon.js',
+  'web/hud/editor/form.js',
+  'web/hud/editor/elements.js',
+  'web/hud/editor/lifecycle.js',
   'web/hud/editor/editor.js',
+  'web/hud/editor/presets.js',
+  'web/app/state.js',
+  'web/app/nui.js',
+  'web/app/render.js',
+  'web/app/editor_bridge.js',
+  'web/app/events.js',
   'web/app.js',
   'web/assets/**',
-  'data/runtime_config.json'
+  'data/runtime_config.json',
+  'data/presets/**'
 }
 
 dependencies {

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "resource": "mz_hud",
+  "scope": "server_global",
+  "auto_load": false,
+  "default_preset": "apex",
+  "description": "Manifesto dos presets globais usados pelo comando administrativo /mzhud_preset. Nenhum preset e carregado automaticamente no start.",
+  "presets": {
+    "apex": {
+      "file": "data/presets/apex.json",
+      "label": "Apex",
+      "recommended_for": "Visual principal moderno da mz_hud",
+      "status_style": "apex",
+      "speedometer_style": "apex",
+      "safe_for_production": true
+    },
+    "clean_minimal": {
+      "file": "data/presets/clean_minimal.json",
+      "label": "Clean Minimal",
+      "recommended_for": "Servidor que quer HUD mais discreta",
+      "status_style": "pill",
+      "speedometer_style": "minimal",
+      "safe_for_production": true
+    },
+    "classic_rp": {
+      "file": "data/presets/classic_rp.json",
+      "label": "Classic RP",
+      "recommended_for": "Servidor RP com leitura visual tradicional",
+      "status_style": "bar",
+      "speedometer_style": "classic",
+      "safe_for_production": true
+    },
+    "setup_debug": {
+      "file": "data/presets/setup_debug.json",
+      "label": "Setup Debug",
+      "recommended_for": "Teste visual durante instalacao/configuracao",
+      "status_style": "square",
+      "speedometer_style": "digital",
+      "safe_for_production": false
+    }
+  }
+}

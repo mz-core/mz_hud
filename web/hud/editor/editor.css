@@ -569,3 +569,260 @@ input[type="checkbox"] {
     grid-template-columns: 1fr;
   }
 }
+
+/* Fase 5 - UX do editor global
+   Escopo: somente comunicação visual para dono/dev de servidor. */
+.editor-meta-row {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.editor-meta-row span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.065);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.editor-notice-card {
+  background:
+    linear-gradient(135deg, rgba(56, 189, 248, 0.10), rgba(34, 197, 94, 0.045)),
+    rgba(255, 255, 255, 0.04);
+  border-color: rgba(56, 189, 248, 0.18);
+}
+
+.editor-notice-card::before {
+  background: linear-gradient(180deg, #67e8f9, #22c55e);
+}
+
+.editor-notice-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.editor-notice-list span {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  line-height: 1.35;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.editor-notice-list strong,
+.strong-help strong {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.section-help {
+  margin-top: -6px;
+  margin-bottom: 13px;
+}
+
+.strong-help {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.style-reference-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: -3px 0 12px;
+}
+
+.style-reference-box span {
+  min-height: 28px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 10.5px;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.style-reference-box strong {
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 900;
+}
+
+.status-style-reference {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+
+@media (max-width: 520px) {
+  .style-reference-box {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Editor presets reais - aplica presets globais sem sair do /mzhud. */
+.editor-preset-card {
+  border-color: rgba(34, 197, 94, 0.18);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(34, 197, 94, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
+}
+
+.editor-preset-card::before {
+  background: linear-gradient(180deg, #22c55e, #38bdf8);
+}
+
+.preset-manager-head {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.preset-manager-head span {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 7px 9px;
+  border-radius: 11px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 850;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.preset-manager-list {
+  display: grid;
+  gap: 9px;
+}
+
+.preset-option {
+  padding: 11px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.preset-option.active {
+  border-color: rgba(34, 197, 94, 0.38);
+  background: rgba(34, 197, 94, 0.085);
+  box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.82);
+}
+
+.preset-option-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.preset-option strong {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.preset-option p {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.preset-option-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.preset-option-meta span,
+.preset-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 10px;
+  font-weight: 850;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.preset-tag.safe {
+  color: #bbf7d0;
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(34, 197, 94, 0.13);
+}
+
+.preset-tag.warning {
+  color: #fde68a;
+  border-color: rgba(234, 179, 8, 0.28);
+  background: rgba(234, 179, 8, 0.12);
+}
+
+.preset-manager-actions {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.preset-manager-status,
+.preset-empty-state {
+  margin: 10px 0 0;
+  padding: 9px 10px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 11px;
+  line-height: 1.35;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.preset-manager-status[data-type="success"] {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.09);
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
+.preset-manager-status[data-type="error"] {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.09);
+  border-color: rgba(239, 68, 68, 0.18);
+}
+
+.preset-manager-status[data-type="info"] {
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.075);
+  border-color: rgba(56, 189, 248, 0.14);
+}
+
+/* Icon catalog editor */
+.speedometer-icons-card .speedometer-icon-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.speedometer-icons-card select,
+.element-card select[data-field="icon"] {
+  font-family: inherit;
+}
+
+.element-icon-preview .hud-icon-mask,
+.element-icon-preview .speedometer-icon-mask {
+  width: 22px;
+  height: 22px;
+}

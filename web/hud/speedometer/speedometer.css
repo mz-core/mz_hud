@@ -1,12 +1,730 @@
+/* MZ HUD - Speedometer: base e modelos migrados de web/style.css na Fase 2. */
+
+.speedometer {
+  position: fixed;
+  z-index: 11;
+  width: 278px;
+  padding: 18px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(94, 234, 212, 0.18), transparent 35%),
+    linear-gradient(160deg, rgba(10, 14, 18, 0.94), rgba(14, 23, 31, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow);
+}
+
+.speedometer-bottom-right {
+  right: 24px;
+  bottom: 24px;
+}
+
+.speedometer-bottom-center {
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+}
+
+.speedometer-bottom-left {
+  left: 24px;
+  bottom: 24px;
+}
+
+.speedometer-top-right {
+  right: 24px;
+  top: 24px;
+}
+
+.speedometer-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.speedometer-kicker {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.speedometer-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.speedometer-speed {
+  font-size: 54px;
+  font-weight: 800;
+  line-height: 0.85;
+}
+
+.speedometer-unit {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.speedometer-gear {
+  min-width: 58px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
+}
+
+.speedometer-gear strong {
+  display: block;
+  font-size: 24px;
+}
+
+.speedometer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.speedometer-stat {
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.speedometer-stat span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+
+.speedometer-stat strong {
+  font-size: 18px;
+}
+
+.speedometer {
+  width: 172px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.38);
+}
+
+.speedometer-bottom-right {
+  right: 16px;
+  bottom: 16px;
+  transform-origin: right bottom;
+}
+
+.speedometer-bottom-center {
+  bottom: 16px;
+  transform-origin: center bottom;
+}
+
+.speedometer-bottom-left {
+  left: 192px;
+  bottom: 16px;
+  transform-origin: left bottom;
+}
+
+.speedometer-top-right {
+  right: 16px;
+  top: 16px;
+  transform-origin: right top;
+}
+
+.speedometer-digital {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.speedometer-speed-wrap {
+  text-align: center;
+}
+
+.speedometer-speed {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.speedometer-unit {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #60a5fa;
+}
+
+.speedometer-rpm {
+  width: 100%;
+}
+
+.speedometer-bar-track,
+.speedometer-fuel-track {
+  width: 100%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.speedometer-bar-track {
+  height: 8px;
+  border-radius: 999px;
+}
+
+.speedometer-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.9);
+  transition: width 120ms linear;
+}
+
+.speedometer-rpm-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.speedometer-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 22px;
+}
+
+.speedometer-gear {
+  min-width: 22px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #60a5fa;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.speedometer-fuel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+}
+
+.speedometer-fuel.is-low {
+  color: #ef4444;
+}
+
+.speedometer-fuel svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.speedometer-fuel-track {
+  width: 64px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.speedometer-fuel-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: #3b82f6;
+  transition: width 120ms linear;
+}
+
+.speedometer-fuel.is-low .speedometer-fuel-track div {
+  background: #ef4444;
+}
+
+.speedometer-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  min-height: 16px;
+}
+
+.speedometer-indicator {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #60a5fa;
+}
+
+.speedometer-indicator.danger {
+  color: #ef4444;
+  animation: hudPulse 1s ease-in-out infinite;
+}
+
+.speedometer-top-left { left: 16px; top: 16px; transform-origin: left top; }
+.speedometer-top-center { left: 50%; top: 16px; transform-origin: center top; }
+.speedometer-center-left { left: 16px; top: 50%; transform-origin: left center; }
+.speedometer-center { left: 50%; top: 50%; transform-origin: center center; }
+.speedometer-center-right { right: 16px; top: 50%; transform-origin: right center; }
+
+/* Velocímetro - modelos e visual inspirado no hud_exemple */
+.speedometer {
+  --speed-primary: #ffffff;
+  --speed-secondary: #3b82f6;
+  --speed-accent: #ef4444;
+  --speed-bg: #000000;
+  --speed-primary-soft: rgba(255,255,255,.55);
+  color: var(--speed-primary);
+  width: auto;
+  height: auto;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.speedometer-panel {
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: color-mix(in srgb, var(--speed-bg) 82%, transparent);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.speedometer-speed,
+.minimal-speed strong,
+.racing-speed strong,
+.gauge-center-text strong {
+  color: var(--speed-primary);
+}
+
+.speedometer-unit,
+.minimal-speed span,
+.racing-speed span,
+.gauge-center-text span {
+  color: var(--speed-secondary);
+}
+
+.speedometer-bar-fill,
+.speedometer-fuel-track div,
+.gauge-progress {
+  background: var(--speed-secondary);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--speed-secondary) 65%, transparent);
+}
+
+.speedometer-style-digital .speedometer-digital {
+  min-width: 180px;
+  padding: 14px 16px;
+  border-radius: 16px;
+}
+
+.speedometer-speed-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: .92;
+}
+
+.speedometer-speed {
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: -4px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--speed-primary) 25%, transparent);
+}
+
+.speedometer-unit {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.speedometer-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 9px;
+}
+
+.speedometer-gear {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--speed-secondary);
+  background: color-mix(in srgb, var(--speed-secondary) 18%, transparent);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.speedometer-fuel,
+.minimal-fuel,
+.racing-fuel,
+.gauge-fuel {
+  color: var(--speed-primary-soft);
+}
+
+.speedometer-fuel svg,
+.minimal-fuel svg,
+.racing-fuel svg,
+.gauge-fuel svg,
+.speedometer-indicator svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.speedometer-fuel.is-low,
+.minimal-fuel.is-low,
+.racing-fuel.is-low,
+.gauge-fuel.is-low,
+.speedometer-indicator.danger {
+  color: var(--speed-accent);
+}
+
+.speedometer-rpm-labels {
+  color: var(--speed-primary-soft);
+}
+
+.speedometer-indicators {
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 8px;
+}
+
+.speedometer-indicator {
+  color: var(--speed-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, currentColor 45%, transparent));
+}
+
+.speedometer-indicator.is-active {
+  color: var(--speed-secondary);
+  opacity: 1;
+}
+
+.speedometer-indicator.is-high {
+  color: var(--speed-primary);
+  opacity: 1;
+}
+
+.speedometer-indicator.is-off {
+  color: var(--speed-primary-soft);
+  opacity: 0.46;
+  filter: none;
+}
+
+.speedometer-minimal {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: color-mix(in srgb, var(--speed-bg) 66%, transparent);
+}
+
+.minimal-speed {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.minimal-speed strong {
+  font-size: 42px;
+  line-height: .9;
+  font-weight: 300;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.minimal-speed span {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.minimal-gear {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--speed-secondary) 26%, transparent);
+  color: var(--speed-secondary);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.minimal-fuel {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.rpm-leds,
+.rpm-blocks {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.rpm-leds span {
+  width: 6px;
+  height: 14px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--speed-primary) 16%, transparent);
+}
+
+.rpm-leds span.active,
+.rpm-blocks span.active {
+  background: var(--speed-secondary);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--speed-secondary) 65%, transparent);
+}
+
+.rpm-leds span.hot.active,
+.rpm-blocks span.hot.active {
+  background: var(--speed-accent);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--speed-accent) 70%, transparent);
+}
+
+.speedometer-racing {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  border-radius: 16px;
+  padding: 12px;
+  border-width: 2px;
+  border-color: color-mix(in srgb, var(--speed-secondary) 40%, transparent);
+  background: color-mix(in srgb, var(--speed-bg) 88%, transparent);
+}
+
+.racing-gear {
+  width: 66px;
+  min-height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--speed-secondary) 20%, transparent);
+  color: var(--speed-secondary);
+  font-size: 34px;
+  font-weight: 950;
+  text-shadow: 0 0 20px var(--speed-secondary);
+}
+
+.racing-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.racing-speed {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.racing-speed strong {
+  font-size: 43px;
+  line-height: .9;
+  font-weight: 950;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.racing-speed span {
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.rpm-blocks span {
+  width: 8px;
+  height: 18px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--speed-primary) 13%, transparent);
+}
+
+.racing-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 9px;
+}
+
+.racing-fuel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speedometer-analog,
+.speedometer-classic {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 999px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--speed-bg) 84%, transparent);
+}
+
+.speedometer-classic {
+  border-radius: 22px;
+  border-width: 4px;
+  border-color: color-mix(in srgb, var(--speed-primary) 28%, transparent);
+}
+
+.speedometer-gauge {
+  position: relative;
+  width: 164px;
+  height: 164px;
+}
+
+.speedometer-classic .speedometer-gauge {
+  width: 136px;
+  height: 136px;
+}
+
+.speedometer-gauge svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gauge-outer,
+.gauge-bg,
+.gauge-progress {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.gauge-outer {
+  stroke: color-mix(in srgb, var(--speed-primary) 18%, transparent);
+  stroke-width: 2;
+}
+
+.gauge-bg {
+  stroke: color-mix(in srgb, var(--speed-primary) 15%, transparent);
+  stroke-width: 8;
+}
+
+.gauge-progress {
+  stroke: var(--speed-secondary);
+  stroke-width: 8;
+  filter: drop-shadow(0 0 7px var(--speed-secondary));
+}
+
+.gauge-needle {
+  stroke: var(--speed-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--speed-accent));
+}
+
+.gauge-center {
+  fill: var(--speed-primary);
+}
+
+.speedometer-gauge text {
+  font-size: 8px;
+  font-weight: 800;
+  fill: var(--speed-primary-soft);
+}
+
+.gauge-center-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 34px;
+  pointer-events: none;
+}
+
+.gauge-center-text strong {
+  font-size: 26px;
+  line-height: .9;
+  font-weight: 900;
+}
+
+.gauge-center-text span {
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: .85;
+}
+
+.gauge-center-text em {
+  margin-top: 4px;
+  font-style: normal;
+  color: var(--speed-secondary);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.gauge-side {
+  min-width: 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-fuel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.gauge-rpm {
+  width: 58px;
+  display: grid;
+  gap: 4px;
+}
+
+.gauge-rpm small {
+  color: var(--speed-primary-soft);
+  font-size: 9px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
 /* Modelo de velocímetro HUD.zip separado do style.css principal.
    Mexa aqui para ajustar o visual do modelo sem encostar no editor inteiro. */
 
-.speedometer-style-hudzip {
+.speedometer-style-apex {
   width: clamp(245px, 15vw, 280px) !important;
   min-height: clamp(190px, 11vw, 215px);
 }
 
-.speedometer-style-hudzip .speedometer-hudzip {
+.speedometer-style-apex .speedometer-apex {
   position: relative;
   width: clamp(245px, 15vw, 280px);
   min-height: clamp(190px, 11vw, 215px);
@@ -19,7 +737,7 @@
 }
 
 /* Arco principal branco/acelerômetro */
-.hudzip-speed-arc {
+.apex-speed-arc {
   position: absolute;
   left: 50%;
   top: -35%;
@@ -29,8 +747,8 @@
   transform: translateX(-50%);
 }
 
-.hudzip-speed-track,
-.hudzip-speed-fill {
+.apex-speed-track,
+.apex-speed-fill {
   fill: transparent;
   stroke-width: clamp(2.4px, 0.05vw, 2.8px);
   stroke-linecap: round;
@@ -39,11 +757,11 @@
   transform-origin: 50% 50%;
 }
 
-.hudzip-speed-track {
+.apex-speed-track {
   stroke: rgba(255, 255, 255, 0.16);
 }
 
-.hudzip-speed-fill {
+.apex-speed-fill {
   stroke: var(--speed-primary, #fff);
   filter: drop-shadow(
     0 0 5px color-mix(in srgb, var(--speed-primary) 70%, transparent)
@@ -54,7 +772,7 @@
 }
 
 /* Círculos laterais: fuel e motor */
-.hudzip-side-circle {
+.apex-side-circle {
   position: absolute;
   bottom: 42px;
   width: clamp(60px, 3.8vw, 72px);
@@ -65,21 +783,21 @@
 }
 
 /* Gasolina esquerda - um pouco mais perto do centro */
-.hudzip-fuel {
+.apex-fuel {
   left: clamp(-30px, -1.5vw, -18px);
 }
 
-.hudzip-fuel.is-low {
+.apex-fuel.is-low {
   color: var(--speed-accent, #ef4444);
 }
 
 /* Motor direita - um pouco mais perto do centro */
-.hudzip-engine-circle {
+.apex-engine-circle {
   right: clamp(-30px, -1.5vw, -18px);
 }
 
 /* SVG do círculo lateral */
-.hudzip-status-svg {
+.apex-status-svg {
   position: absolute;
   inset: 50% auto auto 50%;
   width: 100%;
@@ -90,19 +808,19 @@
   pointer-events: none;
 }
 
-.hudzip-circle-back,
-.hudzip-circle-fill {
+.apex-circle-back,
+.apex-circle-fill {
   fill: transparent;
   stroke-width: 3.4;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }
 
-.hudzip-circle-back {
+.apex-circle-back {
   stroke: rgba(255, 255, 255, 0.15);
 }
 
-.hudzip-circle-fill {
+.apex-circle-fill {
   stroke: currentColor;
   filter: none;
   transition:
@@ -111,26 +829,26 @@
     color 0.2s ease;
 }
 
-.speedometer-hudzip .hudzip-fuel .hudzip-circle-fill,
-.speedometer-hudzip .hudzip-engine-circle .hudzip-circle-fill {
+.speedometer-apex .apex-fuel .apex-circle-fill,
+.speedometer-apex .apex-engine-circle .apex-circle-fill {
   filter: none !important;
 }
 
 /* Estados do motor */
-.hudzip-engine-circle.is-ok {
+.apex-engine-circle.is-ok {
   color: var(--speed-secondary, #22c55e);
 }
 
-.hudzip-engine-circle.is-warning {
+.apex-engine-circle.is-warning {
   color: #f59e0b;
 }
 
-.hudzip-engine-circle.is-off {
+.apex-engine-circle.is-off {
   color: var(--speed-accent, #ef4444);
 }
 
 /* Base do texto/ícone lateral */
-.hudzip-side-value {
+.apex-side-value {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -143,13 +861,13 @@
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.85);
 }
 
-.hudzip-side-value b {
+.apex-side-value b {
   margin-left: 1px;
   font-size: 9px;
   opacity: 0.65;
 }
 
-.hudzip-side-icon {
+.apex-side-icon {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -158,41 +876,41 @@
   place-items: center;
 }
 
-.hudzip-side-icon .speedometer-icon-mask {
+.apex-side-icon .speedometer-icon-mask {
   width: 12px;
   height: 12px;
 }
 
 /* Fuel: ícone em cima, número embaixo, mais juntos no centro */
-.hudzip-fuel .hudzip-side-icon {
+.apex-fuel .apex-side-icon {
   top: 20px;
   bottom: auto;
 }
 
-.hudzip-fuel .hudzip-side-icon .speedometer-icon-mask {
+.apex-fuel .apex-side-icon .speedometer-icon-mask {
   width: 16px;
   height: 16px;
 }
 
-.hudzip-fuel .hudzip-side-value {
+.apex-fuel .apex-side-value {
   top: 35px;
   font-size: 13px;
 }
 
 /* Motor: ícone centralizado no círculo */
-.hudzip-engine-circle .hudzip-side-icon {
+.apex-engine-circle .apex-side-icon {
   top: 50%;
   bottom: auto;
   transform: translate(-50%, -50%);
 }
 
-.hudzip-engine-circle .hudzip-side-icon .speedometer-icon-mask {
+.apex-engine-circle .apex-side-icon .speedometer-icon-mask {
   width: 16px;
   height: 16px;
 }
 
 /* Marcha */
-.hudzip-gear {
+.apex-gear {
   position: absolute;
   top: 10px;
   left: 50%;
@@ -203,7 +921,7 @@
   gap: 8px;
 }
 
-.hudzip-gear small {
+.apex-gear small {
   min-width: 12px;
   color: rgba(255, 255, 255, 0.36);
   font-size: 10px;
@@ -211,7 +929,7 @@
   text-align: center;
 }
 
-.hudzip-gear div {
+.apex-gear div {
   width: 24px;
   height: 24px;
   display: grid;
@@ -225,7 +943,7 @@
 }
 
 /* RPM */
-.hudzip-rpm {
+.apex-rpm {
   position: absolute;
   left: 50%;
   top: 34px;
@@ -235,37 +953,37 @@
   justify-items: center;
 }
 
-.hudzip-rpm strong {
+.apex-rpm strong {
   font-size: 8px;
   letter-spacing: 1px;
   color: rgba(255, 255, 255, 0.58);
 }
 
-.hudzip-rpm-leds {
+.apex-rpm-leds {
   display: flex;
   gap: 3px;
 }
 
-.hudzip-rpm-leds span {
+.apex-rpm-leds span {
   width: 6px;
   height: 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
 }
 
-.hudzip-rpm-leds span.active {
+.apex-rpm-leds span.active {
   background: var(--speed-secondary, #fff);
   box-shadow: 0 0 7px
     color-mix(in srgb, var(--speed-secondary) 70%, transparent);
 }
 
-.hudzip-rpm-leds span.hot.active {
+.apex-rpm-leds span.hot.active {
   background: var(--speed-accent, #ef4444);
   box-shadow: 0 0 7px color-mix(in srgb, var(--speed-accent) 70%, transparent);
 }
 
 /* Velocidade central */
-.speedometer-hudzip h1 {
+.speedometer-apex h1 {
   position: absolute;
   left: 50%;
   top: 62px;
@@ -281,11 +999,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.speedometer-hudzip h1 b {
+.speedometer-apex h1 b {
   color: var(--speed-primary, #fff);
 }
 
-.speedometer-hudzip em {
+.speedometer-apex em {
   position: absolute;
   left: 50%;
   top: 110px;
@@ -299,7 +1017,7 @@
 }
 
 /* Setas, cinto e luzes */
-.hudzip-car-info {
+.apex-car-info {
   position: absolute;
   left: 50%;
   top: 136px;
@@ -310,13 +1028,13 @@
   gap: 12px;
 }
 
-.hudzip-arrows {
+.apex-arrows {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.hudzip-info-icon {
+.apex-info-icon {
   width: 16px;
   height: 16px;
   display: inline-grid;
@@ -325,34 +1043,34 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.hudzip-info-icon .speedometer-icon-mask {
+.apex-info-icon .speedometer-icon-mask {
   width: 14px;
   height: 14px;
 }
 
-.hudzip-info-icon.is-active {
+.apex-info-icon.is-active {
   opacity: 1;
   color: var(--speed-secondary, #22c55e);
 }
 
-.hudzip-info-icon.is-high {
+.apex-info-icon.is-high {
   opacity: 1;
   color: var(--speed-primary, #ffffff);
 }
 
-.hudzip-info-icon.is-off {
+.apex-info-icon.is-off {
   opacity: 0.42;
   color: rgba(255, 255, 255, 0.48);
 }
 
-.hudzip-info-icon.is-danger {
+.apex-info-icon.is-danger {
   opacity: 1;
   color: var(--speed-accent, #ef4444);
-  animation: hudzipBlink 1s step-end infinite;
+  animation: apexBlink 1s step-end infinite;
 }
 
 /* Setas brancas por padrão e piscando quando ativas */
-.hudzip-arrow {
+.apex-arrow {
   width: 13px;
   height: 13px;
   object-fit: contain;
@@ -364,13 +1082,13 @@
     transform 0.2s ease;
 }
 
-.hudzip-arrow.is-active {
+.apex-arrow.is-active {
   opacity: 1;
   filter: none;
-  animation: hudzipBlink 0.75s step-end infinite;
+  animation: apexBlink 0.75s step-end infinite;
 }
 
-@keyframes hudzipBlink {
+@keyframes apexBlink {
   0%,
   49% {
     opacity: 0.25;

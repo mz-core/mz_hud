@@ -1,3 +1,47 @@
+/* MZ HUD - Status: base compacta migrada de web/style.css na Fase 2. */
+
+.hud-item {
+  gap: 0;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.38));
+}
+
+.hud-ring {
+  width: 48px;
+  height: 48px;
+  background:
+    radial-gradient(circle, rgba(0, 0, 0, 0.58) 0 55%, transparent 56%),
+    conic-gradient(var(--item-accent) calc(var(--item-value) * 1%), rgba(55, 65, 81, 0.92) 0);
+  border: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 8px color-mix(in srgb, var(--item-accent) 62%, transparent);
+}
+
+.hud-ring::after {
+  inset: 4px;
+  background: rgba(0, 0, 0, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-icon {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+.hud-value,
+.hud-label {
+  display: none !important;
+}
+
+.hud-speaking .hud-ring {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 14px rgba(34, 197, 94, 0.78),
+    0 0 4px rgba(255, 255, 255, 0.3);
+}
+
 /* MZ HUD - Status module styles
    Movido de web/style.css sem alterar classes ou visual.
    Mantém também estilos compartilhados usados pelos itens de status. */
@@ -44,7 +88,7 @@
   gap: 1px;
 }
 
-/* Base de ícones/masks fica em web/style.css para URL de assets resolver corretamente. */
+/* Base de ícones/masks fica em web/shared/helpers.css para manter uso compartilhado. */
 
 .hud-value {
   font-size: 12px;
@@ -268,7 +312,7 @@
 }
 
 /* ===== Modelo extra importado da hud.zip ===== */
-.hud-style-hudzip .hudzip-status-circle {
+.hud-style-apex .apex-status-circle {
   position: relative;
   width: 40px;
   height: 40px;
@@ -279,10 +323,10 @@
   background: rgba(0, 0, 0, 0.50);
   filter: none;
 }
-.hud-style-hudzip .hudzip-health { transform: scaleX(-1); }
-.hud-style-hudzip .hudzip-health .hud-icon { transform: scaleX(-1); }
-.hudzip-status-svg { position: absolute; inset: -5px; width: 50px; height: 50px; overflow: visible; }
-.hudzip-status-svg circle { fill: none; stroke-width: 2.4px; stroke-dasharray: 113; transition: stroke-dashoffset .35s ease, stroke .2s ease; transform: rotate(-90deg); transform-origin: center; }
-.hud-style-hudzip .hudzip-circle-back { stroke: rgba(255,255,255,.14); stroke-width: 3.2px !important; }
-.hud-style-hudzip .hudzip-circle-fill { stroke: var(--item-accent, #fff); filter: none; }
-.hud-style-hudzip .hud-icon { position: relative; z-index: 2; width: 14px; height: 14px; color: #fff; }
+.hud-style-apex .apex-health { transform: scaleX(-1); }
+.hud-style-apex .apex-health .hud-icon { transform: scaleX(-1); }
+.apex-status-svg { position: absolute; inset: -5px; width: 50px; height: 50px; overflow: visible; }
+.apex-status-svg circle { fill: none; stroke-width: 2.4px; stroke-dasharray: 113; transition: stroke-dashoffset .35s ease, stroke .2s ease; transform: rotate(-90deg); transform-origin: center; }
+.hud-style-apex .apex-circle-back { stroke: rgba(255,255,255,.14); stroke-width: 3.2px !important; }
+.hud-style-apex .apex-circle-fill { stroke: var(--item-accent, #fff); filter: none; }
+.hud-style-apex .hud-icon { position: relative; z-index: 2; width: 14px; height: 14px; color: #fff; }

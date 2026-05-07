@@ -1,15 +1,46 @@
 # Ícones da mz_hud
 
-Padrão de organização:
+A HUD separa **modelo visual** de **ícone**:
+
+- `style` define o formato visual/CSS: `apex`, `circle`, `bar`, etc.
+- `icon` define qual desenho será usado dentro do status/velocímetro.
+
+## Padrão automático
+
+Você pode adicionar ícones sem mexer em JS usando este padrão:
 
 ```txt
-icons/[bloco]/[modelo]/[icone].svg
+web/assets/icons/status/health/health_1.svg
+web/assets/icons/status/health/health_2.svg
+web/assets/icons/status/armor/armor_1.svg
+web/assets/icons/status/hunger/hunger_1.svg
+web/assets/icons/status/thirst/thirst_1.svg
+
+web/assets/icons/vehicle/fuel/fuel_1.svg
+web/assets/icons/vehicle/engine/engine_1.svg
+web/assets/icons/vehicle/seatbelt/seatbelt_1.svg
+web/assets/icons/vehicle/lights/lights_1.svg
+
+web/assets/icons/comms/voice/voice_1.svg
+web/assets/icons/comms/radio/radio_1.svg
 ```
 
-Blocos atuais:
-- `status/default`: vida, colete, fome, sede, stress, stamina e oxigênio.
-- `vehicle/default`: combustível, cinto, faróis e motor.
-- `comms/default`: voz e rádio.
+Extensões aceitas: `.svg`, `.png`, `.webp`.
 
-Todos os SVGs usam `currentColor` e são aplicados pelo CSS com mask, então continuam herdando a cor da HUD/editor.
-Para criar novos modelos, mantenha os mesmos nomes de arquivos dentro de outra pasta de modelo.
+O arquivo `icon_manifest.json` controla quantos índices serão procurados. Por padrão, a HUD procura de `_1` até `_12`.
+
+## Pastas atuais antigas
+
+As pastas `status/default`, `vehicle/default` e `comms/default` guardam os ícones que já existiam antes da modulação. Elas continuam funcionando como fallback.
+
+## Pastas novas
+
+As pastas por função já foram criadas com `.gitkeep`. Você só precisa colocar os arquivos dentro delas.
+
+Exemplo para trocar ícone da vida:
+
+```txt
+web/assets/icons/status/health/health_2.svg
+```
+
+Depois reinicie o resource e abra `/mzhud`.

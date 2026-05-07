@@ -930,6 +930,48 @@ RegisterNUICallback('resetConfig', function(data, cb)
   cb({ ok = true })
 end)
 
+RegisterNUICallback('getEditorPresetManager', function(_, cb)
+  if HudState.canManage ~= true then
+    cb({ ok = false, error = 'forbidden' })
+    return
+  end
+
+  local result = lib.callback.await('mz_hud:server:getEditorPresetManager', false)
+  cb(result or { ok = false, error = 'empty_response' })
+end)
+
+RegisterNUICallback('applyPresetFromEditor', function(data, cb)
+  if HudState.canManage ~= true then
+    cb({ ok = false, error = 'forbidden' })
+    return
+  end
+
+  local presetName = data and data.preset or nil
+  local result = lib.callback.await('mz_hud:server:applyPresetFromEditor', false, presetName)
+
+  if result and result.ok == true and type(result.config) == 'table' then
+    HudState.config = result.config
+    applyMinimapSettings(true)
+    applyChatLayout(HudState.config.chat)
+    sendUI({
+      action = 'applyConfig',
+      config = HudState.config
+    })
+  end
+
+  cb(result or { ok = false, error = 'empty_response' })
+end)
+
+RegisterNUICallback('createEditorBackup', function(_, cb)
+  if HudState.canManage ~= true then
+    cb({ ok = false, error = 'forbidden' })
+    return
+  end
+
+  local result = lib.callback.await('mz_hud:server:createBackupFromEditor', false)
+  cb(result or { ok = false, error = 'empty_response' })
+end)
+
 RegisterNUICallback('applyChatLayout', function(data, cb)
   applyChatLayout(data and data.config or nil)
   cb({ ok = true })
@@ -996,6 +1038,10 @@ RegisterCommand('seatbelt', function()
 end, false)
 
 RegisterCommand('mzhud_voice_debug', function()
+  if Config.Debug ~= true and Config.EnableVoiceDebugCommand ~= true then
+    return
+  end
+
   DebugVoice = not DebugVoice
   notify({
     type = DebugVoice and 'success' or 'inform',

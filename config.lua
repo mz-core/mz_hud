@@ -1,5 +1,21 @@
 Config = Config or {}
 
+--[[
+  mz_hud - HUD global do mz_core
+
+  Esta HUD é configurada pelo dono/desenvolvedor do servidor.
+  O player comum não possui configuração individual de tema/layout.
+
+  Fluxo de configuração:
+    1. config.lua define o padrão inicial do resource.
+    2. data/runtime_config.json guarda o preset global salvo pelo /mzhud.
+    3. Quando existir, o runtime_config.json pode sobrescrever o padrão deste arquivo.
+
+  Importante:
+    - Não trocar a permissão atual sem revisar os demais scripts.
+    - Não mudar o schema de Config.DefaultHUD sem manter compatibilidade com o editor/NUI.
+]]
+
 Config.Admin = {
   -- Principal padrao do starter. O recurso checa se algum identifier do player
   -- herda este grupo via add_principal no cfg/permissions.cfg.
@@ -12,6 +28,58 @@ Config.Admin = {
 
 Config.Storage = {
   runtime_file = 'data/runtime_config.json'
+}
+
+Config.Debug = Config.Debug or false
+Config.EnableVoiceDebugCommand = Config.EnableVoiceDebugCommand or false
+
+Config.Presets = {
+  -- Comando administrativo para aplicar presets globais preparados em data/presets/.
+  -- Continua usando a mesma permissao de Config.Admin.principal.
+  enabled = true,
+  command = 'mzhud_preset',
+  manifest_file = 'data/presets/presets_manifest.json'
+}
+
+
+Config.Diagnostics = {
+  -- Comando administrativo para diagnosticar rapidamente a HUD global do servidor.
+  -- Nao altera configuracao, nao aplica preset e nao salva arquivo.
+  -- Continua usando a mesma permissao de Config.Admin.principal.
+  enabled = true,
+  command = 'mzhud_diag',
+  print_console_details = true
+}
+
+
+Config.Audit = {
+  -- Auditoria local das ações administrativas da HUD.
+  -- Nao envia webhook e nao adiciona dependencia externa.
+  -- Registra alteracoes globais, presets, backups, diagnosticos e tentativas sem permissao.
+  enabled = true,
+  command = 'mzhud_audit',
+  file = 'data/audit/mz_hud_audit.log',
+  max_file_bytes = 512000,
+  log_permission_denied = true,
+  log_diagnostics = true,
+  print_recent_count = 12
+}
+
+Config.Backups = {
+  -- Sistema administrativo de backup da configuracao global da HUD.
+  -- Util para voltar uma configuracao anterior apos salvar no editor, resetar ou aplicar preset.
+  -- Continua usando a mesma permissao de Config.Admin.principal.
+  enabled = true,
+  command = 'mzhud_backup',
+  directory = 'data/backups',
+  index_file = 'data/backups/index.json',
+  max_index_entries = 15,
+
+  -- Backups automaticos antes de a configuracao global ser sobrescrita.
+  auto_before_editor_save = true,
+  auto_before_reset = true,
+  auto_before_preset = true,
+  auto_before_restore = true
 }
 
 Config.Polling = {
@@ -32,6 +100,20 @@ Config.Voice = {
   talking_hold_ms = 650
 }
 
+-- Configuração visual padrão.
+-- O editor global (/mzhud) salva alterações em Config.Storage.runtime_file.
+-- Mantenha os nomes atuais das chaves para preservar compatibilidade com a NUI.
+--
+-- Catálogo rápido de modelos oficiais:
+--   minimap_style: circle | square | default
+--   speedometer.style: digital | analog | minimal | racing | classic | apex
+--   elements.*.style: circle | bar | square | pill | apex | comms
+--   elements.*.icon: nome do icone no catalogo, ex: heart, health_1, armor_2
+--   speedometer.icons.*: nomes do catalogo vehicle, ex: fuel, fuel_1, engine_2
+--
+-- Observação:
+--   "apex" é o nome oficial do modelo visual principal da mz_hud.
+--   Presets globais de exemplo ficam em docs/PRESETS.md, docs/presets/ e data/presets/.
 Config.DefaultHUD = {
   general = {
     show_minimap = true,
@@ -59,8 +141,25 @@ Config.DefaultHUD = {
     free = true,
     x = 88,
     y = 82,
-    style = 'hudzip', -- digital | analog | minimal | racing | classic | hudzip (Apex - nome interno legado)
+    style = 'apex', -- modelos oficiais: digital | analog | minimal | racing | classic | apex
     unit = 'kmh',
+    icons = {
+      fuel = 'fuel',
+      engine = 'engine',
+      engine_indicator = 'turn',
+      belt = 'belt',
+      unbelt = 'unbelt',
+      light = 'light',
+      light_high = 'lightHigh',
+      light_off = 'lightOff',
+      arrow = 'arrow',
+      arrow_active = 'arrowActive',
+      speed = 'speed',
+      rpm = 'rpm',
+      gear = 'gear',
+      weapon = 'weapon',
+      ammo = 'ammo'
+    },
     show_speed = true,
     show_rpm = true,
     show_fuel = true,
@@ -103,7 +202,7 @@ Config.DefaultHUD = {
       enabled = true,
       label = 'Vida',
       icon = 'heart',
-      style = 'circle', -- circle | bar | square | pill | hudzip (Apex - nome interno legado)
+      style = 'circle', -- modelos oficiais: circle | bar | square | pill | apex
       color = '#ef4444',
       opacity = 100,
       position = 'bottom-center',
@@ -201,7 +300,7 @@ Config.DefaultHUD = {
       enabled = true,
       label = 'Voz',
       icon = 'mic',
-      style = 'comms',
+      style = 'comms', -- modelo oficial para voz/radio nesta fase
       color = '#22c55e',
       opacity = 100,
       position = 'top-right',
@@ -221,7 +320,7 @@ Config.DefaultHUD = {
       enabled = true,
       label = 'Radio',
       icon = 'radio',
-      style = 'comms',
+      style = 'comms', -- modelo oficial para voz/radio nesta fase
       color = '#14b8a6',
       opacity = 100,
       position = 'top-right',

@@ -1,26 +1,50 @@
-﻿(function () {
+(function () {
   "use strict";
 
-  const iconAssets = {
-    fuel: "./assets/icons/vehicle/default/fuel.svg",
-    belt: "./assets/icons/vehicle/default/belt.svg",
-    unbelt: "./assets/icons/vehicle/default/unbelt.svg",
-    light: "./assets/icons/vehicle/default/light-spot.svg",
-    lightHigh: "./assets/icons/vehicle/default/light-spot-2.svg",
-    lightOff: "./assets/icons/vehicle/default/light-spot-off.svg",
-    engine: "./assets/icons/vehicle/default/engine.svg",
-    turn: "./assets/icons/vehicle/default/turn.svg",
-    speed: "./assets/icons/vehicle/default/speed.svg",
-    rpm: "./assets/icons/vehicle/default/rpm.svg",
-    gear: "./assets/icons/vehicle/default/gear.svg",
-    weapon: "./assets/icons/vehicle/default/weapon.svg",
-    ammo: "./assets/icons/vehicle/default/ammo.svg",
-    arrow: "./assets/icons/vehicle/default/arrow.svg",
-    arrowActive: "./assets/icons/vehicle/default/arrowActive.svg",
-  };
+  function normalizeSlot(name) {
+    return {
+      lightHigh: "light_high",
+      lightOff: "light_off",
+      arrowActive: "arrow_active",
+      engineIndicator: "engine_indicator",
+    }[name] || name;
+  }
 
-  function icon(name) {
-    const src = iconAssets[name];
+  function fallbackIconPath(name) {
+    const paths = {
+      fuel: "./assets/icons/vehicle/default/fuel.svg",
+      belt: "./assets/icons/vehicle/default/belt.svg",
+      unbelt: "./assets/icons/vehicle/default/unbelt.svg",
+      light: "./assets/icons/vehicle/default/light-spot.svg",
+      light_high: "./assets/icons/vehicle/default/light-spot-2.svg",
+      light_off: "./assets/icons/vehicle/default/light-spot-off.svg",
+      engine: "./assets/icons/vehicle/default/engine.svg",
+      engine_indicator: "./assets/icons/vehicle/default/turn.svg",
+      turn: "./assets/icons/vehicle/default/turn.svg",
+      speed: "./assets/icons/vehicle/default/speed.svg",
+      rpm: "./assets/icons/vehicle/default/rpm.svg",
+      gear: "./assets/icons/vehicle/default/gear.svg",
+      weapon: "./assets/icons/vehicle/default/weapon.svg",
+      ammo: "./assets/icons/vehicle/default/ammo.svg",
+      arrow: "./assets/icons/vehicle/default/arrow.svg",
+      arrow_active: "./assets/icons/vehicle/default/arrowActive.svg",
+    };
+    return paths[normalizeSlot(name)] || "";
+  }
+
+  function iconSrc(name, speedometer = {}) {
+    const slot = normalizeSlot(name);
+    if (window.MZHudCore?.resolveVehicleIconPath) {
+      return window.MZHudCore.resolveVehicleIconPath(slot, speedometer) || fallbackIconPath(slot);
+    }
+    return fallbackIconPath(slot);
+  }
+
+  function icon(name, speedometer = {}) {
+    if (window.MZHudCore?.renderVehicleIcon) {
+      return window.MZHudCore.renderVehicleIcon(normalizeSlot(name), speedometer);
+    }
+    const src = iconSrc(name, speedometer);
     if (!src) return "";
     return `<span class="speedometer-icon-mask" style="--icon-url: url('${src}')"></span>`;
   }
@@ -33,9 +57,9 @@
     const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
 
     return `<div class="speedometer-indicators">
-      ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt")}</span>` : ""}
-      ${speedometer.show_lights ? `<span class="speedometer-indicator ${lightClass}" title="Faróis">${icon(lightIcon)}</span>` : ""}
-      ${speedometer.show_engine ? `<span class="speedometer-indicator ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("turn")}</span>` : ""}
+      ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt", speedometer)}</span>` : ""}
+      ${speedometer.show_lights ? `<span class="speedometer-indicator ${lightClass}" title="Faróis">${icon(lightIcon, speedometer)}</span>` : ""}
+      ${speedometer.show_engine ? `<span class="speedometer-indicator ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("engine_indicator", speedometer)}</span>` : ""}
     </div>`;
   }
 
@@ -56,7 +80,7 @@
     return `${padded.slice(0, -2)}<b>${padded.slice(-2)}</b>`;
   }
 
-  function renderHudzip(ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass) {
+  function renderApex(ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass) {
     const { state, escapeHTML } = ctx;
     const maxSpeed = speedometer.unit === "mph" ? 160 : 260;
     const speedArc = speedArcOffset(speed, maxSpeed, 88);
@@ -76,18 +100,18 @@
     const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
     const engineClass = state.vehicle.engine ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
 
-    return `<div class="speedometer-panel speedometer-hudzip">
-      ${speedometer.show_speed ? `<svg class="hudzip-speed-arc" viewBox="0 0 64 64" aria-hidden="true"><circle class="hudzip-speed-track" r="20" cx="32" cy="32"></circle><circle class="hudzip-speed-fill" r="20" cx="32" cy="32" style="stroke-dashoffset:${speedArc}"></circle></svg>` : ""}
-      ${speedometer.show_fuel ? `<div class="hudzip-side-circle hudzip-fuel ${fuelLowClass}" title="CombustÃ­vel"><svg class="hudzip-status-svg" viewBox="0 0 50 50"><circle class="hudzip-circle-back" r="18" cx="25" cy="25"></circle><circle class="hudzip-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${fuelArc}"></circle></svg><span class="hudzip-side-value">${fuel}<b>L</b></span><span class="hudzip-side-icon">${icon("fuel")}</span></div>` : ""}
-      ${speedometer.show_engine ? `<div class="hudzip-side-circle hudzip-engine-circle ${engineClass}" title="Motor"><svg class="hudzip-status-svg" viewBox="0 0 50 50"><circle class="hudzip-circle-back" r="18" cx="25" cy="25"></circle><circle class="hudzip-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${engineArc}"></circle></svg><span class="hudzip-side-icon">${icon("engine")}</span></div>` : ""}
-      ${speedometer.show_gear ? `<div class="hudzip-gear"><small>${escapeHTML(previousGear)}</small><div>${escapeHTML(gear)}</div><small>${escapeHTML(nextGear)}</small></div>` : ""}
-      ${speedometer.show_rpm ? `<div class="hudzip-rpm"><strong>RPM</strong><div class="hudzip-rpm-leds">${Array.from({ length: 10 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 10) ? "active" : ""} ${i > 7 ? "hot" : ""}"></span>`).join("")}</div></div>` : ""}
+    return `<div class="speedometer-panel speedometer-apex">
+      ${speedometer.show_speed ? `<svg class="apex-speed-arc" viewBox="0 0 64 64" aria-hidden="true"><circle class="apex-speed-track" r="20" cx="32" cy="32"></circle><circle class="apex-speed-fill" r="20" cx="32" cy="32" style="stroke-dashoffset:${speedArc}"></circle></svg>` : ""}
+      ${speedometer.show_fuel ? `<div class="apex-side-circle apex-fuel ${fuelLowClass}" title="CombustÃ­vel"><svg class="apex-status-svg" viewBox="0 0 50 50"><circle class="apex-circle-back" r="18" cx="25" cy="25"></circle><circle class="apex-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${fuelArc}"></circle></svg><span class="apex-side-value">${fuel}<b>L</b></span><span class="apex-side-icon">${icon("fuel", speedometer)}</span></div>` : ""}
+      ${speedometer.show_engine ? `<div class="apex-side-circle apex-engine-circle ${engineClass}" title="Motor"><svg class="apex-status-svg" viewBox="0 0 50 50"><circle class="apex-circle-back" r="18" cx="25" cy="25"></circle><circle class="apex-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${engineArc}"></circle></svg><span class="apex-side-icon">${icon("engine", speedometer)}</span></div>` : ""}
+      ${speedometer.show_gear ? `<div class="apex-gear"><small>${escapeHTML(previousGear)}</small><div>${escapeHTML(gear)}</div><small>${escapeHTML(nextGear)}</small></div>` : ""}
+      ${speedometer.show_rpm ? `<div class="apex-rpm"><strong>RPM</strong><div class="apex-rpm-leds">${Array.from({ length: 10 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 10) ? "active" : ""} ${i > 7 ? "hot" : ""}"></span>`).join("")}</div></div>` : ""}
       ${speedometer.show_speed ? `<h1>${renderSpeedDigits(speed)}</h1><em>${escapeHTML(speedometer.unit === "mph" ? "MPH" : "KM")}</em>` : ""}
-      <div class="hudzip-car-info">
-        ${speedometer.show_lights ? `<span class="hudzip-arrows"><img class="hudzip-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconAssets.arrowActive : iconAssets.arrow}" alt="Seta esquerda" style="transform:scaleX(-1)"><img class="hudzip-arrow ${rightActive ? "is-active" : ""}" src="${rightActive ? iconAssets.arrowActive : iconAssets.arrow}" alt="Seta direita"></span>` : ""}
-        ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="hudzip-info-icon ${beltClass}" title="Cinto">${icon(beltIcon)}</span>` : ""}
-        ${speedometer.show_lights ? `<span class="hudzip-info-icon ${lightClass}" title="Faróis">${icon(lightIcon)}</span>` : ""}
-        ${speedometer.show_engine ? `<span class="hudzip-info-icon ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("turn")}</span>` : ""}
+      <div class="apex-car-info">
+        ${speedometer.show_lights ? `<span class="apex-arrows"><img class="apex-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta esquerda" style="transform:scaleX(-1)"><img class="apex-arrow ${rightActive ? "is-active" : ""}" src="${rightActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta direita"></span>` : ""}
+        ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="apex-info-icon ${beltClass}" title="Cinto">${icon(beltIcon, speedometer)}</span>` : ""}
+        ${speedometer.show_lights ? `<span class="apex-info-icon ${lightClass}" title="Faróis">${icon(lightIcon, speedometer)}</span>` : ""}
+        ${speedometer.show_engine ? `<span class="apex-info-icon ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("engine_indicator", speedometer)}</span>` : ""}
       </div>
     </div>`;
   }
@@ -99,7 +123,7 @@
       ${speedometer.show_rpm ? `<div class="speedometer-rpm"><div class="speedometer-bar-track"><div class="speedometer-bar-fill" style="width:${rpm}%"></div></div><div class="speedometer-rpm-labels"><span>0</span><span>RPM</span><span>9</span></div></div>` : ""}
       <div class="speedometer-bottom-row">
         ${speedometer.show_gear ? `<div class="speedometer-gear">${escapeHTML(gear)}</div>` : ""}
-        ${speedometer.show_fuel ? `<div class="speedometer-fuel ${fuelLowClass}">${icon("fuel")}<div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div></div>` : ""}
+        ${speedometer.show_fuel ? `<div class="speedometer-fuel ${fuelLowClass}">${icon("fuel", speedometer)}<div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div></div>` : ""}
       </div>
       ${indicatorIcons(speedometer, state)}
     </div>`;
@@ -110,7 +134,7 @@
     return `<div class="speedometer-panel speedometer-minimal">
       ${speedometer.show_speed ? `<div class="minimal-speed"><strong>${speed}</strong><span>${escapeHTML(speedometer.unit || "kmh")}</span></div>` : ""}
       ${speedometer.show_gear ? `<div class="minimal-gear">${escapeHTML(gear)}</div>` : ""}
-      ${speedometer.show_fuel ? `<div class="minimal-fuel ${fuelLowClass}">${icon("fuel")}<div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div></div>` : ""}
+      ${speedometer.show_fuel ? `<div class="minimal-fuel ${fuelLowClass}">${icon("fuel", speedometer)}<div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div></div>` : ""}
       ${speedometer.show_rpm ? `<div class="rpm-leds">${Array.from({ length: 8 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 8) ? "active" : ""} ${i > 5 ? "hot" : ""}"></span>`).join("")}</div>` : ""}
       ${indicatorIcons(speedometer, state)}
     </div>`;
@@ -125,7 +149,7 @@
         ${speedometer.show_rpm ? `<div class="rpm-blocks">${Array.from({ length: 12 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 12) ? "active" : ""} ${i > 8 ? "hot" : ""}"></span>`).join("")}</div>` : ""}
       </div>
       <div class="racing-side">
-        ${speedometer.show_fuel ? `<div class="racing-fuel ${fuelLowClass}"><div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div>${icon("fuel")}</div>` : ""}
+        ${speedometer.show_fuel ? `<div class="racing-fuel ${fuelLowClass}"><div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div>${icon("fuel", speedometer)}</div>` : ""}
         ${indicatorIcons(speedometer, state)}
       </div>
     </div>`;
@@ -176,7 +200,7 @@
         </div>
       </div>
       <div class="gauge-side">
-        ${speedometer.show_fuel ? `<div class="gauge-fuel ${fuelLowClass}">${icon("fuel")}<span>${fuel}%</span></div>` : ""}
+        ${speedometer.show_fuel ? `<div class="gauge-fuel ${fuelLowClass}">${icon("fuel", speedometer)}<span>${fuel}%</span></div>` : ""}
         ${speedometer.show_rpm ? `<div class="gauge-rpm"><div class="speedometer-bar-track"><div class="speedometer-bar-fill" style="width:${rpm}%"></div></div><small>RPM</small></div>` : ""}
         ${indicatorIcons(speedometer, state)}
       </div>
@@ -197,7 +221,7 @@
     const speed = Math.max(0, Number(state.vehicle.speed) || 0);
     const gear = state.vehicle.gear || "N";
     const fuelLowClass = fuel < 20 ? "is-low" : "";
-    const style = ["digital", "analog", "minimal", "racing", "classic", "hudzip"].includes(speedometer.style) ? speedometer.style : "digital";
+    const style = ["digital", "analog", "minimal", "racing", "classic", "apex"].includes(speedometer.style) ? speedometer.style : "digital";
     const positionClass = speedometer.free ? "speedometer-free" : getSpeedometerPositionClass(speedometer.position);
     dom.speedometer.className = `speedometer speedometer-style-${style} ${positionClass} ${state.editorOpen && state.selectedElement === "speedometer" ? "is-selected" : ""}`;
     dom.speedometer.style.opacity = `${Math.max(0, Math.min(100, speedometer.opacity || 100)) / 100}`;
@@ -236,7 +260,7 @@
       racing: renderRacing,
       analog: (ctx, s, sp, r, f, g, l) => renderAnalog(ctx, s, sp, r, f, g, l, false),
       classic: (ctx, s, sp, r, f, g, l) => renderAnalog(ctx, s, sp, r, f, g, l, true),
-      hudzip: renderHudzip,
+      apex: renderApex,
     };
 
     dom.speedometer.innerHTML = renderers[style](ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass);

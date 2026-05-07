@@ -11,6 +11,7 @@
     const {
       state,
       iconMap,
+      renderElementIcon,
       escapeHTML,
       withElementDefaults,
       withCommsOptions,
@@ -21,7 +22,6 @@
 
     if (
       !state ||
-      !iconMap ||
       typeof escapeHTML !== "function" ||
       typeof withElementDefaults !== "function" ||
       typeof withCommsOptions !== "function" ||
@@ -35,7 +35,9 @@
     const key = "voice";
     const entry = withElementDefaults(key, rawEntry);
     const opts = withCommsOptions(key, entry.comms_options || {});
-    const icon = iconMap[entry.icon] || iconMap.mic;
+    const icon = typeof renderElementIcon === "function"
+      ? renderElementIcon(key, entry)
+      : (iconMap?.[entry.icon] || iconMap?.mic || "");
     const positionClass = entry.free
       ? "hud-anchor-free"
       : getItemPositionClass(entry.position);

@@ -5,13 +5,14 @@
     const {
       state,
       iconMap,
+      renderElementIcon,
       escapeHTML,
       withElementDefaults,
       itemInlineStyle,
       getItemPositionClass,
     } = ctx;
 
-    if (!state || !iconMap || typeof withElementDefaults !== "function") return "";
+    if (!state || typeof withElementDefaults !== "function") return "";
 
     const entry = withElementDefaults(key, rawEntry);
     const value = Math.max(0, Math.min(100, Number(state.status[key]) || 0));
@@ -24,7 +25,9 @@
     const isComms = key === "voice" || key === "radio";
     const selected =
       state.editorOpen && state.selectedElement === key ? "is-selected" : "";
-    const icon = iconMap[entry.icon] || iconMap.heart;
+    const icon = typeof renderElementIcon === "function"
+      ? renderElementIcon(key, entry)
+      : (iconMap?.[entry.icon] || iconMap?.heart || "");
     const positionClass =
       renderMode === "group"
         ? "hud-anchor-grouped"
@@ -39,7 +42,7 @@
       ${style === "bar" ? `<div class="hud-bar-box"><div class="hud-icon">${icon}</div><div class="hud-bar-track"><div class="hud-bar-fill" style="width:${value}%"></div></div></div>` : ""}
       ${style === "square" ? `<div class="hud-square-box"><div class="hud-square-fill" style="height:${value}%"></div><div class="hud-icon">${icon}</div></div>` : ""}
       ${style === "pill" ? `<div class="hud-pill-box"><div class="hud-icon">${icon}</div><span>${value}%</span></div>` : ""}
-      ${style === "hudzip" ? `<div class="hudzip-status-circle ${key === "health" ? "hudzip-health" : ""}"><svg class="hudzip-status-svg" viewBox="0 0 50 50"><circle class="hudzip-circle-back" r="18" cx="25" cy="25"></circle><circle class="hudzip-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${((113 * (100 - value)) / 100).toFixed(1)}"></circle></svg><div class="hud-icon">${icon}</div></div>` : ""}
+      ${style === "apex" ? `<div class="apex-status-circle ${key === "health" ? "apex-health" : ""}"><svg class="apex-status-svg" viewBox="0 0 50 50"><circle class="apex-circle-back" r="18" cx="25" cy="25"></circle><circle class="apex-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${((113 * (100 - value)) / 100).toFixed(1)}"></circle></svg><div class="hud-icon">${icon}</div></div>` : ""}
     </button>
   `;
   }

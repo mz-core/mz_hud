@@ -1,0 +1,17 @@
+/* MZ HUD - animações compartilhadas
+   Usadas por status, velocímetro, voz e rádio. */
+
+@keyframes hudPulse {
+  0%, 100% { opacity: 0.42; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes mzCommsPulse {
+  0%, 100% { box-shadow: 0 10px 22px rgba(0,0,0,.34), 0 0 12px color-mix(in srgb, var(--item-accent) 26%, transparent); }
+  50% { box-shadow: 0 10px 22px rgba(0,0,0,.34), 0 0 26px color-mix(in srgb, var(--item-accent) 58%, transparent); }
+}
+
+@keyframes mzSignalBounce {
+  0%, 100% { transform: scaleY(.72); opacity: .55; }
+  50% { transform: scaleY(1.08); opacity: 1; }
+}

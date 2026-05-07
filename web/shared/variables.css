@@ -1,0 +1,14 @@
+/* MZ HUD - variáveis globais compartilhadas
+   Escopo: tokens visuais usados por módulos e editor. */
+
+:root {
+  --panel-bg: rgba(10, 14, 18, 0.92);
+  --panel-border: rgba(94, 234, 212, 0.14);
+  --panel-soft: rgba(255, 255, 255, 0.06);
+  --text-main: #f6fafb;
+  --text-soft: rgba(246, 250, 251, 0.72);
+  --accent: #5eead4;
+  --accent-strong: #f59e0b;
+  --danger: #ef4444;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
