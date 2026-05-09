@@ -106,7 +106,7 @@ Config.Voice = {
 --
 -- Catálogo rápido de modelos oficiais:
 --   minimap_style: circle | square | default
---   speedometer.style: digital | analog | minimal | racing | classic | apex
+--   speedometer.style: digital | analog | minimal | racing | classic | apex | vector
 --   elements.*.style: circle | bar | square | pill | apex | comms
 --   elements.*.icon: nome do icone no catalogo, ex: heart, health_1, armor_2
 --   speedometer.icons.*: nomes do catalogo vehicle, ex: fuel, fuel_1, engine_2
@@ -141,7 +141,7 @@ Config.DefaultHUD = {
     free = true,
     x = 88,
     y = 82,
-    style = 'apex', -- modelos oficiais: digital | analog | minimal | racing | classic | apex
+    style = 'apex', -- modelos oficiais: digital | analog | minimal | racing | classic | apex | vector
     unit = 'kmh',
     icons = {
       fuel = 'fuel',
@@ -152,6 +152,8 @@ Config.DefaultHUD = {
       light = 'light',
       light_high = 'lightHigh',
       light_off = 'lightOff',
+      lock = 'lock',
+      unlock = 'unlock',
       arrow = 'arrow',
       arrow_active = 'arrowActive',
       speed = 'speed',
@@ -166,6 +168,7 @@ Config.DefaultHUD = {
     show_gear = true,
     show_seatbelt = true,
     show_lights = true,
+    show_lock = true,
     show_engine = true,
     primary_color = '#ffffff',
     secondary_color = '#3b82f6',

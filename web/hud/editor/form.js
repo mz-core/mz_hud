@@ -41,6 +41,8 @@
       setIconSelectValue("speedometer-icon-light", "light", icons.light || "light");
       setIconSelectValue("speedometer-icon-light-high", "light_high", icons.light_high || "lightHigh");
       setIconSelectValue("speedometer-icon-light-off", "light_off", icons.light_off || "lightOff");
+      setIconSelectValue("speedometer-icon-lock", "lock", icons.lock || "lock");
+      setIconSelectValue("speedometer-icon-unlock", "unlock", icons.unlock || "unlock");
       setIconSelectValue("speedometer-icon-arrow", "arrow", icons.arrow || "arrow");
       setIconSelectValue("speedometer-icon-arrow-active", "arrow_active", icons.arrow_active || "arrowActive");
     }
@@ -89,6 +91,7 @@
       setFormValue("speedometer-show-gear", config.speedometer.show_gear);
       setFormValue("speedometer-show-seatbelt", config.speedometer.show_seatbelt);
       setFormValue("speedometer-show-lights", config.speedometer.show_lights);
+      setFormValue("speedometer-show-lock", config.speedometer.show_lock);
       setFormValue("speedometer-show-engine", config.speedometer.show_engine);
       setFormValue("speedometer-opacity", config.speedometer.opacity);
       setFormValue("speedometer-scale", config.speedometer.scale);

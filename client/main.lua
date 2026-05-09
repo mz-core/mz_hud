@@ -826,6 +826,8 @@ local function getVehiclePayload()
   local indicatorState = GetVehicleIndicatorLights(vehicle)
   local indicatorLeft = indicatorState == 1 or indicatorState == 3
   local indicatorRight = indicatorState == 2 or indicatorState == 3
+  local lockStatus = GetVehicleDoorLockStatus(vehicle)
+  local locked = tonumber(lockStatus) ~= nil and tonumber(lockStatus) > 1
   local engineHealth = clamp(math.floor((GetVehicleEngineHealth(vehicle) or 0.0) / 10), 0, 100)
   local throttle = clamp(math.floor((GetControlNormal(0, 71) or 0.0) * 100), 0, 100)
   local gear = GetVehicleCurrentGear(vehicle)
@@ -857,6 +859,7 @@ local function getVehiclePayload()
       lightsState = highbeamsActive and 'high' or (lightsActive and 'on' or 'off'),
       indicatorLeft = indicatorLeft,
       indicatorRight = indicatorRight,
+      locked = locked,
       engine = GetIsVehicleEngineRunning(vehicle),
       engineHealth = engineHealth
     }

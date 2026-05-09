@@ -40,6 +40,8 @@
     light: { category: "lights", fallback: "light", label: "Farol baixo" },
     light_high: { category: "lights", fallback: "lightHigh", label: "Farol alto" },
     light_off: { category: "lights", fallback: "lightOff", label: "Farol apagado" },
+    lock: { category: "lock", fallback: "lock", label: "Trancado" },
+    unlock: { category: "lock", fallback: "unlock", label: "Destrancado" },
     arrow: { category: "arrow", fallback: "arrow", label: "Seta" },
     arrow_active: { category: "arrow", fallback: "arrowActive", label: "Seta ativa" },
     speed: { category: "speed", fallback: "speed", label: "Velocidade" },
@@ -88,6 +90,10 @@
         { id: "lightHigh", label: "Farol alto", path: "./assets/icons/vehicle/default/light-spot-2.svg" },
         { id: "lightOff", label: "Farol apagado", path: "./assets/icons/vehicle/default/light-spot-off.svg" },
         { id: "lights", label: "Luzes", path: "./assets/icons/vehicle/default/lights.svg" },
+      ],
+      lock: [
+        { id: "lock", label: "Cadeado fechado", path: "./assets/icons/vehicle/default/lock.svg" },
+        { id: "unlock", label: "Cadeado aberto", path: "./assets/icons/vehicle/default/unlock.svg" },
       ],
       arrow: [
         { id: "arrow", label: "Seta", path: "./assets/icons/vehicle/default/arrow.svg" },

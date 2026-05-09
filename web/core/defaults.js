@@ -134,6 +134,8 @@
       light: "light",
       light_high: "lightHigh",
       light_off: "lightOff",
+      lock: "lock",
+      unlock: "unlock",
       arrow: "arrow",
       arrow_active: "arrowActive",
       speed: "speed",
@@ -176,6 +178,10 @@
       show_lights:
         speedometer.show_lights !== undefined
           ? Boolean(speedometer.show_lights)
+          : true,
+      show_lock:
+        speedometer.show_lock !== undefined
+          ? Boolean(speedometer.show_lock)
           : true,
       show_engine:
         speedometer.show_engine !== undefined

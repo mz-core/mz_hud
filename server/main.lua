@@ -51,7 +51,8 @@ local ALLOWED_SPEED_STYLES = {
   minimal = true,
   racing = true,
   classic = true,
-  apex = true
+  apex = true,
+  vector = true
 }
 
 local ALLOWED_ICONS = {
@@ -84,6 +85,8 @@ local SPEEDOMETER_ICON_DEFAULTS = {
   light = 'light',
   light_high = 'lightHigh',
   light_off = 'lightOff',
+  lock = 'lock',
+  unlock = 'unlock',
   arrow = 'arrow',
   arrow_active = 'arrowActive',
   speed = 'speed',
@@ -357,6 +360,7 @@ local function sanitizeHudConfig(incoming)
       show_gear = sanitizeBool(speedometer.show_gear, defaults.speedometer.show_gear),
       show_seatbelt = sanitizeBool(speedometer.show_seatbelt, defaults.speedometer.show_seatbelt),
       show_lights = sanitizeBool(speedometer.show_lights, defaults.speedometer.show_lights),
+      show_lock = sanitizeBool(speedometer.show_lock, defaults.speedometer.show_lock),
       show_engine = sanitizeBool(speedometer.show_engine, defaults.speedometer.show_engine),
       primary_color = sanitizeColor(speedometer.primary_color, defaults.speedometer.primary_color or '#ffffff'),
       secondary_color = sanitizeColor(speedometer.secondary_color, defaults.speedometer.secondary_color or '#3b82f6'),

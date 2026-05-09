@@ -38,6 +38,8 @@
         light: valueField("speedometer-icon-light", "light"),
         light_high: valueField("speedometer-icon-light-high", "lightHigh"),
         light_off: valueField("speedometer-icon-light-off", "lightOff"),
+        lock: valueField("speedometer-icon-lock", "lock"),
+        unlock: valueField("speedometer-icon-unlock", "unlock"),
         arrow: valueField("speedometer-icon-arrow", "arrow"),
         arrow_active: valueField("speedometer-icon-arrow-active", "arrowActive"),
       };
@@ -80,6 +82,7 @@
           show_gear: boolField("speedometer-show-gear", true),
           show_seatbelt: boolField("speedometer-show-seatbelt", false),
           show_lights: boolField("speedometer-show-lights", true),
+          show_lock: boolField("speedometer-show-lock", true),
           show_engine: boolField("speedometer-show-engine", true),
           opacity: numberField("speedometer-opacity", 100),
           scale: numberField("speedometer-scale", 100),

@@ -34,6 +34,7 @@
       seatbelt: true,
       seatbeltAvailable: true,
       lights: true,
+      locked: false,
       engine: true,
     },
     weapon: {

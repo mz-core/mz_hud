@@ -36,6 +36,7 @@
       "racing",
       "classic",
       "apex",
+      "vector",
     ],
     logoPosition: [
       "bottom-left",
@@ -119,6 +120,7 @@
     racing: "Racing",
     classic: "Clássico",
     apex: "Apex",
+    vector: "Vector",
   };
 
   const colorPresets = [

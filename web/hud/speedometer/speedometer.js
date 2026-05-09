@@ -18,6 +18,8 @@
       light: "./assets/icons/vehicle/default/light-spot.svg",
       light_high: "./assets/icons/vehicle/default/light-spot-2.svg",
       light_off: "./assets/icons/vehicle/default/light-spot-off.svg",
+      lock: "./assets/icons/vehicle/default/lock.svg",
+      unlock: "./assets/icons/vehicle/default/unlock.svg",
       engine: "./assets/icons/vehicle/default/engine.svg",
       engine_indicator: "./assets/icons/vehicle/default/turn.svg",
       turn: "./assets/icons/vehicle/default/turn.svg",
@@ -55,10 +57,12 @@
     const lightIcon = lightState === "high" ? "lightHigh" : lightState === "on" ? "light" : "lightOff";
     const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
     const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
+    const locked = Boolean(state.vehicle.locked);
 
     return `<div class="speedometer-indicators">
       ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt", speedometer)}</span>` : ""}
       ${speedometer.show_lights ? `<span class="speedometer-indicator ${lightClass}" title="Faróis">${icon(lightIcon, speedometer)}</span>` : ""}
+      ${speedometer.show_lock ? `<span class="speedometer-indicator ${locked ? "is-active" : "is-off"}" title="${locked ? "Trancado" : "Destrancado"}">${icon(locked ? "lock" : "unlock", speedometer)}</span>` : ""}
       ${speedometer.show_engine ? `<span class="speedometer-indicator ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("engine_indicator", speedometer)}</span>` : ""}
     </div>`;
   }
@@ -98,6 +102,7 @@
     const beltIcon = state.vehicle.seatbelt ? "belt" : "unbelt";
     const beltClass = state.vehicle.seatbelt ? "is-active" : "is-danger";
     const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
+    const locked = Boolean(state.vehicle.locked);
     const engineClass = state.vehicle.engine ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
 
     return `<div class="speedometer-panel speedometer-apex">
@@ -111,6 +116,7 @@
         ${speedometer.show_lights ? `<span class="apex-arrows"><img class="apex-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta esquerda" style="transform:scaleX(-1)"><img class="apex-arrow ${rightActive ? "is-active" : ""}" src="${rightActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta direita"></span>` : ""}
         ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="apex-info-icon ${beltClass}" title="Cinto">${icon(beltIcon, speedometer)}</span>` : ""}
         ${speedometer.show_lights ? `<span class="apex-info-icon ${lightClass}" title="Faróis">${icon(lightIcon, speedometer)}</span>` : ""}
+        ${speedometer.show_lock ? `<span class="apex-info-icon ${locked ? "is-active" : "is-off"}" title="${locked ? "Trancado" : "Destrancado"}">${icon(locked ? "lock" : "unlock", speedometer)}</span>` : ""}
         ${speedometer.show_engine ? `<span class="apex-info-icon ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("engine_indicator", speedometer)}</span>` : ""}
       </div>
     </div>`;
@@ -132,7 +138,7 @@
   function renderMinimal(ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass) {
     const { state, escapeHTML } = ctx;
     return `<div class="speedometer-panel speedometer-minimal">
-      ${speedometer.show_speed ? `<div class="minimal-speed"><strong>${speed}</strong><span>${escapeHTML(speedometer.unit || "kmh")}</span></div>` : ""}
+      ${speedometer.show_speed ? `<div class="minimal-speed"><strong>${renderSpeedDigits(speed)}</strong><span>${escapeHTML(speedometer.unit || "kmh")}</span></div>` : ""}
       ${speedometer.show_gear ? `<div class="minimal-gear">${escapeHTML(gear)}</div>` : ""}
       ${speedometer.show_fuel ? `<div class="minimal-fuel ${fuelLowClass}">${icon("fuel", speedometer)}<div class="speedometer-fuel-track"><div style="width:${fuel}%"></div></div></div>` : ""}
       ${speedometer.show_rpm ? `<div class="rpm-leds">${Array.from({ length: 8 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 8) ? "active" : ""} ${i > 5 ? "hot" : ""}"></span>`).join("")}</div>` : ""}
@@ -145,7 +151,7 @@
     return `<div class="speedometer-panel speedometer-racing">
       ${speedometer.show_gear ? `<div class="racing-gear">${escapeHTML(gear)}</div>` : ""}
       <div class="racing-main">
-        ${speedometer.show_speed ? `<div class="racing-speed"><strong>${speed}</strong><span>${escapeHTML(speedometer.unit || "kmh")}</span></div>` : ""}
+        ${speedometer.show_speed ? `<div class="racing-speed"><strong>${renderSpeedDigits(speed)}</strong><span>${escapeHTML(speedometer.unit || "kmh")}</span></div>` : ""}
         ${speedometer.show_rpm ? `<div class="rpm-blocks">${Array.from({ length: 12 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 12) ? "active" : ""} ${i > 8 ? "hot" : ""}"></span>`).join("")}</div>` : ""}
       </div>
       <div class="racing-side">
@@ -155,13 +161,66 @@
     </div>`;
   }
 
+  function renderVector(ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass) {
+    const { state, escapeHTML } = ctx;
+    const maxSpeed = speedometer.unit === "mph" ? 160 : 260;
+    const safeSpeed = Math.max(0, Math.min(maxSpeed, Number(speed) || 0));
+    const speedPercent = Math.max(0, Math.min(100, (safeSpeed / maxSpeed) * 100));
+    const dash = 350;
+    const speedOffset = (dash - (dash * speedPercent) / 100).toFixed(1);
+    const engineValue = Math.max(0, Math.min(100, Number(state.vehicle.engineHealth ?? (state.vehicle.engine ? 100 : 0)) || 0));
+    const engineClass = state.vehicle.engine ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
+    const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
+    const lightState = state.vehicle.lightsState || (state.vehicle.lightsHigh ? "high" : state.vehicle.lights ? "on" : "off");
+    const lightIcon = lightState === "high" ? "lightHigh" : lightState === "on" ? "light" : "lightOff";
+    const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
+    const locked = Boolean(state.vehicle.locked);
+
+    return `<div class="speedometer-panel speedometer-vector">
+      ${speedometer.show_speed ? `<svg class="vector-speed-line" viewBox="0 0 298 68" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="vector-speed-gradient" x1="0" y1="0" x2="298" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--speed-primary)" />
+            <stop offset="100%" stop-color="var(--speed-accent)" />
+          </linearGradient>
+        </defs>
+        <path d="M3 65L38.4 28.0283C50.2 17.0368 66.72 2.04825 89.14 3.04747H298" class="vector-speed-track" />
+        <path d="M3 65L38.4 28.0283C50.2 17.0368 66.72 2.04825 89.14 3.04747H298" class="vector-speed-fill" stroke-dasharray="${dash}" stroke-dashoffset="${speedOffset}" />
+      </svg>` : ""}
+      <div class="vector-main">
+        ${speedometer.show_speed ? `<div class="vector-speed"><strong>${renderSpeedDigits(speed)}</strong><span>${escapeHTML(speedometer.unit === "mph" ? "MPH" : "KM/H")}</span></div>` : ""}
+        ${speedometer.show_gear ? `<div class="vector-gear"><span>GEAR</span><strong>${escapeHTML(gear)}</strong></div>` : ""}
+      </div>
+      ${speedometer.show_rpm ? `<div class="vector-rpm">${Array.from({ length: 12 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 12) ? "is-active" : ""} ${i > 9 ? "is-hot" : ""}"></span>`).join("")}</div>` : ""}
+      <div class="vector-status">
+        ${speedometer.show_fuel ? `<div class="vector-stat ${fuelLowClass}">${icon("fuel", speedometer)}<span>${fuel}%</span></div>` : ""}
+        ${speedometer.show_engine ? `<div class="vector-stat ${engineClass}">${icon("engine", speedometer)}<span>${Math.round(engineValue)}%</span></div>` : ""}
+        ${speedometer.show_seatbelt && seatbeltAvailable ? `<div class="vector-stat ${state.vehicle.seatbelt ? "is-active" : "is-danger"}">${icon(state.vehicle.seatbelt ? "belt" : "unbelt", speedometer)}</div>` : ""}
+        ${speedometer.show_lights ? `<div class="vector-stat ${lightClass}">${icon(lightIcon, speedometer)}</div>` : ""}
+        ${speedometer.show_lock ? `<div class="vector-stat ${locked ? "is-active" : "is-off"}" title="${locked ? "Trancado" : "Destrancado"}">${icon(locked ? "lock" : "unlock", speedometer)}</div>` : ""}
+      </div>
+    </div>`;
+  }
+
   function renderAnalog(ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass, classic = false) {
     const { state, escapeHTML } = ctx;
     const maxSpeed = speedometer.unit === "mph" ? (classic ? 120 : 160) : classic ? 200 : 260;
     const safeSpeed = Math.max(0, Math.min(maxSpeed, Number(speed) || 0));
-    const dash = classic ? 250 : 198;
+    const dash = classic ? 250 : 176;
     const progress = Math.max(0, Math.min(dash, (safeSpeed / maxSpeed) * dash));
     const needle = (safeSpeed / maxSpeed) * 240 - 120;
+    const engineValue = Math.max(0, Math.min(100, Number(state.vehicle.engineHealth ?? (state.vehicle.engine ? 100 : 0)) || 0));
+    const engineOn = Boolean(state.vehicle.engine);
+    const engineClass = engineOn ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
+    const engineArc = 120;
+    const engineOffset = (engineArc * (1 - engineValue / 100)).toFixed(1);
+    const leftActive = Boolean(state.vehicle.indicatorLeft);
+    const rightActive = Boolean(state.vehicle.indicatorRight);
+    const lightState = state.vehicle.lightsState || (state.vehicle.lightsHigh ? "high" : state.vehicle.lights ? "on" : "off");
+    const lightIcon = lightState === "high" ? "lightHigh" : lightState === "on" ? "light" : "lightOff";
+    const lightClass = lightState === "high" ? "is-high" : lightState === "on" ? "is-active" : "is-off";
+    const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
+    const locked = Boolean(state.vehicle.locked);
     const tickCount = classic ? 21 : 9;
     const ticks = Array.from({ length: tickCount }, (_, i) => {
       const percent = tickCount === 1 ? 0 : i / (tickCount - 1);
@@ -186,13 +245,20 @@
     return `<div class="speedometer-panel ${classic ? "speedometer-classic" : "speedometer-analog"}">
       <div class="speedometer-gauge">
         <svg viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="gauge-needle-gradient" x1="50" y1="50" x2="50" y2="15" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="var(--speed-accent)" stop-opacity="0" />
+              <stop offset="48%" stop-color="var(--speed-accent)" stop-opacity="0" />
+              <stop offset="78%" stop-color="var(--speed-accent)" stop-opacity=".82" />
+              <stop offset="100%" stop-color="var(--speed-accent)" stop-opacity="1" />
+            </linearGradient>
+          </defs>
           <circle cx="50" cy="50" r="46" class="gauge-outer" />
           ${numbers}
           <circle cx="50" cy="50" r="42" class="gauge-bg" stroke-dasharray="${dash} 264" transform="rotate(150 50 50)" />
           <circle cx="50" cy="50" r="42" class="gauge-progress" stroke-dasharray="${progress.toFixed(1)} 264" transform="rotate(150 50 50)" />
           ${ticks}
           <line x1="50" y1="50" x2="50" y2="15" class="gauge-needle" transform="rotate(${needle.toFixed(2)} 50 50)" />
-          <circle cx="50" cy="50" r="5" class="gauge-center" />
         </svg>
         <div class="gauge-center-text">
           ${speedometer.show_speed ? `<strong>${speed}</strong><span>${escapeHTML(speedometer.unit || "kmh")}</span>` : ""}
@@ -200,9 +266,16 @@
         </div>
       </div>
       <div class="gauge-side">
+        ${speedometer.show_engine ? `<div class="gauge-engine-edge ${engineClass}" title="Motor"><span class="gauge-engine-icon">${icon("engine", speedometer)}</span><svg viewBox="0 0 32 120" aria-hidden="true"><path d="M 8 10 C 30 34 30 86 8 110" class="gauge-engine-arc-bg" /><path d="M 8 10 C 30 34 30 86 8 110" class="gauge-engine-arc ${engineClass}" stroke-dasharray="${engineArc}" stroke-dashoffset="${engineOffset}" /></svg></div>` : ""}
+        ${speedometer.show_lights ? `<div class="gauge-drive-icons"><img class="gauge-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta esquerda"><img class="gauge-arrow gauge-arrow-right ${rightActive ? "is-active" : ""}" src="${rightActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta direita"></div>` : ""}
         ${speedometer.show_fuel ? `<div class="gauge-fuel ${fuelLowClass}">${icon("fuel", speedometer)}<span>${fuel}%</span></div>` : ""}
         ${speedometer.show_rpm ? `<div class="gauge-rpm"><div class="speedometer-bar-track"><div class="speedometer-bar-fill" style="width:${rpm}%"></div></div><small>RPM</small></div>` : ""}
-        ${indicatorIcons(speedometer, state)}
+        <div class="gauge-status-icons">
+          ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="speedometer-indicator ${state.vehicle.seatbelt ? "is-active" : "danger"}" title="Cinto">${icon(state.vehicle.seatbelt ? "belt" : "unbelt", speedometer)}</span>` : ""}
+          ${speedometer.show_lights ? `<span class="speedometer-indicator ${lightClass}" title="Faróis">${icon(lightIcon, speedometer)}</span>` : ""}
+          ${speedometer.show_lock ? `<span class="speedometer-indicator ${locked ? "is-active" : "is-off"}" title="${locked ? "Trancado" : "Destrancado"}">${icon(locked ? "lock" : "unlock", speedometer)}</span>` : ""}
+          ${speedometer.show_engine ? `<span class="speedometer-indicator ${engineOn ? "is-active" : "is-off"}" title="Motor">${icon("engine_indicator", speedometer)}</span>` : ""}
+        </div>
       </div>
     </div>`;
   }
@@ -221,7 +294,7 @@
     const speed = Math.max(0, Number(state.vehicle.speed) || 0);
     const gear = state.vehicle.gear || "N";
     const fuelLowClass = fuel < 20 ? "is-low" : "";
-    const style = ["digital", "analog", "minimal", "racing", "classic", "apex"].includes(speedometer.style) ? speedometer.style : "digital";
+    const style = ["digital", "analog", "minimal", "racing", "classic", "apex", "vector"].includes(speedometer.style) ? speedometer.style : "digital";
     const positionClass = speedometer.free ? "speedometer-free" : getSpeedometerPositionClass(speedometer.position);
     dom.speedometer.className = `speedometer speedometer-style-${style} ${positionClass} ${state.editorOpen && state.selectedElement === "speedometer" ? "is-selected" : ""}`;
     dom.speedometer.style.opacity = `${Math.max(0, Math.min(100, speedometer.opacity || 100)) / 100}`;
@@ -261,6 +334,7 @@
       analog: (ctx, s, sp, r, f, g, l) => renderAnalog(ctx, s, sp, r, f, g, l, false),
       classic: (ctx, s, sp, r, f, g, l) => renderAnalog(ctx, s, sp, r, f, g, l, true),
       apex: renderApex,
+      vector: renderVector,
     };
 
     dom.speedometer.innerHTML = renderers[style](ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass);
