@@ -204,13 +204,25 @@ local function getWeaponHudClipAmmo(ped, weaponHash, totalAmmo, clipSize, prefer
   clipSize = math.max(0, math.floor(tonumber(clipSize) or 0))
 
   local nativeClip, nativeOk = getWeaponClipAmmo(ped, weaponHash)
-  if nativeOk and not (nativeClip == 0 and totalAmmo > 0) then
+  if nativeOk == true then
+    nativeClip = math.max(0, math.floor(tonumber(nativeClip) or 0))
+
+    if totalAmmo > 0 then
+      return math.min(nativeClip, totalAmmo), true
+    end
+
     return nativeClip, true
   end
 
   local coreClip = tonumber(preferredClip)
-  if coreClip and coreClip > 0 then
-    return math.min(math.floor(coreClip), totalAmmo), false
+  if coreClip ~= nil then
+    coreClip = math.max(0, math.floor(coreClip))
+
+    if totalAmmo > 0 then
+      return math.min(coreClip, totalAmmo), false
+    end
+
+    return coreClip, false
   end
 
   if totalAmmo > 0 and clipSize > 0 then
@@ -221,68 +233,41 @@ local function getWeaponHudClipAmmo(ped, weaponHash, totalAmmo, clipSize, prefer
     return math.min(totalAmmo, 30), false
   end
 
-  return 0, nativeOk == true
+  return 0, false
 end
 
 local function getCoreWeaponVisualAmmo(weaponHash, totalAmmo, clipSize, nativeClip, nativeOk, coreClip)
   totalAmmo = math.max(0, math.floor(tonumber(totalAmmo) or 0))
   clipSize = math.max(0, math.floor(tonumber(clipSize) or 0))
-  nativeClip = nativeOk == true and math.max(0, math.floor(tonumber(nativeClip) or 0)) or nil
+
+  if nativeOk == true then
+    nativeClip = math.max(0, math.floor(tonumber(nativeClip) or 0))
+
+    if totalAmmo > 0 then
+      return math.min(nativeClip, totalAmmo)
+    end
+
+    return nativeClip
+  end
+
   coreClip = tonumber(coreClip)
   if coreClip ~= nil then
     coreClip = math.max(0, math.floor(coreClip))
-  end
-
-  local cache = CoreWeaponVisualAmmo
-  if type(cache) ~= 'table' or tonumber(cache.weaponHash) ~= tonumber(weaponHash) then
-    cache = {
-      weaponHash = weaponHash,
-      totalAmmo = totalAmmo,
-      clipAmmo = nil
-    }
-  end
-
-  local clipAmmo = cache.clipAmmo
-  if clipAmmo == nil then
-    if coreClip ~= nil then
-      clipAmmo = math.min(coreClip, totalAmmo)
-    elseif clipSize > 0 then
-      clipAmmo = math.min(totalAmmo, clipSize)
-    else
-      clipAmmo = math.min(totalAmmo, 30)
+    if totalAmmo > 0 then
+      return math.min(coreClip, totalAmmo)
     end
+    return coreClip
   end
 
-  local previousTotal = tonumber(cache.totalAmmo)
-  if previousTotal ~= nil and totalAmmo < previousTotal then
-    local spent = previousTotal - totalAmmo
-    clipAmmo = math.max(0, math.floor(clipAmmo) - spent)
-  elseif previousTotal == nil or totalAmmo > previousTotal then
-    if coreClip ~= nil then
-      clipAmmo = math.min(coreClip, totalAmmo)
-    elseif clipSize > 0 then
-      clipAmmo = math.min(totalAmmo, clipSize)
-    else
-      clipAmmo = math.min(totalAmmo, 30)
-    end
-  elseif nativeClip ~= nil and clipSize <= 1 then
-    clipAmmo = math.min(nativeClip, totalAmmo)
-  elseif nativeClip ~= nil and nativeClip > 1 then
-    clipAmmo = math.min(nativeClip, totalAmmo)
+  if totalAmmo > 0 and clipSize > 0 then
+    return math.min(totalAmmo, clipSize)
   end
 
-  if clipSize > 0 then
-    clipAmmo = math.min(clipAmmo, clipSize)
+  if totalAmmo > 0 then
+    return math.min(totalAmmo, 30)
   end
-  clipAmmo = math.min(math.max(0, math.floor(clipAmmo)), totalAmmo)
 
-  CoreWeaponVisualAmmo = {
-    weaponHash = weaponHash,
-    totalAmmo = totalAmmo,
-    clipAmmo = clipAmmo
-  }
-
-  return clipAmmo
+  return 0
 end
 
 local function applySeatbeltCrashEffect(playerPed, vehicle, deltaKmh, hadSeatbelt)
