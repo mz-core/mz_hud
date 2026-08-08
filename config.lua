@@ -123,6 +123,8 @@ Config.Voice = {
 --   "apex" é o nome oficial do modelo visual principal da mz_hud.
 --   Presets globais de exemplo ficam em docs/PRESETS.md, docs/presets/ e data/presets/.
 Config.DefaultHUD = {
+  schema_version = 2,
+  revision = 0,
   general = {
     show_minimap = true,
     minimap_style = 'square', -- circle | square | default
@@ -130,7 +132,11 @@ Config.DefaultHUD = {
     minimap_x = 24,
     minimap_y = 24,
     hud_position = 'bottom-left',
-    status_group = { enabled = true, position = 'bottom-center', free = true, x = 50, y = 94, opacity = 100, scale = 100, gap = 8 },
+    status_group = {
+      enabled = true, position = 'bottom-center', free = true, x = 50, y = 94,
+      opacity = 100, scale = 100, gap = 8, orientation = 'horizontal',
+      alignment = 'center', locked = false
+    },
     global_opacity = 100,
     scale = 100
   },
@@ -140,7 +146,13 @@ Config.DefaultHUD = {
     width = 140,
     height = 44,
     opacity = 90,
+    scale = 100,
     position = 'top-center',
+    free = false,
+    x = 50,
+    y = 6,
+    locked = false,
+    visibilityMode = 'always',
     show_only_in_vehicle = false
   },
   speedometer = {
@@ -183,7 +195,9 @@ Config.DefaultHUD = {
     accent_color = '#ef4444',
     background_color = '#000000',
     opacity = 94,
-    scale = 100
+    scale = 100,
+    locked = false,
+    visibilityMode = 'smart'
   },
   weapon = {
     enabled = true,
@@ -197,7 +211,9 @@ Config.DefaultHUD = {
     icon_model = 'default',
     image_model = 'default',
     opacity = 92,
-    scale = 100
+    scale = 100,
+    locked = false,
+    visibilityMode = 'smart'
   },
   chat = {
     enabled = true,
@@ -206,7 +222,8 @@ Config.DefaultHUD = {
     x = 2,
     y = 3,
     scale = 1.0,
-    opacity = 1.0
+    opacity = 1.0,
+    locked = false
   },
   elements = {
     health = {
@@ -221,7 +238,10 @@ Config.DefaultHUD = {
       x = 48,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'always',
+      locked = false,
+      collapseWhenHidden = false
     },
     armor = {
       enabled = true,
@@ -235,7 +255,10 @@ Config.DefaultHUD = {
       x = 45,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'smart',
+      locked = false,
+      collapseWhenHidden = false
     },
     hunger = {
       enabled = true,
@@ -249,7 +272,10 @@ Config.DefaultHUD = {
       x = 54,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'always',
+      locked = false,
+      collapseWhenHidden = false
     },
     thirst = {
       enabled = true,
@@ -263,7 +289,10 @@ Config.DefaultHUD = {
       x = 57,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'always',
+      locked = false,
+      collapseWhenHidden = false
     },
     stamina = {
       enabled = true,
@@ -277,10 +306,13 @@ Config.DefaultHUD = {
       x = 42,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'smart',
+      locked = false,
+      collapseWhenHidden = false
     },
     oxygen = {
-      enabled = false,
+      enabled = true,
       label = 'Oxigenio',
       icon = 'wind',
       style = 'circle',
@@ -291,7 +323,10 @@ Config.DefaultHUD = {
       x = 60,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'smart',
+      locked = false,
+      collapseWhenHidden = false
     },
     stress = {
       enabled = false,
@@ -305,7 +340,10 @@ Config.DefaultHUD = {
       x = 63,
       y = 95,
       scale = 100,
-      individual = false
+      individual = false,
+      visibilityMode = 'always',
+      locked = false,
+      collapseWhenHidden = false
     },
     voice = {
       enabled = true,
@@ -320,6 +358,9 @@ Config.DefaultHUD = {
       y = 10,
       scale = 100,
       individual = true,
+      visibilityMode = 'always',
+      locked = false,
+      collapseWhenHidden = false,
       comms_options = {
         show_label = true,
         show_level_text = true,
@@ -340,6 +381,9 @@ Config.DefaultHUD = {
       y = 10,
       scale = 100,
       individual = true,
+      visibilityMode = 'always',
+      locked = false,
+      collapseWhenHidden = false,
       comms_options = {
         show_frequency = true,
         show_inactive = true,

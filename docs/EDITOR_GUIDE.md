@@ -1,101 +1,55 @@
-# mz_hud - Guia do editor global
+# mz_hud - Guia do editor visual
 
-O comando `/mzhud` abre o editor global da HUD. Ele existe para o dono/desenvolvedor do servidor configurar o visual padrão da framework `mz_core`.
+O comando `/mzhud` abre o editor administrativo global diretamente sobre a HUD. O mundo continua como preview e nada é persistido até **Salvar e Aplicar**.
 
-O player comum não escolhe tema, posição ou preset individual. Ele apenas recebe a configuração global definida pelo servidor.
+## Fluxo
 
-## Fluxo do editor
-
-```txt
+```text
 /mzhud
-  ↓
-abre o painel administrativo da HUD
-  ↓
-dev/admin ajusta módulos, posições, estilos, cores e visibilidade
-  ↓
-Salvar e Aplicar
-  ↓
-server/main.lua salva em data/runtime_config.json
-  ↓
-broadcast aplica a HUD para todos os jogadores
+  -> servidor valida group.mz_owner
+  -> NUI recebe config ativa + defaults
+  -> editor cria draft local
+  -> seleção/drag/resize/inspector alteram apenas o draft
+  -> Salvar e Aplicar
+  -> servidor valida permissão + revisão + schema
+  -> backup -> runtime_config.json -> broadcast
 ```
 
-## Botões principais
+## Seleção e controles
 
-### Preview
+- Clique diretamente em um item da HUD.
+- Use o seletor superior para alcançar elementos desativados ou difíceis de clicar.
+- Arraste o elemento ou use **Mover** na toolbar contextual.
+- Use o handle inferior direito para resize.
+- Setas movem 1 unidade percentual; Shift+setas movem 10.
+- O inspector edita aparência, posição, visibilidade e propriedades específicas.
+- `statusGroup` move e dimensiona os status agrupados como unidade.
 
-Dispara uma prévia de notificação para conferir posicionamento/visual sem alterar a lógica principal da HUD.
+## Dock
 
-### Resetar
+- Undo/Redo: histórico local de até 50 operações.
+- Grid/Snap/Safe: guias visuais; snap considera grade, centro e posições de outros itens.
+- Preview: Normal, Todos, Veículo, Baixo status e Submerso.
+- Presets: aplica card ao draft.
+- Resetar: coloca os defaults no draft após confirmação.
+- Salvar e Aplicar: único caminho de persistência do editor.
+- Fechar: pede confirmação quando há alterações não salvas.
 
-Volta para a configuração padrão do `config.lua`, respeitando a sanitização do servidor.
+## Preview
 
-### Salvar e Aplicar
+Preview é somente estado NUI. Não altera vida, fome, sede, posição, veículo ou oxigênio reais do ped. `Todos` revela itens SMART/HIDDEN com badges e opacidade reduzida.
 
-Grava a configuração global em `data/runtime_config.json` e aplica para todos os jogadores conectados.
+## Atalhos
 
-### Fechar
+- `Ctrl+Z`: desfazer.
+- `Ctrl+Y` ou `Ctrl+Shift+Z`: refazer.
+- `Esc`: fecha primeiro o inspector/modal; depois tenta fechar o editor.
+- Setas / Shift+setas: ajuste fino.
 
-Fecha o painel sem salvar novas alterações pendentes.
+## Persistência e segurança
 
-## Áreas do editor
+A NUI não concede permissão. O client apenas encaminha o draft. Toda gravação passa novamente pelo ACE no servidor, por revisão otimista, backup e sanitização do schema fechado.
 
-### Geral
+Para arquitetura, schema, SMART visibility, extensão e checklist completo, consulte [VISUAL_EDITOR.md](VISUAL_EDITOR.md).
 
-Controla minimapa, visibilidade global, opacidade e escala geral. Use para ajustes amplos; ajuste fino deve ficar nos módulos específicos.
-
-### HUD de status
-
-Controla o grupo principal de status, como vida, colete, fome, sede e afins. Os itens individuais aparecem na área `Elementos`.
-
-### Velocímetro
-
-Controla modelo, unidade, posição, visibilidade de velocidade, RPM, combustível, marcha, cinto, luzes e motor.
-
-### Visual do velocímetro
-
-Controla cores rápidas do velocímetro. Não substitui o sistema `style` e não altera outros módulos da HUD.
-
-### Armas
-
-Controla exibição da arma equipada, imagem, nome e munição.
-
-### Chat
-
-Envia layout para o `mz_chat`. O chat padrão do FiveM não é alterado por este editor.
-
-### Logo
-
-Controla a imagem global do servidor/framework. Para evitar fundo quadrado atrás da logo, prefira imagens PNG/WebP transparentes.
-
-### Voz e Rádio
-
-Controla apenas indicadores de voz e rádio. Não altera status, minimapa, logo ou velocímetro.
-
-### Elementos
-
-Controla itens individuais de status, incluindo ícone, cor, estilo, posição, escala e opacidade.
-
-## Regras de segurança
-
-```txt
-- Não usar o editor como preferência individual de player
-- Não renomear IDs do HTML sem atualizar editor.js
-- Não renomear callbacks NUI sem atualizar client/main.lua
-- Não trocar style por theme nesta fase
-- Não apagar runtime_config.json sem backup
-- Não editar runtime_config.json ao mesmo tempo em que o editor está salvando
-```
-
-## Teste rápido depois de mexer no editor
-
-```txt
-[ ] /mzhud abre
-[ ] Preview funciona
-[ ] Salvar e Aplicar funciona
-[ ] Resetar funciona
-[ ] Fechar funciona
-[ ] F8 não mostra erro NUI
-[ ] Console do servidor não mostra erro Lua
-[ ] HUD continua aparecendo para todos
-```
+Status de teste real: **PENDENTE DE VALIDAÇÃO RUNTIME FIVEM**.

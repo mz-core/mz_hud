@@ -36,6 +36,7 @@
         itemInlineStyle: app.itemInlineStyle,
         getItemPositionClass: h.getItemPositionClass,
         voiceLevelFromStatus: app.voiceLevelFromStatus,
+        resolveVisibility: window.MZHudVisibility?.resolveVisibility,
       });
     }
 
@@ -50,6 +51,7 @@
         itemInlineStyle: app.itemInlineStyle,
         getItemPositionClass: h.getItemPositionClass,
         formatRadioFrequency: h.formatRadioFrequency,
+        resolveVisibility: window.MZHudVisibility?.resolveVisibility,
       });
     }
 
@@ -73,6 +75,7 @@
             withElementDefaults: h.withElementDefaults,
             itemInlineStyle: app.itemInlineStyle,
             getItemPositionClass: h.getItemPositionClass,
+            resolveVisibility: window.MZHudVisibility?.resolveVisibility,
           },
           renderMode,
         )
@@ -92,13 +95,14 @@
           withStatusGroupDefaults: h.withStatusGroupDefaults,
           statusGroupInlineStyle: h.statusGroupInlineStyle,
           getStatusGroupPositionClass: h.getStatusGroupPositionClass,
+          resolveVisibility: window.MZHudVisibility?.resolveVisibility,
         })
       : "";
   };
 
   app.renderHud = function renderHud() {
     if (!state.config) return;
-    state.config = h.normalizeConfig(state.config);
+    if (!state.editorOpen) state.config = h.normalizeConfig(state.config);
     const general = state.config.general || {};
     const elements = state.config.elements || {};
     dom.hudContainer.className = "hud-container hud-layout-free";
@@ -185,11 +189,8 @@
   app.applyVisibility = function applyVisibility() {
     dom.hudContainer.classList.toggle("hidden", !state.hudVisible);
     if (!state.hudVisible) dom.hudLogo.classList.add("hidden");
-    if (
-      !state.speedometerVisible ||
-      !state.vehicle.visible ||
-      !state.config?.speedometer?.enabled
-    )
+    const speedVisibility = window.MZHudVisibility?.resolveVisibility("speedometer", state.config?.speedometer || {}, state, { preview: state.editorPreview });
+    if (!state.speedometerVisible || !state.config?.speedometer?.enabled || speedVisibility?.visible === false)
       dom.speedometer.classList.add("hidden");
     if (
       !state.hudVisible ||

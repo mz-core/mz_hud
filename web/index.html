@@ -25,367 +25,69 @@
     <div id="medical-hud" class="medical-hud hidden" aria-live="polite"></div>
   </div>
 
-  <div id="editor-overlay" class="editor-overlay hidden">
-    <div class="editor-shell">
-      <div class="editor-header">
-        <div>
-          <p class="eyebrow">mz_hud</p>
-          <h1>Editor Global da HUD</h1>
-          <p class="subcopy">Editor administrativo para definir o visual global do servidor. O player comum apenas recebe o padrão salvo aqui.</p>
-          <div class="editor-meta-row" aria-label="Informações do editor">
-            <span>Global</span>
-            <span>/mzhud</span>
-            <span>group.mz_owner</span>
-          </div>
-        </div>
+  <div id="editor-overlay" class="visual-editor hidden" aria-label="Editor visual da HUD">
+    <div id="editor-grid-guide" class="editor-grid-guide hidden" aria-hidden="true"></div>
+    <div id="editor-safezone" class="editor-safezone hidden" aria-hidden="true"><span>ÁREA SEGURA DA HUD</span></div>
+    <div id="editor-guide-x" class="editor-snap-guide guide-x hidden" aria-hidden="true"></div>
+    <div id="editor-guide-y" class="editor-snap-guide guide-y hidden" aria-hidden="true"></div>
 
-        <div class="editor-actions">
-          <button id="preview-notify" class="ghost-button" type="button">Preview</button>
-          <button id="reset-config" class="ghost-button danger-button" type="button">Resetar</button>
-          <button id="save-config" class="primary-button" type="button">Salvar e Aplicar</button>
-          <button id="close-editor" class="ghost-button" type="button">Fechar</button>
-        </div>
+    <aside class="editor-navigator" aria-label="Elementos da HUD">
+      <div><strong>MZ HUD</strong><span>Editor visual</span></div>
+      <select id="editor-element-select" aria-label="Selecionar status"><option value="">Status...</option><option value="health">Vida</option><option value="armor">Colete</option><option value="hunger">Fome</option><option value="thirst">Sede</option><option value="stamina">Stamina</option><option value="oxygen">Oxigênio</option><option value="stress">Stress</option><option value="voice">Voz</option><option value="radio">Rádio</option></select>
+      <button type="button" data-select-element="statusGroup">Status group</button>
+      <button type="button" data-select-element="speedometer">Velocímetro</button>
+      <button type="button" data-select-element="weapon">Arma</button>
+      <button type="button" data-select-element="logo">Logo</button>
+    </aside>
+
+    <div id="editor-selection-box" class="editor-selection-box hidden" aria-hidden="true">
+      <div id="editor-context-toolbar" class="editor-context-toolbar">
+        <span id="editor-selection-name">Elemento</span>
+        <button type="button" data-editor-action="move" title="Mover">Mover</button>
+        <button type="button" data-editor-action="inspect" title="Abrir inspector">Aparência</button>
+        <button type="button" data-editor-action="toggle-lock" title="Bloquear ou desbloquear">Bloquear</button>
+        <button type="button" data-editor-action="reset-element" title="Resetar elemento">Resetar</button>
       </div>
+      <button id="editor-resize-handle" class="editor-resize-handle" type="button" title="Redimensionar" aria-label="Redimensionar elemento"></button>
+    </div>
 
-      <div class="editor-grid">
-        <section class="editor-card editor-notice-card" aria-label="Aviso importante">
-          <h2>Modo servidor</h2>
-          <p class="editor-help strong-help">Tudo que for salvo neste painel vira configuração global da <strong>mz_hud</strong> e será aplicado para todos os jogadores conectados.</p>
-          <div class="editor-notice-list">
-            <span>Salvar grava em <strong>data/runtime_config.json</strong></span>
-            <span>Resetar volta para o padrão do <strong>config.lua</strong></span>
-            <span>Use presets pelo painel ou pelo comando <strong>/mzhud_preset</strong></span>
-          </div>
-        </section>
+    <section id="editor-inspector" class="visual-inspector hidden" aria-label="Inspector de propriedades">
+      <header>
+        <div><small>INSPECTOR</small><strong id="inspector-title">Elemento</strong></div>
+        <button id="inspector-close" type="button" title="Fechar inspector">x</button>
+      </header>
+      <div id="inspector-body" class="inspector-body"></div>
+    </section>
 
-        <section class="editor-card editor-preset-card" aria-label="Presets globais">
-          <div class="editor-card-title-row">
-            <h2>Presets globais</h2>
-            <button id="preset-manager-refresh" type="button" class="ghost-button compact-button">Atualizar</button>
-          </div>
-          <p class="editor-help section-help">Aplique um visual pronto direto no editor. O servidor cria backup automático antes de aplicar quando essa opção estiver ativa no config.lua.</p>
-          <div class="preset-manager-head">
-            <span id="preset-active-label">Atual: carregando...</span>
-            <span id="preset-backup-summary">Backups: carregando...</span>
-          </div>
-          <div id="preset-manager-list" class="preset-manager-list">
-            <div class="preset-empty-state">Carregando presets...</div>
-          </div>
-          <div class="preset-manager-actions">
-            <button id="preset-manager-backup" type="button" class="ghost-button">Criar backup atual</button>
-          </div>
-          <p id="preset-manager-status" class="preset-manager-status" data-type="info">Aguardando abertura do editor.</p>
-        </section>
-
-        <section class="editor-card">
-          <h2>Geral</h2>
-          <p class="editor-help section-help">Configura base global, minimapa e opacidade geral. Evite usar isso como ajuste fino de cada módulo.</p>
-          <label>
-            <span>Posição rápida do mapa</span>
-            <select id="general-hud-position"></select>
-          </label>
-          <label>
-            <span>Estilo do minimapa</span>
-            <select id="general-minimap-style"></select>
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar minimapa</span>
-            <input id="general-show-minimap" type="checkbox">
-          </label>
-          <label>
-            <span>Visibilidade do minimapa</span>
-            <select id="general-minimap-visibility"></select>
-          </label>
-          <label>
-            <span>Mapa X (%)</span>
-            <input id="general-minimap-x" type="number" step="1">
-          </label>
-          <label>
-            <span>Mapa Y (%)</span>
-            <input id="general-minimap-y" type="number" step="1">
-          </label>
-          <label>
-            <span>Opacidade global</span>
-            <input id="general-global-opacity" type="range" min="0" max="100">
-          </label>
-          <label>
-            <span>Escala global</span>
-            <input id="general-scale" type="range" min="60" max="140">
-          </label>
-        </section>
-
-
-        <section class="editor-card">
-          <h2>HUD de status</h2>
-          <p class="editor-help section-help">Controla o grupo principal de vida, colete, fome, sede e outros status. O estilo individual dos itens fica na seção Elementos.</p>
-          <label class="toggle-row">
-            <span>Agrupar fome, sede, vida e afins</span>
-            <input id="status-group-enabled" type="checkbox">
-          </label>
-          <label>
-            <span>Posição rápida da HUD de status</span>
-            <select id="status-group-position"></select>
-          </label>
-          <label class="toggle-row">
-            <span>Posição livre em porcentagem</span>
-            <input id="status-group-free" type="checkbox">
-          </label>
-          <div class="editor-mini-grid">
-            <label><span>X (%)</span><input id="status-group-x" type="number" min="0" max="100" step="0.1"></label>
-            <label><span>Y (%)</span><input id="status-group-y" type="number" min="0" max="100" step="0.1"></label>
-          </div>
-          <div class="editor-mini-grid">
-            <label><span>Tamanho do grupo</span><input id="status-group-scale" type="range" min="50" max="180"></label>
-            <label><span>Opacidade do grupo</span><input id="status-group-opacity" type="range" min="0" max="100"></label>
-          </div>
-          <label>
-            <span>Espaçamento</span>
-            <input id="status-group-gap" type="range" min="0" max="24">
-          </label>
-          <p class="editor-help">Por padrão, os status andam juntos. Marque “mover separado do grupo” em um item para soltar apenas ele.</p>
-        </section>
-
-        <section class="editor-card">
-          <h2>Velocímetro</h2>
-          <p class="editor-help section-help">Define o modelo global do velocímetro. Os estilos oficiais estão documentados em docs/STYLES_CATALOG.md.</p>
-          <label class="toggle-row">
-            <span>Ativado</span>
-            <input id="speedometer-enabled" type="checkbox">
-          </label>
-          <label>
-            <span>Posicao</span>
-            <select id="speedometer-position"></select>
-          </label>
-          <label class="toggle-row">
-            <span>Posicao livre em porcentagem</span>
-            <input id="speedometer-free" type="checkbox">
-          </label>
-          <div class="editor-mini-grid">
-            <label><span>X (%)</span><input id="speedometer-x" type="number" min="0" max="100" step="0.1"></label>
-            <label><span>Y (%)</span><input id="speedometer-y" type="number" min="0" max="100" step="0.1"></label>
-          </div>
-          <label>
-            <span>Modelo</span>
-            <select id="speedometer-style"></select>
-          </label>
-          <div class="style-reference-box">
-            <span><strong>digital</strong> simples</span>
-            <span><strong>analog</strong> circular</span>
-            <span><strong>minimal</strong> limpo</span>
-            <span><strong>racing</strong> esportivo</span>
-            <span><strong>classic</strong> RP</span>
-            <span><strong>apex</strong> especial</span>
-            <span><strong>vector</strong> angular</span>
-          </div>
-          <label>
-            <span>Unidade</span>
-            <select id="speedometer-unit"></select>
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar velocidade</span>
-            <input id="speedometer-show-speed" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar RPM</span>
-            <input id="speedometer-show-rpm" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar combustivel</span>
-            <input id="speedometer-show-fuel" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar marcha</span>
-            <input id="speedometer-show-gear" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar cinto</span>
-            <input id="speedometer-show-seatbelt" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar luzes</span>
-            <input id="speedometer-show-lights" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar trava</span>
-            <input id="speedometer-show-lock" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar motor</span>
-            <input id="speedometer-show-engine" type="checkbox">
-          </label>
-          <label>
-            <span>Opacidade</span>
-            <input id="speedometer-opacity" type="range" min="0" max="100">
-          </label>
-          <label>
-            <span>Escala</span>
-            <input id="speedometer-scale" type="range" min="60" max="150">
-          </label>
-        </section>
-
-        <section class="editor-card speedometer-icons-card">
-          <h2>Ícones do velocímetro</h2>
-          <p class="editor-help">Escolha apenas o desenho dos ícones. O formato/tamanho continua vindo do modelo visual do velocímetro.</p>
-          <div class="editor-mini-grid speedometer-icon-grid">
-            <label><span>Combustível</span><select id="speedometer-icon-fuel"></select></label>
-            <label><span>Motor</span><select id="speedometer-icon-engine"></select></label>
-            <label><span>Motor ligado</span><select id="speedometer-icon-engine-indicator"></select></label>
-            <label><span>Cinto colocado</span><select id="speedometer-icon-belt"></select></label>
-            <label><span>Cinto removido</span><select id="speedometer-icon-unbelt"></select></label>
-            <label><span>Farol baixo</span><select id="speedometer-icon-light"></select></label>
-            <label><span>Farol alto</span><select id="speedometer-icon-light-high"></select></label>
-            <label><span>Farol apagado</span><select id="speedometer-icon-light-off"></select></label>
-            <label><span>Trancado</span><select id="speedometer-icon-lock"></select></label>
-            <label><span>Destrancado</span><select id="speedometer-icon-unlock"></select></label>
-            <label><span>Seta</span><select id="speedometer-icon-arrow"></select></label>
-            <label><span>Seta ativa</span><select id="speedometer-icon-arrow-active"></select></label>
-          </div>
-          <p class="editor-help">Para adicionar novos: coloque arquivos como <strong>web/assets/icons/vehicle/fuel/fuel_1.svg</strong>. A HUD detecta automaticamente nomes sequenciais.</p>
-        </section>
-
-        <section class="editor-card speedometer-visual-card">
-          <h2>Visual do velocímetro</h2>
-          <p class="editor-help">Cores rápidas para o velocímetro atual. Isso não troca o sistema de style e não altera as demais partes da HUD.</p>
-          <div class="speed-theme-grid">
-            <button type="button" data-speed-theme="blue"><span style="--swatch:#3b82f6"></span><strong>Azul</strong></button>
-            <button type="button" data-speed-theme="red"><span style="--swatch:#ef4444"></span><strong>Vermelho</strong></button>
-            <button type="button" data-speed-theme="green"><span style="--swatch:#22c55e"></span><strong>Verde</strong></button>
-            <button type="button" data-speed-theme="purple"><span style="--swatch:#8b5cf6"></span><strong>Roxo</strong></button>
-            <button type="button" data-speed-theme="orange"><span style="--swatch:#f97316"></span><strong>Laranja</strong></button>
-            <button type="button" data-speed-theme="mono"><span style="--swatch:#f8fafc"></span><strong>Mono</strong></button>
-          </div>
-          <div class="editor-mini-grid color-input-grid">
-            <label><span>Cor primária</span><input id="speedometer-primary-color" type="color"></label>
-            <label><span>Cor secundária</span><input id="speedometer-secondary-color" type="color"></label>
-            <label><span>Destaque</span><input id="speedometer-accent-color" type="color"></label>
-            <label><span>Fundo</span><input id="speedometer-background-color" type="color"></label>
-          </div>
-        </section>
-
-
-        <section class="editor-card">
-          <h2>Armas</h2>
-          <p class="editor-help">Exibe arma equipada, imagem e munição. Visual discreto no mesmo padrão de voz e rádio.</p>
-          <label class="toggle-row">
-            <span>Ativar HUD de armas</span>
-            <input id="weapon-enabled" type="checkbox">
-          </label>
-          <label>
-            <span>Posição rápida</span>
-            <select id="weapon-position"></select>
-          </label>
-          <label class="toggle-row">
-            <span>Posição livre em porcentagem</span>
-            <input id="weapon-free" type="checkbox">
-          </label>
-          <div class="editor-mini-grid">
-            <label><span>X (%)</span><input id="weapon-x" type="number" min="0" max="100" step="0.1"></label>
-            <label><span>Y (%)</span><input id="weapon-y" type="number" min="0" max="100" step="0.1"></label>
-          </div>
-          <label class="toggle-row">
-            <span>Mostrar imagem da arma</span>
-            <input id="weapon-show-image" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar munição</span>
-            <input id="weapon-show-ammo" type="checkbox">
-          </label>
-          <label class="toggle-row">
-            <span>Mostrar nome</span>
-            <input id="weapon-show-name" type="checkbox">
-          </label>
-          <label>
-            <span>Opacidade</span>
-            <input id="weapon-opacity" type="range" min="0" max="100">
-          </label>
-          <label>
-            <span>Escala</span>
-            <input id="weapon-scale" type="range" min="60" max="150">
-          </label>
-        </section>
-        <section class="editor-card chat-editor-card">
-          <div class="editor-card-title-row">
-            <h2>Chat</h2>
-            <button type="button" class="ghost-button compact-button" data-select-element="chat">Selecionar</button>
-          </div>
-          <p class="editor-help">Configura o layout enviado para o mz_chat. O chat padrao do FiveM nao e alterado por este editor.</p>
-          <label class="toggle-row">
-            <span>Ativar layout do chat</span>
-            <input id="chat-enabled" type="checkbox">
-          </label>
-          <label>
-            <span>Preset</span>
-            <select id="chat-preset"></select>
-          </label>
-          <label class="toggle-row">
-            <span>Posicao livre em porcentagem</span>
-            <input id="chat-free" type="checkbox">
-          </label>
-          <div class="editor-mini-grid">
-            <label><span>X (%)</span><input id="chat-x" type="number" min="0" max="100" step="0.1"></label>
-            <label><span>Y (%)</span><input id="chat-y" type="number" min="0" max="100" step="0.1"></label>
-          </div>
-          <label>
-            <span>Escala</span>
-            <input id="chat-scale" type="range" min="0.5" max="1.8" step="0.05">
-          </label>
-          <label>
-            <span>Opacidade</span>
-            <input id="chat-opacity" type="range" min="0" max="1" step="0.05">
-          </label>
-        </section>
-        <section class="editor-card">
-          <h2>Logo</h2>
-          <p class="editor-help section-help">Imagem global de identidade do servidor/framework. Mantenha fundo transparente para evitar retângulo atrás da logo.</p>
-          <label class="toggle-row">
-            <span>Ativar logo</span>
-            <input id="logo-enabled" type="checkbox">
-          </label>
-          <label>
-            <span>URL da imagem</span>
-            <input id="logo-image-url" type="text" placeholder="https://...">
-          </label>
-          <label>
-            <span>Posicao</span>
-            <select id="logo-position"></select>
-          </label>
-          <label class="toggle-row">
-            <span>So dentro do veiculo</span>
-            <input id="logo-show-only-in-vehicle" type="checkbox">
-          </label>
-          <label>
-            <span>Largura</span>
-            <input id="logo-width" type="range" min="40" max="400">
-          </label>
-          <label>
-            <span>Altura</span>
-            <input id="logo-height" type="range" min="20" max="200">
-          </label>
-          <label>
-            <span>Opacidade</span>
-            <input id="logo-opacity" type="range" min="0" max="100">
-          </label>
-        </section>
-
-        <section class="editor-card span-two voice-editor-card">
-          <h2>Voz e Rádio</h2>
-          <p class="editor-help">Controla somente os indicadores de voz e rádio. Não mexe na HUD de status, mapa, logo ou velocímetro.</p>
-          <div id="voice-editor" class="elements-editor voice-editor"></div>
-        </section>
-
-        <section class="editor-card span-two">
-          <h2>Elementos</h2>
-          <p class="editor-help section-help">Aqui ficam os itens individuais de status. Use esta área para escolher ícone, estilo, cor, posição e se o item acompanha o grupo.</p>
-          <div class="style-reference-box status-style-reference">
-            <span><strong>circle</strong> circular</span>
-            <span><strong>bar</strong> barra</span>
-            <span><strong>square</strong> quadrado</span>
-            <span><strong>pill</strong> pílula</span>
-            <span><strong>apex</strong> especial</span>
-          </div>
-          <div id="elements-editor" class="elements-editor"></div>
-        </section>
+    <div class="editor-dock" role="toolbar" aria-label="Ações globais">
+      <div class="editor-brand"><strong>MZ HUD</strong><span id="editor-dirty-state">Sem alterações</span></div>
+      <div class="dock-group">
+        <button id="editor-undo" type="button" title="Desfazer (Ctrl+Z)" disabled>Undo</button>
+        <button id="editor-redo" type="button" title="Refazer (Ctrl+Y)" disabled>Redo</button>
       </div>
+      <div class="dock-group">
+        <button id="editor-grid-toggle" type="button" aria-pressed="false" title="Mostrar grade">Grid</button>
+        <button id="editor-snap-toggle" type="button" aria-pressed="true" title="Ativar snap">Snap</button>
+        <button id="editor-safezone-toggle" type="button" aria-pressed="false" title="Mostrar safezone">Safe</button>
+      </div>
+      <label class="dock-select" title="Estado visual de preview"><span>Preview</span><select id="editor-preview-state"><option value="normal">Normal</option><option value="all">Todos</option><option value="vehicle">Veículo</option><option value="low">Baixo status</option><option value="submerged">Submerso</option></select></label>
+      <button id="editor-presets-open" type="button" title="Abrir presets">Presets</button>
+      <button id="reset-config" class="dock-danger" type="button" title="Resetar toda a HUD no draft">Resetar</button>
+      <button id="save-config" class="dock-primary" type="button">Salvar e Aplicar</button>
+      <button id="close-editor" type="button" title="Fechar editor">Fechar</button>
+    </div>
+
+    <div id="editor-preset-modal" class="editor-modal hidden" role="dialog" aria-modal="true" aria-labelledby="preset-modal-title">
+      <div class="editor-modal-card preset-modal-card">
+        <header><div><small>PRESETS</small><h2 id="preset-modal-title">Aplicar ao draft</h2></div><button type="button" data-modal-close="presets">x</button></header>
+        <div class="preset-manager-head"><span id="preset-active-label">Atual: carregando...</span><span id="preset-backup-summary">Backups: carregando...</span></div>
+        <div id="preset-manager-list" class="preset-manager-list"><div class="preset-empty-state">Carregando presets...</div></div>
+        <p id="preset-manager-status" class="preset-manager-status" data-type="info">O preset só será persistido ao salvar.</p>
+      </div>
+    </div>
+
+    <div id="editor-confirm-modal" class="editor-modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="editor-modal-card confirm-card"><h2 id="confirm-title">Descartar alterações?</h2><p id="confirm-message">Existem alterações não salvas no draft.</p><div><button id="confirm-cancel" type="button">Continuar editando</button><button id="confirm-discard" class="dock-danger" type="button">Descartar alterações</button></div></div>
     </div>
   </div>
 
@@ -393,6 +95,8 @@
   <script src="core/utils.js"></script>
   <script src="core/positions.js"></script>
   <script src="core/icons.js"></script>
+  <script src="hud/editor/schema.js"></script>
+  <script src="hud/editor/visibility.js"></script>
   <script src="core/defaults.js"></script>
   <script src="core/weapons.js"></script>
   <script src="core/core.js"></script>
@@ -402,9 +106,8 @@
   <script src="hud/radio/radio.js"></script>
   <script src="hud/logo/logo.js"></script>
   <script src="hud/weapon/weapon.js"></script>
-  <script src="hud/editor/form.js"></script>
-  <script src="hud/editor/elements.js"></script>
-  <script src="hud/editor/lifecycle.js"></script>
+  <script src="hud/editor/store.js"></script>
+  <script src="hud/editor/visual.js"></script>
   <script src="hud/editor/editor.js"></script>
   <script src="hud/editor/presets.js"></script>
   <script src="app/state.js"></script>

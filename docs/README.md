@@ -1,5 +1,7 @@
 # Documentação - mz_hud
 
+> Editor visual v2: consulte [VISUAL_EDITOR.md](VISUAL_EDITOR.md) para arquitetura, schema, draft, SMART visibility, testes e checklist FiveM.
+
 Bem-vindo à documentação da HUD global `mz_hud` para servidores `mz_core`.
 
 ## 📋 Índice rápido

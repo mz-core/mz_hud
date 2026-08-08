@@ -1,6 +1,7 @@
 local RESOURCE_NAME = GetCurrentResourceName()
 
 local RuntimeConfig = nil
+local SCHEMA_VERSION = 2
 
 local ALLOWED_POSITIONS = {
   ['bottom-left'] = true,
@@ -75,6 +76,15 @@ local ALLOWED_ELEMENT_STYLES = {
   apex = true,
   comms = true
 }
+
+local ALLOWED_VISIBILITY_MODES = {
+  always = true,
+  smart = true,
+  hidden = true
+}
+
+local ALLOWED_GROUP_ORIENTATIONS = { horizontal = true, vertical = true }
+local ALLOWED_GROUP_ALIGNMENTS = { start = true, center = true, ['end'] = true }
 
 local SPEEDOMETER_ICON_DEFAULTS = {
   fuel = 'fuel',
@@ -272,7 +282,10 @@ local function sanitizeElements(defaults, incoming)
       y = clampNumber(entry.y, 0, 100, defaultElement.y or 95),
       scale = clampNumber(entry.scale, 50, 180, defaultElement.scale or 100),
       opacity = clampNumber(entry.opacity, 0, 100, defaultElement.opacity),
-      individual = (key == 'voice' or key == 'radio') and true or sanitizeBool(entry.individual, defaultElement.individual == true)
+      individual = (key == 'voice' or key == 'radio') and true or sanitizeBool(entry.individual, defaultElement.individual == true),
+      visibilityMode = sanitizeEnum(entry.visibilityMode, ALLOWED_VISIBILITY_MODES, defaultElement.visibilityMode or 'always'),
+      locked = sanitizeBool(entry.locked, defaultElement.locked == true),
+      collapseWhenHidden = sanitizeBool(entry.collapseWhenHidden, defaultElement.collapseWhenHidden == true)
     }
 
     if key == 'voice' or key == 'radio' then
@@ -297,7 +310,10 @@ local function sanitizeStatusGroup(defaults, incoming)
     y = clampNumber(group.y, 0, 100, defaultGroup.y or 94),
     scale = clampNumber(group.scale, 50, 180, defaultGroup.scale or 100),
     opacity = clampNumber(group.opacity, 0, 100, defaultGroup.opacity or 100),
-    gap = clampNumber(group.gap, 0, 40, defaultGroup.gap or 8)
+    gap = clampNumber(group.gap, 0, 40, defaultGroup.gap or 8),
+    orientation = sanitizeEnum(group.orientation, ALLOWED_GROUP_ORIENTATIONS, defaultGroup.orientation or 'horizontal'),
+    alignment = sanitizeEnum(group.alignment, ALLOWED_GROUP_ALIGNMENTS, defaultGroup.alignment or 'center'),
+    locked = sanitizeBool(group.locked, defaultGroup.locked == true)
   }
 end
 
@@ -312,7 +328,8 @@ local function sanitizeChatConfig(defaults, incoming)
     x = clampNumber(chat.x, 0, 100, defaultChat.x or 2),
     y = clampNumber(chat.y, 0, 100, defaultChat.y or 3),
     scale = clampNumber(chat.scale, 0.5, 1.8, defaultChat.scale or 1.0),
-    opacity = clampNumber(chat.opacity, 0, 1, defaultChat.opacity or 1.0)
+    opacity = clampNumber(chat.opacity, 0, 1, defaultChat.opacity or 1.0),
+    locked = sanitizeBool(chat.locked, defaultChat.locked == true)
   }
 end
 
@@ -325,6 +342,8 @@ local function sanitizeHudConfig(incoming)
   local chat = type(incoming) == 'table' and incoming.chat or {}
 
   return {
+    schema_version = SCHEMA_VERSION,
+    revision = math.max(0, math.floor(clampNumber(type(incoming) == 'table' and incoming.revision, 0, 2147483647, defaults.revision or 0))),
     general = {
       show_minimap = sanitizeBool(general.show_minimap, defaults.general.show_minimap),
       minimap_style = sanitizeEnum(general.minimap_style, ALLOWED_MINIMAP_STYLES, defaults.general.minimap_style),
@@ -342,7 +361,13 @@ local function sanitizeHudConfig(incoming)
       width = clampNumber(logo.width, 40, 400, defaults.logo.width),
       height = clampNumber(logo.height, 20, 200, defaults.logo.height),
       opacity = clampNumber(logo.opacity, 0, 100, defaults.logo.opacity),
+      scale = clampNumber(logo.scale, 50, 180, defaults.logo.scale or 100),
       position = sanitizeEnum(logo.position, ALLOWED_LOGO_POSITIONS, defaults.logo.position),
+      free = sanitizeBool(logo.free, defaultBool(defaults.logo.free, false)),
+      x = clampNumber(logo.x, 0, 100, defaults.logo.x or 50),
+      y = clampNumber(logo.y, 0, 100, defaults.logo.y or 6),
+      locked = sanitizeBool(logo.locked, defaults.logo.locked == true),
+      visibilityMode = sanitizeEnum(logo.visibilityMode, ALLOWED_VISIBILITY_MODES, defaults.logo.visibilityMode or 'always'),
       show_only_in_vehicle = sanitizeBool(logo.show_only_in_vehicle, defaults.logo.show_only_in_vehicle)
     },
     speedometer = {
@@ -367,7 +392,9 @@ local function sanitizeHudConfig(incoming)
       accent_color = sanitizeColor(speedometer.accent_color, defaults.speedometer.accent_color or '#ef4444'),
       background_color = sanitizeColor(speedometer.background_color, defaults.speedometer.background_color or '#000000'),
       opacity = clampNumber(speedometer.opacity, 0, 100, defaults.speedometer.opacity),
-      scale = clampNumber(speedometer.scale, 60, 150, defaults.speedometer.scale)
+      scale = clampNumber(speedometer.scale, 60, 150, defaults.speedometer.scale),
+      locked = sanitizeBool(speedometer.locked, defaults.speedometer.locked == true),
+      visibilityMode = sanitizeEnum(speedometer.visibilityMode, ALLOWED_VISIBILITY_MODES, defaults.speedometer.visibilityMode or 'smart')
     },
     weapon = {
       enabled = sanitizeBool(weapon.enabled, defaultBool(defaults.weapon and defaults.weapon.enabled, true)),
@@ -381,7 +408,9 @@ local function sanitizeHudConfig(incoming)
       icon_model = sanitizeText(weapon.icon_model, defaults.weapon and defaults.weapon.icon_model or 'default', 24),
       image_model = sanitizeText(weapon.image_model, defaults.weapon and defaults.weapon.image_model or 'default', 24),
       opacity = clampNumber(weapon.opacity, 0, 100, defaults.weapon and defaults.weapon.opacity or 92),
-      scale = clampNumber(weapon.scale, 60, 150, defaults.weapon and defaults.weapon.scale or 100)
+      scale = clampNumber(weapon.scale, 60, 150, defaults.weapon and defaults.weapon.scale or 100),
+      locked = sanitizeBool(weapon.locked, defaults.weapon and defaults.weapon.locked == true),
+      visibilityMode = sanitizeEnum(weapon.visibilityMode, ALLOWED_VISIBILITY_MODES, defaults.weapon and defaults.weapon.visibilityMode or 'smart')
     },
     chat = sanitizeChatConfig(defaults, chat),
     elements = sanitizeElements(defaults, type(incoming) == 'table' and incoming.elements or nil)
@@ -921,7 +950,9 @@ local function restoreBackupForSource(source, requestedBackupId)
     createAutoBackup('before_restore', source, { restore_target = entry.id })
   end
 
+  local previousRevision = tonumber(RuntimeConfig and RuntimeConfig.revision) or 0
   RuntimeConfig = sanitizeHudConfig(deepMerge(getDefaults(), backupConfig))
+  RuntimeConfig.revision = previousRevision + 1
   saveRuntimeConfig()
   broadcastConfig(-1)
 
@@ -1095,7 +1126,9 @@ local function applyPresetForSource(source, requestedName)
     createAutoBackup('before_preset', source, { preset = presetName })
   end
 
+  local previousRevision = tonumber(RuntimeConfig and RuntimeConfig.revision) or 0
   RuntimeConfig = sanitizeHudConfig(deepMerge(getDefaults(), preset))
+  RuntimeConfig.revision = previousRevision + 1
   saveRuntimeConfig()
   broadcastConfig(-1)
 
@@ -1176,9 +1209,10 @@ local function getRequiredHudFiles()
     'web/core/weapons.js',
     'web/core/core.js',
     'web/hud/editor/editor.css',
-    'web/hud/editor/form.js',
-    'web/hud/editor/elements.js',
-    'web/hud/editor/lifecycle.js',
+    'web/hud/editor/schema.js',
+    'web/hud/editor/visibility.js',
+    'web/hud/editor/store.js',
+    'web/hud/editor/visual.js',
     'web/hud/editor/editor.js',
     'web/hud/editor/presets.js',
     'web/hud/status/status.css',
@@ -1251,11 +1285,13 @@ local function detectMatchingPreset()
   end
 
   local currentConfig = sanitizeHudConfig(RuntimeConfig or getDefaults())
+  currentConfig.revision = 0
   local names = getSortedPresetNames(manifest)
   for _, presetName in ipairs(names) do
     local preset = loadPresetConfig(presetName)
     if preset then
       local candidate = sanitizeHudConfig(deepMerge(getDefaults(), preset))
+      candidate.revision = 0
       if tableDeepEqual(currentConfig, candidate) then
         return presetName, nil
       end
@@ -1458,6 +1494,7 @@ end
 lib.callback.register('mz_hud:server:getBootstrap', function(source)
   return {
     config = deepCopy(RuntimeConfig or getDefaults()),
+    defaults = deepCopy(getDefaults()),
     can_manage = hasAdminAccess(source)
   }
 end)
@@ -1478,16 +1515,25 @@ lib.callback.register('mz_hud:server:applyPresetFromEditor', function(source, pr
     return { ok = false, error = 'forbidden' }
   end
 
-  local ok, configOrErr, label = applyPresetForSource(source, presetName)
-  if not ok then
-    return { ok = false, error = configOrErr or 'unknown' }
+  if not (Config.Presets and Config.Presets.enabled == true) then
+    return { ok = false, error = 'disabled' }
   end
 
-  writeAudit('editor_preset_apply', source, 'success', { preset = normalizePresetName(presetName) or '' })
+  local normalizedName = normalizePresetName(presetName)
+  local preset, manifest, err = loadPresetConfig(normalizedName)
+  if not preset then
+    writeAudit('editor_preset_draft', source, 'failed', { preset = normalizedName or '', reason = err or 'unknown' })
+    return { ok = false, error = err or 'unknown' }
+  end
+
+  local entry = getPresetEntry(manifest, normalizedName) or {}
+  local draft = sanitizeHudConfig(deepMerge(getDefaults(), preset))
+  draft.revision = tonumber(RuntimeConfig and RuntimeConfig.revision) or 0
+  writeAudit('editor_preset_draft', source, 'success', { preset = normalizedName })
   return {
     ok = true,
-    config = deepCopy(configOrErr or RuntimeConfig or getDefaults()),
-    label = label or normalizePresetName(presetName) or 'preset',
+    config = deepCopy(draft),
+    label = entry.label or normalizedName or 'preset',
     manager = buildEditorPresetManager()
   }
 end)
@@ -1512,8 +1558,7 @@ lib.callback.register('mz_hud:server:createBackupFromEditor', function(source)
   }
 end)
 
-local function saveConfigForSource(source, payload)
-  local source = source
+local function saveConfigForSource(source, payload, requireRevision)
   if not hasAdminAccess(source) then
     writeAudit('editor_save', source, 'denied')
     notifyClient(source, {
@@ -1521,32 +1566,54 @@ local function saveConfigForSource(source, payload)
       title = 'HUD',
       message = 'Sem permissao para editar a HUD.'
     })
-    return
+    return false, 'forbidden'
+  end
+
+  local currentRevision = tonumber(RuntimeConfig and RuntimeConfig.revision) or 0
+  local incomingRevision = type(payload) == 'table' and tonumber(payload.revision) or nil
+  if requireRevision == true and incomingRevision ~= currentRevision then
+    writeAudit('editor_save', source, 'conflict', { expected = currentRevision, received = incomingRevision or 'missing' })
+    return false, 'revision_conflict', { revision = currentRevision, config = deepCopy(RuntimeConfig or getDefaults()) }
   end
 
   if getBackupConfig().auto_before_editor_save == true then
-    createAutoBackup('before_editor_save', source)
+    local backupOk, backupErr = createAutoBackup('before_editor_save', source)
+    if areBackupsEnabled() and not backupOk then
+      writeAudit('editor_save', source, 'failed', { reason = backupErr or 'backup_failed' })
+      return false, backupErr or 'backup_failed'
+    end
   end
 
-  RuntimeConfig = sanitizeHudConfig(payload)
+  local sanitized = sanitizeHudConfig(payload)
+  sanitized.revision = currentRevision + 1
+  RuntimeConfig = sanitized
   saveRuntimeConfig()
   broadcastConfig(-1)
 
-  writeAudit('editor_save', source, 'success')
+  writeAudit('editor_save', source, 'success', { revision = RuntimeConfig.revision })
 
   notifyClient(source, {
     type = 'success',
     title = 'HUD',
     message = 'Configuracao da HUD aplicada para todos.'
   })
+  return true, nil, deepCopy(RuntimeConfig)
 end
 
+lib.callback.register('mz_hud:server:saveEditorConfig', function(source, payload)
+  local ok, err, extra = saveConfigForSource(source, payload, true)
+  if not ok then
+    return { ok = false, error = err or 'unknown', revision = extra and extra.revision, config = extra and extra.config }
+  end
+  return { ok = true, config = extra, revision = extra and extra.revision }
+end)
+
 RegisterNetEvent('mz_hud:server:saveConfig', function(payload)
-  saveConfigForSource(source, payload)
+  saveConfigForSource(source, payload, false)
 end)
 
 RegisterNetEvent('mz_hud:server:saveSettings', function(payload)
-  saveConfigForSource(source, payload)
+  saveConfigForSource(source, payload, false)
 end)
 
 RegisterNetEvent('mz_hud:server:resetConfig', function(payload)
@@ -1562,6 +1629,7 @@ RegisterNetEvent('mz_hud:server:resetConfig', function(payload)
   end
 
   local module = type(payload) == 'table' and payload.module or nil
+  local previousRevision = tonumber(RuntimeConfig and RuntimeConfig.revision) or 0
   if getBackupConfig().auto_before_reset == true then
     createAutoBackup(module == 'chat' and 'before_chat_reset' or 'before_reset', source, { module = module or 'all' })
   end
@@ -1573,6 +1641,7 @@ RegisterNetEvent('mz_hud:server:resetConfig', function(payload)
   else
     RuntimeConfig = getDefaults()
   end
+  RuntimeConfig.revision = previousRevision + 1
   saveRuntimeConfig()
   broadcastConfig(-1)
 
@@ -1613,7 +1682,7 @@ registerAdminCommand(Config.Admin and Config.Admin.open_command, function(source
   end
 
   writeAudit('editor_open', source, 'success')
-  TriggerClientEvent('mz_hud:client:openEditor', source, deepCopy(RuntimeConfig or getDefaults()))
+  TriggerClientEvent('mz_hud:client:openEditor', source, deepCopy(RuntimeConfig or getDefaults()), deepCopy(getDefaults()))
 end)
 
 registerAdminCommand(Config.Admin and Config.Admin.reload_command, function(source)
@@ -1662,7 +1731,9 @@ registerAdminCommand(Config.Admin and Config.Admin.reset_command, function(sourc
     createAutoBackup('before_reset_command', source)
   end
 
+  local previousRevision = tonumber(RuntimeConfig and RuntimeConfig.revision) or 0
   RuntimeConfig = getDefaults()
+  RuntimeConfig.revision = previousRevision + 1
   saveRuntimeConfig()
   broadcastConfig(-1)
 

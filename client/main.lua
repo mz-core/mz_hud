@@ -3,6 +3,7 @@ local DebugSeatbelt = false
 
 local HudState = {
   config = nil,
+  defaults = nil,
   canManage = false,
   hudVisible = true,
   speedometerVisible = true,
@@ -729,8 +730,9 @@ local function getStatusPayload()
   local canonicalArmor = getPlayerMetadataValue('armor', nil, 0, 100)
   local oxygen = 100
   local underwaterTime = GetPlayerUnderwaterTimeRemaining(PlayerId())
+  local oxygenActive = IsPedSwimmingUnderWater(playerPed)
 
-  if IsPedSwimmingUnderWater(playerPed) then
+  if oxygenActive then
     oxygen = clamp(math.floor((underwaterTime or 0.0) * 10.0), 0, 100)
   end
 
@@ -749,6 +751,7 @@ local function getStatusPayload()
       stress = getPlayerMetadataValue('stress', 0),
       stamina = clamp(100 - math.floor(GetPlayerSprintStaminaRemaining(PlayerId()) or 0), 0, 100),
       oxygen = oxygen,
+      oxygenActive = oxygenActive,
       voice = voice.value,
       voiceLabel = voice.label,
       voiceMode = voice.mode,
@@ -1164,6 +1167,12 @@ local function closeEditor()
   })
 end
 
+AddEventHandler('onResourceStop', function(resourceName)
+  if resourceName ~= GetCurrentResourceName() then return end
+  HudState.editorOpen = false
+  SetNuiFocus(false, false)
+end)
+
 RegisterNetEvent('mz_hud:client:notify', function(payload)
   notify(payload)
 end)
@@ -1263,17 +1272,19 @@ RegisterNetEvent('mz_hud:client:applyConfig', function(config)
   })
 end)
 
-RegisterNetEvent('mz_hud:client:openEditor', function(config)
+RegisterNetEvent('mz_hud:client:openEditor', function(config, defaults)
   if config then
     HudState.config = config
   end
 
   HudState.editorOpen = true
   HudState.canManage = true
+  HudState.defaults = type(defaults) == 'table' and defaults or HudState.defaults
 
   sendUI({
     action = 'openEditor',
     config = HudState.config,
+    defaults = HudState.defaults,
     canManage = HudState.canManage
   })
 
@@ -1283,6 +1294,7 @@ end)
 RegisterNUICallback('ready', function(_, cb)
   local bootstrap = lib.callback.await('mz_hud:server:getBootstrap', false)
   HudState.config = bootstrap and bootstrap.config or HudState.config
+  HudState.defaults = bootstrap and bootstrap.defaults or HudState.defaults
   HudState.canManage = bootstrap and bootstrap.can_manage == true or false
   HudState.bootstrapDone = true
   HudState.coreHUDState = exports['mz_core']:GetHUDState() or HudState.coreHUDState
@@ -1296,6 +1308,7 @@ RegisterNUICallback('ready', function(_, cb)
   sendUI({
     action = 'bootstrap',
     config = HudState.config,
+    defaults = HudState.defaults,
     canManage = HudState.canManage,
     hudVisible = HudState.hudVisible,
     speedometerVisible = HudState.speedometerVisible
@@ -1315,10 +1328,12 @@ RegisterNUICallback('saveConfig', function(data, cb)
     return
   end
 
-  TriggerServerEvent('mz_hud:server:saveSettings', data and data.config or {})
-  applyChatLayout(data and data.config and data.config.chat or nil)
-  closeEditor()
-  cb({ ok = true })
+  local result = lib.callback.await('mz_hud:server:saveEditorConfig', false, data and data.config or {})
+  if result and result.ok == true and type(result.config) == 'table' then
+    HudState.config = result.config
+    applyChatLayout(HudState.config.chat)
+  end
+  cb(result or { ok = false, error = 'empty_response' })
 end)
 
 RegisterNUICallback('resetConfig', function(data, cb)
@@ -1350,16 +1365,6 @@ RegisterNUICallback('applyPresetFromEditor', function(data, cb)
 
   local presetName = data and data.preset or nil
   local result = lib.callback.await('mz_hud:server:applyPresetFromEditor', false, presetName)
-
-  if result and result.ok == true and type(result.config) == 'table' then
-    HudState.config = result.config
-    applyMinimapSettings(true)
-    applyChatLayout(HudState.config.chat)
-    sendUI({
-      action = 'applyConfig',
-      config = HudState.config
-    })
-  end
 
   cb(result or { ok = false, error = 'empty_response' })
 end)

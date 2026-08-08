@@ -24,7 +24,7 @@ Abre a interface de configuração visual da HUD.
 
 ### O que faz
 
-1. Admin/dev abre o painel editor
+1. Admin/dev abre o editor visual sobre a HUD
 2. Ajusta módulos, posições, cores e visibilidade
 3. Clica "Salvar e Aplicar"
 4. Configuração é gravada em `data/runtime_config.json`

@@ -284,7 +284,8 @@
     const { state, dom, withSpeedometerDefaults, getSpeedometerPositionClass } = ctx;
     if (!state.config) return;
     const speedometer = withSpeedometerDefaults(state.config.speedometer || {});
-    const visible = Boolean(speedometer.enabled && state.vehicle.visible && state.speedometerVisible);
+    const visibility = window.MZHudVisibility?.resolveVisibility("speedometer", speedometer, state, { preview: state.editorPreview }) || { visible: true, forced: false };
+    const visible = Boolean(speedometer.enabled && visibility.visible && state.speedometerVisible);
     if (!visible) {
       dom.speedometer.className = "speedometer hidden";
       return;
@@ -296,7 +297,8 @@
     const fuelLowClass = fuel < 20 ? "is-low" : "";
     const style = ["digital", "analog", "minimal", "racing", "classic", "apex", "vector"].includes(speedometer.style) ? speedometer.style : "digital";
     const positionClass = speedometer.free ? "speedometer-free" : getSpeedometerPositionClass(speedometer.position);
-    dom.speedometer.className = `speedometer speedometer-style-${style} ${positionClass} ${state.editorOpen && state.selectedElement === "speedometer" ? "is-selected" : ""}`;
+    dom.speedometer.className = `speedometer speedometer-style-${style} ${positionClass} ${state.editorOpen && state.selectedElement === "speedometer" ? "is-selected" : ""} ${visibility.forced ? "is-editor-forced" : ""}`;
+    dom.speedometer.dataset.hudSelect = "speedometer";
     dom.speedometer.style.opacity = `${Math.max(0, Math.min(100, speedometer.opacity || 100)) / 100}`;
     dom.speedometer.style.setProperty("--speed-primary", speedometer.primary_color);
     dom.speedometer.style.setProperty("--speed-secondary", speedometer.secondary_color);
@@ -337,7 +339,8 @@
       vector: renderVector,
     };
 
-    dom.speedometer.innerHTML = renderers[style](ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass);
+    const badge = state.editorOpen && visibility.mode !== "always" ? `<span class="hud-editor-module-badge">${visibility.mode.toUpperCase()}</span>` : "";
+    dom.speedometer.innerHTML = badge + renderers[style](ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass);
   }
 
   window.MZHudSpeedometer = {

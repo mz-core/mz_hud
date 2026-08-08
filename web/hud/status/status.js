@@ -10,6 +10,7 @@
       withElementDefaults,
       itemInlineStyle,
       getItemPositionClass,
+      resolveVisibility,
     } = ctx;
 
     if (!state || typeof withElementDefaults !== "function") return "";
@@ -35,9 +36,17 @@
           ? "hud-anchor-free"
           : getItemPositionClass(entry.position);
     const voiceClass = isComms ? "hud-voice-item" : "";
+    const visibility = typeof resolveVisibility === "function"
+      ? resolveVisibility(key, entry, state, { preview: state.editorPreview })
+      : { visible: true, forced: false, mode: "always" };
+    const visibilityClass = visibility.visible ? "is-visibility-visible" : "is-visibility-hidden";
+    const forcedClass = visibility.forced ? "is-editor-forced" : "";
+    const badge = state.editorOpen && visibility.mode !== "always"
+      ? `<span class="hud-editor-badge">${visibility.mode.toUpperCase()}</span>` : "";
 
     return `
-    <button class="hud-item hud-style-${style} ${extraClass} ${selected} ${positionClass} ${voiceClass}" data-hud-select="${key}" title="${escapeHTML(key === "voice" ? state.status.voiceLabel || entry.label : key === "radio" ? state.status.radioLabel || entry.label : entry.label)}" style="${itemInlineStyle(key, entry)}">
+    <button class="hud-item hud-style-${style} ${extraClass} ${selected} ${positionClass} ${voiceClass} ${visibilityClass} ${forcedClass} ${entry.collapseWhenHidden ? "collapse-when-hidden" : ""}" data-hud-select="${key}" data-visibility-mode="${visibility.mode}" title="${escapeHTML(key === "voice" ? state.status.voiceLabel || entry.label : key === "radio" ? state.status.radioLabel || entry.label : entry.label)}" style="${itemInlineStyle(key, entry)}">
+      ${badge}
       ${style === "circle" ? `<div class="hud-ring"><div class="hud-center"><div class="hud-icon">${icon}</div></div></div>` : ""}
       ${style === "bar" ? `<div class="hud-bar-box"><div class="hud-icon">${icon}</div><div class="hud-bar-track"><div class="hud-bar-fill" style="width:${value}%"></div></div></div>` : ""}
       ${style === "square" ? `<div class="hud-square-box"><div class="hud-square-fill" style="height:${value}%"></div><div class="hud-icon">${icon}</div></div>` : ""}
@@ -64,7 +73,7 @@
     const positionClass = group.free
       ? "hud-group-anchor-free"
       : getStatusGroupPositionClass(group.position);
-    return `<div class="hud-status-group ${positionClass}" style="${statusGroupInlineStyle(group)}">${keys
+    return `<div class="hud-status-group ${positionClass} group-${group.orientation} align-${group.alignment} ${state.editorOpen && state.selectedElement === "statusGroup" ? "is-selected" : ""}" data-hud-select="statusGroup" style="${statusGroupInlineStyle(group)}">${keys
       .map((key) => renderHudItem(key, elements[key], ctx, "group"))
       .join("")}</div>`;
   }

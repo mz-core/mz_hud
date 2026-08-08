@@ -8,6 +8,7 @@
 
   const state = {
     config: null,
+    editorDefaults: null,
     status: {
       health: 100,
       armor: 0,
@@ -15,6 +16,7 @@
       thirst: 100,
       stamina: 100,
       oxygen: 100,
+      oxygenActive: false,
       stress: 0,
       voice: 66,
       voiceLabel: "Normal",
@@ -47,6 +49,7 @@
     hudVisible: true,
     speedometerVisible: true,
     editorOpen: false,
+    editorPreview: "normal",
     canManage: false,
     selectedElement: "health",
     editorPresetManager: null,
@@ -60,17 +63,6 @@
     weaponHud: document.getElementById("weapon-hud"),
     medicalHud: document.getElementById("medical-hud"),
     editorOverlay: document.getElementById("editor-overlay"),
-    editorShell: document.querySelector(".editor-shell"),
-    elementsEditor: document.getElementById("elements-editor"),
-    voiceEditor: document.getElementById("voice-editor"),
-    saveConfig: document.getElementById("save-config"),
-    resetConfig: document.getElementById("reset-config"),
-    previewNotify: document.getElementById("preview-notify"),
-    closeEditor: document.getElementById("close-editor"),
-    presetManagerList: document.getElementById("preset-manager-list"),
-    presetActiveLabel: document.getElementById("preset-active-label"),
-    presetBackupSummary: document.getElementById("preset-backup-summary"),
-    presetManagerStatus: document.getElementById("preset-manager-status"),
   };
 
   const core = window.MZHudCore || {};

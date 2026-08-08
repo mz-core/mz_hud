@@ -12,6 +12,7 @@
       itemInlineStyle,
       getItemPositionClass,
       formatRadioFrequency,
+      resolveVisibility,
     } = ctx;
 
     if (
@@ -41,6 +42,8 @@
     const channel = Number(state.status.radioChannel) || 0;
     const active = Boolean(state.status.radioActive || channel > 0);
     const talking = Boolean(state.status.radioTalking);
+    const visibility = typeof resolveVisibility === "function" ? resolveVisibility(key, entry, state, { preview: state.editorPreview }) : { visible: true, forced: false, mode: "always" };
+    if (!visibility.visible) return "";
 
     if (!active && opts.show_inactive === false && !state.editorOpen) return "";
 
@@ -57,7 +60,8 @@
       : "Sem rádio";
 
     return `
-      <button class="hud-comms hud-comms-radio ${active ? "is-radio-active" : "is-radio-off"} ${talking ? "is-speaking" : ""} ${selected} ${positionClass}" data-hud-select="radio" title="${escapeHTML(active ? frequency : "Fora do rádio")}" style="${itemInlineStyle(key, entry)}">
+      <button class="hud-comms hud-comms-radio ${active ? "is-radio-active" : "is-radio-off"} ${talking ? "is-speaking" : ""} ${selected} ${positionClass} ${visibility.forced ? "is-editor-forced" : ""}" data-hud-select="radio" title="${escapeHTML(active ? frequency : "Fora do rádio")}" style="${itemInlineStyle(key, entry)}">
+        ${state.editorOpen && visibility.mode !== "always" ? `<span class="hud-editor-badge">${visibility.mode.toUpperCase()}</span>` : ""}
         <div class="radio-signal"><span></span><span></span><span></span></div>
         <div class="comms-icon-wrap"><div class="hud-icon">${icon}</div></div>
         <div class="comms-copy"><strong>${escapeHTML(mainText)}</strong>${opts.show_talking_text ? `<small>${escapeHTML(subText)}</small>` : ""}</div>

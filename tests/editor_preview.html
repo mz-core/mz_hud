@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>mz_hud editor preview harness</title>
+  <style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden}body{background:linear-gradient(145deg,#18222b,#344553)}</style>
+</head>
+<body>
+  <iframe id="preview" src="../web/index.html" title="Preview local do editor"></iframe>
+  <script>
+    const config = {
+      revision: 4,
+      general: { global_opacity: 100, status_group: { enabled: true, free: true, x: 50, y: 78, scale: 100, opacity: 100, gap: 9, orientation: "horizontal", alignment: "center" } },
+      logo: { enabled: false, position: "top-center", width: 140, height: 44, opacity: 90 },
+      speedometer: { enabled: true, free: true, x: 86, y: 74, style: "minimal", unit: "kmh", scale: 100, opacity: 94, visibilityMode: "smart", show_speed: true, show_rpm: true, show_fuel: true, show_gear: true, show_seatbelt: true, show_lights: true, show_lock: true, show_engine: true },
+      weapon: { enabled: true, free: true, x: 86, y: 55, scale: 100, opacity: 92, visibilityMode: "smart", show_image: true, show_ammo: true },
+      chat: { enabled: true, free: false, x: 2, y: 3, scale: 1, opacity: 1 },
+      elements: {
+        stamina: { enabled: true, label: "Stamina", icon: "zap", style: "apex", color: "#eab308", visibilityMode: "smart" },
+        armor: { enabled: true, label: "Colete", icon: "shield", style: "apex", color: "#3b82f6", visibilityMode: "smart" },
+        health: { enabled: true, label: "Vida", icon: "heart", style: "apex", color: "#ef4444", visibilityMode: "always" },
+        hunger: { enabled: true, label: "Fome", icon: "utensils", style: "apex", color: "#f97316", visibilityMode: "always" },
+        thirst: { enabled: true, label: "Sede", icon: "droplet", style: "apex", color: "#06b6d4", visibilityMode: "always" },
+        oxygen: { enabled: true, label: "Oxigênio", icon: "wind", style: "apex", color: "#8b5cf6", visibilityMode: "smart" },
+        stress: { enabled: true, label: "Stress", icon: "brain", style: "apex", color: "#ec4899", visibilityMode: "hidden" },
+        voice: { enabled: true, individual: true, free: true, x: 90, y: 12, label: "Voz", icon: "mic", style: "comms", color: "#22c55e", visibilityMode: "always" },
+        radio: { enabled: true, individual: true, free: true, x: 80, y: 12, label: "Rádio", icon: "radio", style: "comms", color: "#14b8a6", visibilityMode: "always" }
+      }
+    };
+    document.getElementById("preview").addEventListener("load", (event) => {
+      const target = event.target.contentWindow;
+      target.postMessage({ action: "bootstrap", config, defaults: config, canManage: true, hudVisible: true, speedometerVisible: true }, "*");
+      setTimeout(() => target.postMessage({ action: "openEditor", config, defaults: config, canManage: true }, "*"), 120);
+    });
+  </script>
+</body>
+</html>

@@ -82,6 +82,9 @@
       opacity: Number(group.opacity ?? 100),
       scale: Number(group.scale ?? 100),
       gap: Number(group.gap ?? 8),
+      orientation: ["horizontal", "vertical"].includes(group.orientation) ? group.orientation : "horizontal",
+      alignment: ["start", "center", "end"].includes(group.alignment) ? group.alignment : "center",
+      locked: group.locked === true,
     };
   }
 
@@ -116,6 +119,11 @@
         entry.individual !== undefined
           ? Boolean(entry.individual)
           : key === "voice" || key === "radio",
+      visibilityMode: ["always", "smart", "hidden"].includes(entry.visibilityMode)
+        ? entry.visibilityMode
+        : ["armor", "stamina", "oxygen"].includes(key) ? "smart" : "always",
+      locked: entry.locked === true,
+      collapseWhenHidden: entry.collapseWhenHidden === true,
       comms_options:
         key === "voice" || key === "radio"
           ? withCommsOptions(key, entry.comms_options || {})
@@ -193,6 +201,8 @@
       background_color: speedometer.background_color || "#000000",
       opacity: Number(speedometer.opacity ?? 94),
       scale: Number(speedometer.scale ?? 100),
+      visibilityMode: ["always", "smart", "hidden"].includes(speedometer.visibilityMode) ? speedometer.visibilityMode : "smart",
+      locked: speedometer.locked === true,
     };
   }
 
@@ -212,6 +222,8 @@
       image_model: weapon.image_model || "default",
       opacity: Number(weapon.opacity ?? 92),
       scale: Number(weapon.scale ?? 100),
+      visibilityMode: ["always", "smart", "hidden"].includes(weapon.visibilityMode) ? weapon.visibilityMode : "smart",
+      locked: weapon.locked === true,
     };
   }
 
@@ -224,6 +236,7 @@
       y: Number(chat.y ?? 3),
       scale: Number(chat.scale ?? 1.0),
       opacity: Number(chat.opacity ?? 1.0),
+      locked: chat.locked === true,
     };
   }
 
@@ -246,6 +259,9 @@
         normalized.elements[key],
       );
     });
+    if (window.MZHudEditorSchema?.normalizeConfig) {
+      return window.MZHudEditorSchema.normalizeConfig(normalized);
+    }
     return normalized;
   }
 

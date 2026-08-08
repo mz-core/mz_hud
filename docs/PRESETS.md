@@ -135,7 +135,7 @@ O comando usa a permissão atual da HUD e salva a configuração em `data/runtim
 
 ### Opção B — pelo editor `/mzhud`
 
-Use o preset como referência visual e configure pelo editor:
+Abra **Presets**, escolha um card e clique em **Aplicar ao Draft**. O preset altera apenas o draft local; ele só é validado, salvo e transmitido depois de **Salvar e Aplicar**.
 
 ```txt
 1. Entrar no servidor com permissão administrativa atual da HUD

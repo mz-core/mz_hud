@@ -87,9 +87,10 @@ mz_hud/
    │  └─ weapons/
    └─ hud/
       ├─ editor/
-      │  ├─ form.js
-      │  ├─ elements.js
-      │  ├─ lifecycle.js
+      │  ├─ schema.js
+      │  ├─ store.js
+      │  ├─ visibility.js
+      │  ├─ visual.js
       │  ├─ editor.js
       │  └─ presets.js
       ├─ logo/

@@ -67,8 +67,8 @@
     return app.getEditorModule().applyEditorPreview();
   };
 
-  app.openEditor = function openEditor(config) {
-    const result = app.getEditorModule().openEditor(config);
+  app.openEditor = function openEditor(config, defaults) {
+    const result = app.getEditorModule().openEditor(config, defaults || state.editorDefaults);
     app.getEditorPresetModule()?.ensureLoaded();
     return result;
   };
@@ -88,6 +88,7 @@
         renderHud: app.renderHud,
         populateEditor: app.populateEditor,
         applyChatLayoutPreview: app.applyChatLayoutPreview,
+        applyPreset: (config) => app.getEditorModule().applyPreset(config),
       });
     }
     return editorPresetModule;

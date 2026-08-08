@@ -27,9 +27,8 @@
     }
 
     const config = withWeaponDefaults(state.config.weapon || {});
-    const visible = Boolean(
-      config.enabled && state.weapon?.visible && state.hudVisible,
-    );
+    const visibility = window.MZHudVisibility?.resolveVisibility("weapon", config, state, { preview: state.editorPreview }) || { visible: true, forced: false };
+    const visible = Boolean(config.enabled && visibility.visible && state.hudVisible);
 
     if (!visible) {
       weaponHud.className = "weapon-hud hidden";
@@ -40,7 +39,8 @@
       ? "weapon-free"
       : getWeaponPositionClass(config.position);
     const selected = state.editorOpen && state.selectedElement === "weapon" ? "is-selected" : "";
-    weaponHud.className = `weapon-hud ${positionClass} ${selected}`;
+    weaponHud.className = `weapon-hud ${positionClass} ${selected} ${visibility.forced ? "is-editor-forced" : ""}`;
+    weaponHud.dataset.hudSelect = "weapon";
     weaponHud.style.opacity = `${Math.max(0, Math.min(100, config.opacity || 100)) / 100}`;
 
     const scale = Math.max(60, Math.min(150, config.scale || 100)) / 100;
@@ -79,6 +79,7 @@
     const reserveText = (ammoParts.slice(1).join("/") || String(reserve)).trim();
 
     weaponHud.innerHTML = `
+      ${state.editorOpen && visibility.mode !== "always" ? `<span class="hud-editor-module-badge">${visibility.mode.toUpperCase()}</span>` : ""}
       <div class="weapon-card weapon-comms-card" data-hud-select="weapon">
         ${config.show_image ? `<img class="weapon-image" src="${image}" alt="" onerror="this.style.display='none'">` : `<div class="weapon-placeholder">${speedometerIcon("weapon")}</div>`}
         <div class="weapon-info">
