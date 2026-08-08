@@ -8,6 +8,9 @@ local HudState = {
   speedometerVisible = true,
   editorOpen = false,
   bootstrapDone = false,
+  coreRevision = -1,
+  coreDeathState = 'alive',
+  statusContract = nil,
   coreHUDState = {
     metadata = {}
   }
@@ -271,7 +274,6 @@ local function getCoreWeaponVisualAmmo(weaponHash, totalAmmo, clipSize, nativeCl
 end
 
 local function applySeatbeltCrashEffect(playerPed, vehicle, deltaKmh, hadSeatbelt)
-  local health = GetEntityHealth(playerPed)
   local damage = 0
   local shouldEject = false
   
@@ -296,8 +298,7 @@ local function applySeatbeltCrashEffect(playerPed, vehicle, deltaKmh, hadSeatbel
   
   -- Aplicar dano
   if damage > 0 then
-    local newHealth = math.max(101, health - damage)
-    SetEntityHealth(playerPed, newHealth)
+    TriggerEvent('mz_status:client:reportVehicleImpact', hadSeatbelt == true)
   end
   
   -- Ejetar se necessário
@@ -542,7 +543,7 @@ local function applyChatLayout(config)
   dispatchChatLayout(config)
 end
 
-local function getPlayerMetadataValue(key, fallback)
+local function getPlayerMetadataValue(key, fallback, minimum, maximum)
   local metadata = HudState.coreHUDState and HudState.coreHUDState.metadata or {}
   local value = metadata and metadata[key]
 
@@ -557,7 +558,7 @@ local function getPlayerMetadataValue(key, fallback)
     return fallback
   end
 
-  return clamp(math.floor(numeric), 0, 100)
+  return clamp(math.floor(numeric), tonumber(minimum) or 0, tonumber(maximum) or 100)
 end
 
 local function isVoicePttPressed()
@@ -722,6 +723,8 @@ local function getStatusPayload()
   local playerPed = PlayerPedId()
   local currentHealth = math.max(0, GetEntityHealth(playerPed) - 100)
   local maxHealth = math.max(1, GetEntityMaxHealth(playerPed) - 100)
+  local canonicalHealth = getPlayerMetadataValue('health', nil, 0, 200)
+  local canonicalArmor = getPlayerMetadataValue('armor', nil, 0, 100)
   local oxygen = 100
   local underwaterTime = GetPlayerUnderwaterTimeRemaining(PlayerId())
 
@@ -735,8 +738,10 @@ local function getStatusPayload()
   return {
     action = 'updateStatus',
     status = {
-      health = clamp(math.floor((currentHealth / maxHealth) * 100), 0, 100),
-      armor = clamp(GetPedArmour(playerPed), 0, 100),
+      health = canonicalHealth ~= nil
+        and clamp(canonicalHealth - 100, 0, 100)
+        or clamp(math.floor((currentHealth / maxHealth) * 100), 0, 100),
+      armor = canonicalArmor ~= nil and canonicalArmor or clamp(GetPedArmour(playerPed), 0, 100),
       hunger = getPlayerMetadataValue('hunger', 100),
       thirst = getPlayerMetadataValue('thirst', 100),
       stress = getPlayerMetadataValue('stress', 0),
@@ -1159,11 +1164,53 @@ AddEventHandler('onClientResourceStart', function(resourceName)
 end)
 
 RegisterNetEvent('mz_core:client:hudStateUpdated', function(hudState)
-  if type(hudState) == 'table' then
+  if type(hudState) == 'table' and HudState.coreRevision < 0 then
     HudState.coreHUDState = {
       metadata = type(hudState.metadata) == 'table' and hudState.metadata or {}
     }
   end
+end)
+
+local function applyCanonicalPlayerState(payload)
+  HudState.statusContract = HudState.statusContract or MZHudStatusContract.create(Config.StatusAlerts)
+  local accepted, result = MZHudStatusContract.apply(HudState.statusContract, payload, GetGameTimer())
+  if not accepted then return false end
+  HudState.coreRevision = HudState.statusContract.revision
+  HudState.coreDeathState = HudState.statusContract.deathState
+  HudState.coreHUDState = { metadata = result.metadata }
+  for _, alert in ipairs(result.alerts or {}) do
+    notify({ type = 'warning', title = alert.title, message = ('Valor atual: %s'):format(alert.value) })
+  end
+  return true
+end
+
+RegisterNetEvent('mz_core:client:playerStateSync', function(payload)
+  applyCanonicalPlayerState(payload)
+end)
+
+local MedicalHudLastKey = nil
+AddEventHandler('mz_hud:client:medicalState', function(payload)
+  if type(payload) ~= 'table' then return end
+  local state = tostring(payload.state or 'alive')
+  local remaining = tonumber(payload.remaining)
+  if remaining == nil then
+    local deadline, serverTime = tonumber(payload.deadline), tonumber(payload.serverTime)
+    remaining = deadline and serverTime and (deadline - serverTime) or 0
+  end
+  remaining = math.max(0, math.ceil(remaining))
+  local key = table.concat({ state, tostring(remaining), tostring(payload.treatment == true), tostring(payload.respawnAvailable == true) }, ':')
+  if key == MedicalHudLastKey then return end
+  MedicalHudLastKey = key
+  SendNUIMessage({
+    action = 'updateMedical',
+    medical = {
+      state = state,
+      remaining = remaining,
+      helpEnabled = payload.helpEnabled == true,
+      respawnAvailable = payload.respawnAvailable == true,
+      treatment = payload.treatment == true
+    }
+  })
 end)
 
 AddEventHandler('mz_core:client:weaponHudState', function(payload)
@@ -1228,6 +1275,8 @@ RegisterNUICallback('ready', function(_, cb)
   HudState.canManage = bootstrap and bootstrap.can_manage == true or false
   HudState.bootstrapDone = true
   HudState.coreHUDState = exports['mz_core']:GetHUDState() or HudState.coreHUDState
+  local snapshotOk, snapshot = pcall(function() return exports['mz_core']:GetLocalPlayerState() end)
+  if snapshotOk and type(snapshot) == 'table' then applyCanonicalPlayerState(snapshot) end
   clearNuiPayloadCache()
 
   applyMinimapSettings(true)

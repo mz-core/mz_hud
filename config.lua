@@ -88,6 +88,14 @@ Config.Polling = {
   weapon_ms = 200
 }
 
+Config.StatusAlerts = {
+  enabled = true,
+  cooldownMs = 60000,
+  hunger = { threshold = 20, direction = 'low', title = 'Fome crítica' },
+  thirst = { threshold = 20, direction = 'low', title = 'Sede crítica' },
+  stress = { threshold = 80, direction = 'high', title = 'Estresse elevado' }
+}
+
 Config.Visibility = {
   hide_gta_hud = true
 }

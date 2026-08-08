@@ -137,3 +137,27 @@ body.hud-initializing #editor-overlay {
   transform: translateX(-50%);
   transform-origin: center bottom;
 }
+/* Lote 5: camada medica minima; nao participa de nenhuma decisao de estado. */
+.medical-hud {
+  position: fixed;
+  left: 50%;
+  bottom: 8vh;
+  transform: translateX(-50%);
+  display: flex;
+  min-width: 280px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(10, 12, 16, 0.82);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  pointer-events: none;
+}
+.medical-hud strong { font-size: 15px; letter-spacing: 0.16em; }
+.medical-hud span { font-size: 26px; font-variant-numeric: tabular-nums; }
+.medical-hud small { color: rgba(255, 255, 255, 0.76); }
+.medical-dead { border-color: rgba(220, 60, 60, 0.55); }
+.medical-downed { border-color: rgba(240, 170, 45, 0.55); }

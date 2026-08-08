@@ -149,6 +149,28 @@
       app.renderHud();
       return;
     }
+    if (data.action === "updateMedical") {
+      const medical = data.medical || {};
+      const target = dom.medicalHud;
+      if (!target) return;
+      const stateName = String(medical.state || "alive");
+      if (stateName === "alive") {
+        target.classList.add("hidden");
+        target.innerHTML = "";
+        return;
+      }
+      const remaining = Math.max(0, Number(medical.remaining) || 0);
+      const minutes = Math.floor(remaining / 60);
+      const seconds = String(Math.floor(remaining % 60)).padStart(2, "0");
+      const title = stateName === "downed" ? "INCAPACITADO" : stateName === "dead" ? "MORTO" : "RESPAWN EM ANDAMENTO";
+      const instructions = [];
+      if (medical.treatment) instructions.push("Atendimento em andamento");
+      if (medical.helpEnabled && stateName !== "respawning") instructions.push("H - pedir ajuda");
+      if (medical.respawnAvailable && stateName === "dead") instructions.push("E - respawn hospitalar");
+      target.className = `medical-hud medical-${stateName}`;
+      target.innerHTML = `<strong>${h.escapeHTML(title)}</strong><span>${minutes}:${seconds}</span><small>${h.escapeHTML(instructions.join(" · "))}</small>`;
+      return;
+    }
     if (data.action === "updateVehicle") {
       const incoming = data.vehicle || {};
       if (!state.editorOpen) {

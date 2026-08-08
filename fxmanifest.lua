@@ -15,6 +15,7 @@ shared_scripts {
 }
 
 client_scripts {
+  'client/status_contract.lua',
   'client/main.lua'
 }
 

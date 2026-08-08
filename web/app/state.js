@@ -58,6 +58,7 @@
     hudLogo: document.getElementById("hud-logo"),
     speedometer: document.getElementById("speedometer"),
     weaponHud: document.getElementById("weapon-hud"),
+    medicalHud: document.getElementById("medical-hud"),
     editorOverlay: document.getElementById("editor-overlay"),
     editorShell: document.querySelector(".editor-shell"),
     elementsEditor: document.getElementById("elements-editor"),
