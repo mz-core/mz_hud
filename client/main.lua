@@ -921,7 +921,12 @@ local function getWeaponPayload()
 
     local nativeClip, nativeOk = getWeaponClipAmmo(ped, weaponHash)
     local clipAmmo = getCoreWeaponVisualAmmo(weaponHash, totalAmmo, clipSize, nativeClip, nativeOk, CoreWeaponHudState.clipAmmo)
-    local reserveAmmo = math.max(totalAmmo - clipAmmo, 0)
+    local reserveAmmo = tonumber(CoreWeaponHudState.reserveAmmo)
+    if reserveAmmo == nil then
+      reserveAmmo = math.max(totalAmmo - clipAmmo, 0)
+    else
+      reserveAmmo = math.max(0, math.floor(reserveAmmo))
+    end
     local ammoText = ('%d / %d'):format(clipAmmo, reserveAmmo)
 
     local itemName = tostring(CoreWeaponHudState.item or '')

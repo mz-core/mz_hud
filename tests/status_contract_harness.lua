@@ -49,5 +49,7 @@ local clipResultCheck = assert(main:find("if type(clip) == 'number' then", 1, tr
 local boolResultCheck = assert(main:find("if type(ok) == 'number' then", 1, true))
 expect(clipResultCheck < boolResultCheck, 'HUD usa o BOOL numerico como quantidade do pente')
 expect(main:find('if nativeTotalAmmo == nil then', 1, true) ~= nil, 'HUD ainda troca zero bala por um snapshot antigo')
+expect(main:find('local reserveAmmo = tonumber(CoreWeaponHudState.reserveAmmo)', 1, true) ~= nil,
+  'HUD nao exibe as balas restantes no inventario')
 
 print('status_contract_harness: ok')
