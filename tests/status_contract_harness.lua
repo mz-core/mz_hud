@@ -43,5 +43,8 @@ expect(main:find("RegisterNetEvent('mz_core:client:playerStateSync'", 1, true) ~
 expect(not main:find("SetStatus", 1, true) and not main:find("ApplyStatusPatch", 1, true),
   'HUD escreve status')
 expect(not main:find('SetEntityHealth(playerPed', 1, true), 'dano de colisao ainda altera health diretamente')
+local clipResultCheck = assert(main:find("if type(clip) == 'number' then", 1, true))
+local boolResultCheck = assert(main:find("if type(ok) == 'number' then", 1, true))
+expect(clipResultCheck < boolResultCheck, 'HUD usa o BOOL numerico como quantidade do pente')
 
 print('status_contract_harness: ok')

@@ -191,7 +191,9 @@ local function getWeaponClipAmmo(ped, weaponHash)
   end
 
   local ok, clip = GetAmmoInClip(ped, weaponHash)
-  if ok == true and type(clip) == 'number' then
+  -- Alguns artifacts retornam o BOOL nativo como 1/0. O segundo retorno continua
+  -- sendo a quantidade real do pente e deve sempre ter prioridade.
+  if type(clip) == 'number' then
     return math.max(math.floor(clip), 0), true
   end
 
