@@ -909,10 +909,14 @@ local function getWeaponPayload()
     CoreWeaponMismatchSince = 0
 
     local clipSize = tonumber(CoreWeaponHudState.clipSize) or 0
-    local totalAmmo = GetAmmoInPedWeapon(ped, weaponHash)
-    totalAmmo = math.max(0, math.floor(tonumber(totalAmmo) or 0))
-    if totalAmmo <= 0 then
+    local nativeTotalAmmo = tonumber(GetAmmoInPedWeapon(ped, weaponHash))
+    local totalAmmo
+    if nativeTotalAmmo == nil then
       totalAmmo = math.max(0, math.floor(tonumber(CoreWeaponHudState.ammo) or 0))
+    else
+      -- Zero e um valor nativo valido. Usar o snapshot do core nesse caso
+      -- fazia a ultima bala permanecer na HUD ate o proximo sync.
+      totalAmmo = math.max(0, math.floor(nativeTotalAmmo))
     end
 
     local nativeClip, nativeOk = getWeaponClipAmmo(ped, weaponHash)
@@ -1509,10 +1513,14 @@ end)
 CreateThread(function()
   while true do
     if HudState.bootstrapDone and HudState.config then
-      sendHudMessageIfChanged(getWeaponPayload(), { forceIntervalMs = 1000 })
+      sendHudMessageIfChanged(getWeaponPayload(), { forceIntervalMs = 250 })
     end
 
-    Wait(getPolling('weapon_ms', 200))
+    local interval = getPolling('weapon_ms', 50)
+    if CoreWeaponHudState.known == true and CoreWeaponHudState.equipped == true then
+      interval = math.min(interval, 50)
+    end
+    Wait(math.max(25, interval))
   end
 end)
 

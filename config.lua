@@ -85,7 +85,7 @@ Config.Backups = {
 Config.Polling = {
   hud_ms = 200,
   vehicle_ms = 100,
-  weapon_ms = 200
+  weapon_ms = 50
 }
 
 Config.StatusAlerts = {

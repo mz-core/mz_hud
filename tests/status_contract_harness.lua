@@ -5,6 +5,8 @@ end
 dofile('config.lua')
 dofile('client/status_contract.lua')
 
+expect(tonumber(Config.Polling and Config.Polling.weapon_ms) <= 50, 'polling de arma introduz atraso perceptivel na HUD')
+
 local runtime = MZHudStatusContract.create(Config.StatusAlerts)
 local function payload(revision, hunger, thirst, stress, deathState)
   return {
@@ -46,5 +48,6 @@ expect(not main:find('SetEntityHealth(playerPed', 1, true), 'dano de colisao ain
 local clipResultCheck = assert(main:find("if type(clip) == 'number' then", 1, true))
 local boolResultCheck = assert(main:find("if type(ok) == 'number' then", 1, true))
 expect(clipResultCheck < boolResultCheck, 'HUD usa o BOOL numerico como quantidade do pente')
+expect(main:find('if nativeTotalAmmo == nil then', 1, true) ~= nil, 'HUD ainda troca zero bala por um snapshot antigo')
 
 print('status_contract_harness: ok')
