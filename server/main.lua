@@ -350,6 +350,7 @@ local function sanitizeHudConfig(incoming)
       minimap_visibility = sanitizeEnum(general.minimap_visibility, { always = true, vehicle = true, foot = true, never = true }, defaults.general.minimap_visibility or 'always'),
       minimap_x = clampNumber(general.minimap_x, -300, 500, defaults.general.minimap_x or 24),
       minimap_y = clampNumber(general.minimap_y, -300, 500, defaults.general.minimap_y or 24),
+      minimap_locked = sanitizeBool(general.minimap_locked, defaults.general.minimap_locked == true),
       hud_position = sanitizeEnum(general.hud_position, ALLOWED_HUD_POSITIONS, defaults.general.hud_position),
       status_group = sanitizeStatusGroup(defaults, general.status_group),
       global_opacity = clampNumber(general.global_opacity, 0, 100, defaults.general.global_opacity),

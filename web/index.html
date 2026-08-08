@@ -23,6 +23,7 @@
     <div id="speedometer" class="speedometer hidden"></div>
     <div id="weapon-hud" class="weapon-hud hidden"></div>
     <div id="medical-hud" class="medical-hud hidden" aria-live="polite"></div>
+    <button id="editor-minimap-proxy" class="editor-minimap-proxy hidden" type="button" data-hud-select="minimap" aria-label="Preview do minimapa"><span class="minimap-proxy-grid"></span><strong>MAPA</strong><small>PREVIEW</small></button>
   </div>
 
   <div id="editor-overlay" class="visual-editor hidden" aria-label="Editor visual da HUD">
@@ -35,6 +36,7 @@
       <div><strong>MZ HUD</strong><span>Editor visual</span></div>
       <select id="editor-element-select" aria-label="Selecionar status"><option value="">Status...</option><option value="health">Vida</option><option value="armor">Colete</option><option value="hunger">Fome</option><option value="thirst">Sede</option><option value="stamina">Stamina</option><option value="oxygen">Oxigênio</option><option value="stress">Stress</option><option value="voice">Voz</option><option value="radio">Rádio</option></select>
       <button type="button" data-select-element="statusGroup">Status group</button>
+      <button type="button" data-select-element="minimap">Mapa</button>
       <button type="button" data-select-element="speedometer">Velocímetro</button>
       <button type="button" data-select-element="weapon">Arma</button>
       <button type="button" data-select-element="logo">Logo</button>

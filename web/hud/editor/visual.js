@@ -11,6 +11,7 @@
     oxygen: "STATUS / OXIGÊNIO", stress: "STATUS / STRESS", voice: "COMUNICAÇÃO / VOZ",
     radio: "COMUNICAÇÃO / RÁDIO", speedometer: "VEÍCULO / VELOCÍMETRO",
     weapon: "COMBATE / ARMA", logo: "IDENTIDADE / LOGO", chat: "INTERFACE / CHAT",
+    minimap: "GERAL / MAPA",
   };
 
   const field = (label, property, control, extra = "") =>
@@ -26,6 +27,8 @@
     const ui = {
       selection: document.getElementById("editor-selection-box"),
       selectionName: document.getElementById("editor-selection-name"),
+      resize: document.getElementById("editor-resize-handle"),
+      minimapProxy: document.getElementById("editor-minimap-proxy"),
       inspector: document.getElementById("editor-inspector"),
       inspectorTitle: document.getElementById("inspector-title"),
       inspectorBody: document.getElementById("inspector-body"),
@@ -47,6 +50,7 @@
     function renderDraft(reason) {
       state.config = store.draft;
       renderHud();
+      updateMinimapProxy();
       updateDirty();
       if (ui.inspector && !ui.inspector.classList.contains("hidden") && reason !== "inspector-live") renderInspector();
       cancelAnimationFrame(frame);
@@ -70,6 +74,27 @@
     function targetNode() {
       const id = String(state.selectedElement || "").replace(/[^a-zA-Z0-9_-]/g, "");
       return dom.hudRoot.querySelector(`[data-hud-select="${id}"]`);
+    }
+
+    function updateMinimapProxy() {
+      if (!ui.minimapProxy) return;
+      if (!state.editorOpen || !store.draft?.general) {
+        ui.minimapProxy.classList.add("hidden");
+        return;
+      }
+      const general = store.draft.general;
+      const style = ["square", "circle", "default"].includes(general.minimap_style) ? general.minimap_style : "square";
+      ui.minimapProxy.classList.remove("hidden", "is-square", "is-circle", "is-default");
+      ui.minimapProxy.classList.add(`is-${style}`);
+      ui.minimapProxy.classList.toggle("is-disabled", general.show_minimap === false || general.minimap_visibility === "never");
+      ui.minimapProxy.style.left = `${schema.clamp(general.minimap_x, -300, 500, 24) / 1920 * window.innerWidth}px`;
+      ui.minimapProxy.style.bottom = `${schema.clamp(general.minimap_y, -300, 500, 24) / 1080 * window.innerHeight}px`;
+      ui.minimapProxy.style.top = "auto";
+      ui.minimapProxy.style.right = "auto";
+    }
+
+    function isLocked(id, entry) {
+      return id === "minimap" ? entry?.minimap_locked === true : entry?.locked === true;
     }
 
     function selectElement(id, openInspector = false) {
@@ -98,6 +123,7 @@
       ui.selection.style.width = `${rect.width + 10}px`;
       ui.selection.style.height = `${rect.height + 10}px`;
       ui.selectionName.textContent = names[state.selectedElement] || state.selectedElement;
+      if (ui.resize) ui.resize.classList.toggle("hidden", state.selectedElement === "minimap");
       if (rect.top < 62) ui.selection.classList.add("toolbar-below");
     }
 
@@ -120,7 +146,17 @@
       if (!entry) return;
       ui.inspectorTitle.textContent = names[id] || id;
       let specific = "";
-      if (store.draft.elements?.[id]) {
+      if (id === "minimap") {
+        ui.inspectorBody.innerHTML = `<section><h3>Mapa do jogo</h3>
+          ${field("Mostrar mapa", "show_minimap", toggle(entry.show_minimap), "toggle-field")}
+          ${field("Formato", "minimap_style", select(entry.minimap_style, [["square", "Quadrado"], ["circle", "Circular"], ["default", "Padrão GTA"]]))}
+          ${field("Exibição", "minimap_visibility", select(entry.minimap_visibility, [["always", "Sempre"], ["vehicle", "Em veículo"], ["foot", "A pé"], ["never", "Nunca"]]))}
+          <div class="inspector-pair">${field("Deslocamento X", "minimap_x", number(entry.minimap_x, -300, 500, 1))}${field("Deslocamento Y", "minimap_y", number(entry.minimap_y, -300, 500, 1))}</div>
+          ${field("Bloqueado", "minimap_locked", toggle(entry.minimap_locked), "toggle-field")}
+          <p class="inspector-note">Este contorno representa o minimapa nativo. Arraste para posicionar; o formato real é aplicado pelo jogo depois de salvar.</p>
+        </section>`;
+        return;
+      } else if (store.draft.elements?.[id]) {
         const iconOptions = typeof getElementIconOptions === "function" ? getElementIconOptions(id).map((option) => [option.id, option.label || option.id]) : [[entry.icon, entry.icon]];
         specific = `${field("Nome", "label", `<INPUT type="text" maxlength="24" value="${escapeHTML(entry.label || id)}">`)}
           ${field("Ícone", "icon", select(entry.icon, iconOptions))}
@@ -163,6 +199,7 @@
       if (mode === "low") state.status = { ...state.status, health: 18, armor: 12, hunger: 14, thirst: 10, stamina: 72 };
       if (mode === "submerged") state.status = { ...state.status, oxygen: 42, oxygenActive: true };
       renderHud();
+      updateMinimapProxy();
       requestAnimationFrame(positionSelection);
     }
 
@@ -191,25 +228,36 @@
       if (event.button !== 0 || !state.editorOpen) return;
       let id = state.selectedElement;
       let entry = schema.target(store.draft, id);
-      if (!entry || entry.locked) return;
+      if (!entry || isLocked(id, entry)) return;
       let node = targetNode();
       if (mode === "drag" && store.draft.elements?.[id] && entry.individual !== true) {
         id = "statusGroup";
         entry = schema.target(store.draft, id);
         node = dom.hudRoot.querySelector('[data-hud-select="statusGroup"]');
       }
-      if (!entry || entry.locked) return;
+      if (!entry || isLocked(id, entry)) return;
       if (!node) return;
       event.preventDefault();
       store.begin();
-      pointerAction = { mode, id, entry, node, startX: event.clientX, startY: event.clientY, startScale: Number(entry.scale || 100), startRect: node.getBoundingClientRect() };
+      pointerAction = {
+        mode, id, entry, node, startX: event.clientX, startY: event.clientY,
+        startScale: Number(entry.scale || 100), startRect: node.getBoundingClientRect(),
+        startMinimapX: Number(entry.minimap_x ?? 24), startMinimapY: Number(entry.minimap_y ?? 24),
+      };
       document.body.classList.add("editor-is-dragging");
     }
 
     function movePointer(event) {
       if (!pointerAction) return;
-      const { mode, entry, node, startX, startY, startScale, startRect, id } = pointerAction;
-      if (mode === "drag") {
+      const { mode, entry, node, startX, startY, startScale, startRect, startMinimapX, startMinimapY, id } = pointerAction;
+      if (mode === "drag" && id === "minimap") {
+        entry.minimap_x = schema.clamp(startMinimapX + ((event.clientX - startX) * 1920 / window.innerWidth), -300, 500, startMinimapX);
+        entry.minimap_y = schema.clamp(startMinimapY - ((event.clientY - startY) * 1080 / window.innerHeight), -300, 500, startMinimapY);
+        updateMinimapProxy();
+        const rect = node.getBoundingClientRect();
+        ui.selection.style.left = `${rect.left - 5}px`;
+        ui.selection.style.top = `${rect.top - 5}px`;
+      } else if (mode === "drag") {
         entry.free = true;
         entry.x = snapValue(((startRect.left + startRect.width / 2 + event.clientX - startX) / window.innerWidth) * 100, "x", id);
         entry.y = snapValue(((startRect.top + startRect.height / 2 + event.clientY - startY) / window.innerHeight) * 100, "y", id);
@@ -241,8 +289,24 @@
 
     function nudge(dx, dy) {
       const entry = schema.target(store.draft, state.selectedElement);
-      if (!entry || entry.locked || entry.x === undefined) return;
+      if (!entry || isLocked(state.selectedElement, entry)) return;
+      if (state.selectedElement === "minimap") {
+        store.mutate(() => {
+          entry.minimap_x = schema.clamp(Number(entry.minimap_x) + dx, -300, 500, 24);
+          entry.minimap_y = schema.clamp(Number(entry.minimap_y) - dy, -300, 500, 24);
+        }, "nudge:minimap");
+        return;
+      }
+      if (entry.x === undefined) return;
       store.mutate(() => { entry.free = true; entry.x = Math.max(4, Math.min(96, Number(entry.x) + dx)); entry.y = Math.max(4, Math.min(96, Number(entry.y) + dy)); }, "nudge");
+    }
+
+    function resetSelected() {
+      if (state.selectedElement !== "minimap") return store.reset(state.selectedElement);
+      const keys = ["show_minimap", "minimap_style", "minimap_visibility", "minimap_x", "minimap_y", "minimap_locked"];
+      store.mutate((draft) => {
+        keys.forEach((key) => { draft.general[key] = deepClone(store.defaults.general[key]); });
+      }, "reset:minimap");
     }
 
     function promptConfirm(action) {
@@ -289,8 +353,13 @@
         if (selectButton) return selectElement(selectButton.dataset.selectElement, true);
         const action = event.target.closest("[data-editor-action]")?.dataset.editorAction;
         if (action === "inspect") showInspector();
-        if (action === "toggle-lock") store.mutate(() => { const item = schema.target(store.draft, state.selectedElement); if (item) item.locked = !item.locked; }, "lock");
-        if (action === "reset-element") store.reset(state.selectedElement);
+        if (action === "toggle-lock") store.mutate(() => {
+          const item = schema.target(store.draft, state.selectedElement);
+          if (!item) return;
+          if (state.selectedElement === "minimap") item.minimap_locked = !item.minimap_locked;
+          else item.locked = !item.locked;
+        }, "lock");
+        if (action === "reset-element") resetSelected();
         if (event.target.closest("#inspector-close")) hideInspector();
         if (event.target.closest("#editor-undo")) store.undo();
         if (event.target.closest("#editor-redo")) store.redo();
@@ -318,12 +387,12 @@
         renderDraft("inspector-live");
       });
       ui.inspectorBody.addEventListener("change", () => store.commit("inspector"));
-      document.getElementById("editor-resize-handle").addEventListener("pointerdown", (event) => startPointer(event, "resize"));
+      ui.resize.addEventListener("pointerdown", (event) => startPointer(event, "resize"));
       document.addEventListener("pointermove", movePointer);
       document.addEventListener("pointerup", endPointer);
       ui.preview.addEventListener("change", () => setPreview(ui.preview.value));
       document.getElementById("editor-element-select").addEventListener("change", (event) => { if (event.target.value) selectElement(event.target.value, true); event.target.value = ""; });
-      window.addEventListener("resize", positionSelection);
+      window.addEventListener("resize", () => { updateMinimapProxy(); positionSelection(); });
       document.addEventListener("keydown", (event) => {
         if (!state.editorOpen) return;
         if (event.key === "Escape") { event.preventDefault(); if (!ui.inspector.classList.contains("hidden")) return hideInspector(); if (!ui.presetModal.classList.contains("hidden")) return ui.presetModal.classList.add("hidden"); store.isDirty() ? promptConfirm("close") : discardAndClose(); return; }
@@ -359,6 +428,7 @@
       hideInspector(); ui.selection.classList.add("hidden"); ui.confirm.classList.add("hidden"); ui.presetModal.classList.add("hidden");
       if (runtimeSnapshot) { state.status = runtimeSnapshot.status; state.vehicle = runtimeSnapshot.vehicle; state.weapon = runtimeSnapshot.weapon; runtimeSnapshot = null; }
       state.config = deepClone(store.persisted || state.config);
+      if (ui.minimapProxy) ui.minimapProxy.classList.add("hidden");
       renderHud();
     }
 

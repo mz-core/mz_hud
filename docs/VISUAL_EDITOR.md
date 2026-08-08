@@ -112,6 +112,12 @@ Itens ocultos preservam espaço por padrão para evitar saltos. `collapseWhenHid
 
 `statusGroup` pode ser movido, redimensionado, bloqueado e resetado como unidade. Suporta `orientation`, `alignment`, `gap`, `scale`, `opacity`, anchor e posição percentual. Itens podem continuar no grupo ou usar `individual=true`.
 
+## Editor do mapa
+
+O item `Mapa`, no navegador superior, seleciona um proxy visual do minimapa nativo. O proxy pode ser arrastado ou ajustado pelas setas e expõe no inspector: ativar, formato quadrado/circular/padrão GTA, regra de exibição, deslocamentos X/Y e bloqueio.
+
+O draft continua usando o contrato legado `general.show_minimap`, `minimap_style`, `minimap_visibility`, `minimap_x` e `minimap_y`; apenas `minimap_locked` é estado adicional do editor. O desenho real do radar depende das natives do FiveM e é aplicado pelo cliente depois de salvar.
+
 ## Presets e reset
 
 `applyPresetFromEditor` apenas carrega, sanitiza e devolve o preset; não salva nem transmite. A persistência ocorre no save normal.

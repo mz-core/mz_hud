@@ -58,6 +58,18 @@ test("normalização migra v1, fecha enums e aplica ranges", () => {
   assert.equal(config.elements.armor.locked, false);
 });
 
+test("minimapa preserva contrato, fecha formato e limita deslocamentos", () => {
+  const config = schema.normalizeConfig({
+    general: { minimap_style: "hexagonal", minimap_visibility: "combat", minimap_x: 999, minimap_y: -999, minimap_locked: "yes" },
+  });
+  assert.equal(config.general.minimap_style, "square");
+  assert.equal(config.general.minimap_visibility, "vehicle");
+  assert.equal(config.general.minimap_x, 500);
+  assert.equal(config.general.minimap_y, -300);
+  assert.equal(config.general.minimap_locked, false);
+  assert.equal(schema.target(config, "minimap"), config.general);
+});
+
 test("presets existentes normalizam para schema v2", () => {
   const presetDirectory = path.join(__dirname, "..", "data", "presets");
   for (const filename of ["apex.json", "classic_rp.json", "clean_minimal.json", "setup_debug.json"]) {

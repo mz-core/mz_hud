@@ -47,6 +47,12 @@
     config.schema_version = SCHEMA_VERSION;
     config.revision = Math.max(0, Math.floor(clamp(config.revision, 0, 2147483647, 0)));
     config.general = config.general || {};
+    config.general.show_minimap = config.general.show_minimap !== false;
+    config.general.minimap_style = oneOf(config.general.minimap_style, ["square", "circle", "default"], "square");
+    config.general.minimap_visibility = oneOf(config.general.minimap_visibility, ["always", "vehicle", "foot", "never"], "vehicle");
+    config.general.minimap_x = clamp(config.general.minimap_x, -300, 500, 24);
+    config.general.minimap_y = clamp(config.general.minimap_y, -300, 500, 24);
+    config.general.minimap_locked = config.general.minimap_locked === true;
     const group = config.general.status_group || {};
     config.general.status_group = {
       ...group,
@@ -103,6 +109,7 @@
   function target(config, id) {
     if (!config) return null;
     if (id === "statusGroup") return config.general?.status_group || null;
+    if (id === "minimap") return config.general || null;
     if (statusKeys.includes(id) || config.elements?.[id]) return config.elements?.[id] || null;
     if (["speedometer", "weapon", "logo", "chat"].includes(id)) return config[id] || null;
     return null;

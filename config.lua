@@ -131,6 +131,7 @@ Config.DefaultHUD = {
     minimap_visibility = 'vehicle', -- always | vehicle | foot | never
     minimap_x = 24,
     minimap_y = 24,
+    minimap_locked = false,
     hud_position = 'bottom-left',
     status_group = {
       enabled = true, position = 'bottom-center', free = true, x = 50, y = 94,
