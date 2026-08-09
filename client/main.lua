@@ -6,6 +6,7 @@ local HudState = {
   defaults = nil,
   canManage = false,
   hudVisible = true,
+  suppressors = {},
   speedometerVisible = true,
   editorOpen = false,
   bootstrapDone = false,
@@ -55,6 +56,10 @@ local SeatbeltCrashConfig = {
 }
 
 local notify
+
+local function isHudEffectivelyVisible()
+  return HudState.hudVisible == true and next(HudState.suppressors) == nil
+end
 
 local function resetSeatbeltRuntime(vehicle)
   SeatbeltRuntime.enabled = false
@@ -865,7 +870,7 @@ end
 local function getWeaponPayload()
   local weaponConfig = HudState.config and HudState.config.weapon or nil
 
-  if not weaponConfig or weaponConfig.enabled ~= true or HudState.hudVisible ~= true then
+  if not weaponConfig or weaponConfig.enabled ~= true or not isHudEffectivelyVisible() then
     return {
       action = 'updateWeapon',
       weapon = { visible = false }
@@ -1038,6 +1043,10 @@ local function hideMinimapHealthAndArmor()
 end
 
 local function shouldShowMinimap(general)
+  if not isHudEffectivelyVisible() then
+    return false
+  end
+
   if not general or general.show_minimap ~= true then
     return false
   end
@@ -1159,6 +1168,29 @@ local function applyMinimapSettings(force)
   lastMinimapSignature = signature
   minimapAppliedOnce = true
 end
+
+local function setHudSuppressed(owner, suppressed)
+  owner = tostring(owner or 'external')
+
+  if suppressed == true then
+    HudState.suppressors[owner] = true
+  else
+    HudState.suppressors[owner] = nil
+  end
+
+  clearNuiPayloadCache()
+  sendUI({
+    action = 'setHudVisible',
+    visible = isHudEffectivelyVisible()
+  })
+  applyMinimapSettings(true)
+end
+
+RegisterNetEvent('mz_hud:client:setSuppressed', function(owner, suppressed)
+  setHudSuppressed(owner, suppressed)
+end)
+
+exports('SetSuppressed', setHudSuppressed)
 local function closeEditor()
   HudState.editorOpen = false
   SetNuiFocus(false, false)
@@ -1310,7 +1342,7 @@ RegisterNUICallback('ready', function(_, cb)
     config = HudState.config,
     defaults = HudState.defaults,
     canManage = HudState.canManage,
-    hudVisible = HudState.hudVisible,
+    hudVisible = isHudEffectivelyVisible(),
     speedometerVisible = HudState.speedometerVisible
   })
 
@@ -1397,8 +1429,9 @@ RegisterCommand('togglehud', function()
   HudState.hudVisible = not HudState.hudVisible
   sendUI({
     action = 'setHudVisible',
-    visible = HudState.hudVisible
+    visible = isHudEffectivelyVisible()
   })
+  applyMinimapSettings(true)
 end, false)
 
 RegisterCommand('togglespeed', function()
@@ -1463,7 +1496,7 @@ RegisterKeyMapping('seatbelt', 'Colocar/remover cinto de segurança', 'keyboard'
 
 CreateThread(function()
   while true do
-    if HudState.bootstrapDone and HudState.config and HudState.hudVisible then
+    if HudState.bootstrapDone and HudState.config and isHudEffectivelyVisible() then
       sendHudMessageIfChanged(getStatusPayload(), { forceIntervalMs = 1200 })
     end
 
