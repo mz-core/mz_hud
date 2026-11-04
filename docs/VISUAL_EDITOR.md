@@ -112,11 +112,50 @@ Itens ocultos preservam espaço por padrão para evitar saltos. `collapseWhenHid
 
 `statusGroup` pode ser movido, redimensionado, bloqueado e resetado como unidade. Suporta `orientation`, `alignment`, `gap`, `scale`, `opacity`, anchor e posição percentual. Itens podem continuar no grupo ou usar `individual=true`.
 
+O `alignment` define a direção de crescimento do grupo, ancorando a aresta inicial/central/final no ponto escolhido:
+
+- horizontal: `start` cresce da esquerda para a direita, `center` centraliza, `end` cresce da direita para a esquerda;
+- vertical: `start` cresce de cima para baixo, `center` centraliza, `end` cresce de baixo para cima.
+
+Status ocultos com `collapseWhenHidden` saem do fluxo (`display: none`), então o grupo se reancora e fecha o vão na direção configurada sem espaçamento residual. Itens ocultos sem colapso preservam o espaço.
+
+No inspector do grupo há ainda **Modelo dos status → Aplicar a todos**, que define `style` de todos os status (vida, colete, fome, sede, stamina, oxigênio, stress) de uma vez. Voz e rádio mantêm o modelo `comms` e cada status continua editável individualmente.
+
 ## Editor do mapa
 
 O item `Mapa`, no navegador superior, seleciona um proxy visual do minimapa nativo. O proxy pode ser arrastado ou ajustado pelas setas e expõe no inspector: ativar, formato quadrado/circular/padrão GTA, regra de exibição, deslocamentos X/Y e bloqueio.
 
 O draft continua usando o contrato legado `general.show_minimap`, `minimap_style`, `minimap_visibility`, `minimap_x` e `minimap_y`; apenas `minimap_locked` é estado adicional do editor. O desenho real do radar depende das natives do FiveM e é aplicado pelo cliente depois de salvar.
+
+O proxy agora espelha a mesma geometria que o cliente aplica (`SetMinimapComponentPosition`), por estilo:
+
+- base e tamanho por estilo: `square` 0.1638×0.183, `circle` 0.180×0.258 (círculo) e `default` 0.150×0.188888;
+- `minimap_x`/`minimap_y` são deslocamentos a partir do padrão (24,24): positivo = direita/cima;
+- o mesmo `minimapOffset` de ultrawide é aplicado ao proxy;
+- o cliente envia `minimapInset` (recuo do safezone via `GetSafeZoneSize`) e a caixa visível é ancorada nesse recuo — a base negativa dos estilos é a área das barras de vida/colete, que ficam ocultas.
+
+Assim, o contorno no editor fica no mesmo lugar e tamanho do minimapa real, em vez do retângulo fixo antigo.
+
+## Inspector completo
+
+O inspector é montado a partir do schema fechado; cada seção edita somente chaves que o servidor já sanitiza. Cobertura atual:
+
+- Posicionamento e aparência (comum): ativado, âncora, posição livre, X/Y, escala, opacidade, visibilidade e bloqueio.
+- Status e comunicação: nome, ícone (catálogo), estilo, cor, mover separado e colapsar quando oculto; voz e rádio também expõem `comms_options` (rótulo, textos, opacidade inativo, frequência e sufixo).
+- Grupo de status: orientação, alinhamento e espaçamento.
+- Velocímetro: modelo, unidade, indicadores (velocidade, RPM, combustível, marcha, cinto, faróis, cadeado e motor), cores (principal, destaque, secundária e fundo) e ícone por slot (`speedometer.icons.*`).
+- Arma: imagem, munição, nome e modelo da imagem (`image_model`).
+- Logo: imagem, largura, altura e exibição apenas em veículo.
+- Chat: preset de posição.
+- Navegador superior: `Geral` (opacidade global) e `Chat` além de status, grupo, mapa, velocímetro, arma e logo.
+
+Nenhuma opção cria chave fora do schema sanitizado no servidor.
+
+## Setas e indicador de motor
+
+Nos modelos `apex`, `analog` e `classic`, as setas passam a usar `<span>` com `speedometer-icon-mask` em vez de `<img>`, herdando a cor do tema: inativas em `primary-soft`, ativas em `accent`. Isso remove a cor base fixa do SVG antigo.
+
+O indicador de motor separa barra e ícone: o aro/arco segue a saúde do motor (`is-ok` / `is-warning` / `is-critical`) e somente o ícone reflete ligado/desligado (`is-on` / `is-off`).
 
 ## Presets e reset
 
@@ -147,6 +186,7 @@ Novo preset:
 
 ```powershell
 node tests/editor_harness.js
+node --test tests/hud_editor_extended.test.js tests/status_group_alignment_contract.test.js tests/minimap_proxy_contract.test.js tests/medical_presentation_contract.test.js tests/presentation_visibility_contract.test.js
 Get-ChildItem -Recurse -Filter *.js web | ForEach-Object { node --check $_.FullName }
 lua tests/status_contract_harness.lua
 ```

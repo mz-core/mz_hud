@@ -1,0 +1,69 @@
+/*
+  MZ HUD — modelo "auren_aton" (portado do Auren_Speedometer ATON).
+  Uso local autorizado; não redistribuir publicamente sem autorização.
+  Fonte Rajdhani e dígitos/ícones rastreados NÃO foram copiados (sistema + glyphs próprios).
+  Isolado sob .speedometer-style-auren_aton e .cluster.
+*/
+
+.speedometer-style-auren_aton {
+  width: 472px;
+  height: 296px;
+  padding: 0;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.speedometer-style-auren_aton .cluster {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 472 / 296;
+  position: relative;
+  user-select: none;
+  pointer-events: none;
+}
+.speedometer-style-auren_aton .cluster svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.speedometer-style-auren_aton .cluster text { font-family: 'Arial Narrow', Arial, sans-serif; font-weight: 500; fill: var(--model-text, #dce7f2); }
+.speedometer-style-auren_aton .dial-label { font-size: 16px; text-anchor: middle; font-style: italic; opacity: .86; }
+.speedometer-style-auren_aton .dial-label.red { fill: var(--model-accent, #ff2639); opacity: .78; }
+.speedometer-style-auren_aton .tick { stroke: #d9e8f5; stroke-width: .85; opacity: .62; }
+.speedometer-style-auren_aton .tick.major { stroke-width: 1.15; opacity: .94; }
+.speedometer-style-auren_aton .tick.red { stroke: #45131b; stroke-width: 1.05; opacity: .82; }
+.speedometer-style-auren_aton .inner-spokes { fill: none; stroke: #8a9dac; stroke-width: .55; opacity: .037; stroke-dasharray: 13 2 3 7; }
+.speedometer-style-auren_aton .readout { fill: var(--digit-fill, #eaf2fd) !important; filter: var(--text-filter, none); }
+.speedometer-style-auren_aton .speed-value { font-size: 61px; letter-spacing: -2px; text-anchor: middle; visibility: hidden; }
+.speedometer-style-auren_aton .gear-value { font-size: 47px; text-anchor: middle; visibility: hidden; }
+.speedometer-style-auren_aton .speed-ink,
+.speedometer-style-auren_aton .gear-ink { fill: #e5effa; shape-rendering: geometricPrecision; }
+.speedometer-style-auren_aton .small-label { font-size: 15px; fill: var(--model-text, #98b1c6) !important; letter-spacing: .6px; text-anchor: middle; opacity: .68; }
+.speedometer-style-auren_aton .side-label { font-size: 13px; fill: var(--model-text, #c2cfdd) !important; }
+.speedometer-style-auren_aton .lamp { opacity: .035; transition: opacity .16s ease; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; color: #ffd000; }
+.speedometer-style-auren_aton .lamp.lamp-red { color: var(--model-accent, #ff1328); }
+.speedometer-style-auren_aton .lamp.is-on { opacity: 1; filter: drop-shadow(0 0 .4px currentColor); }
+.speedometer-style-auren_aton .cluster.is-off .instrument-light { opacity: .35; }
+.speedometer-style-auren_aton .instrument-light { transition: opacity .5s; }
+.speedometer-style-auren_aton .redline-aura { opacity: 0; transition: opacity .15s ease; }
+.speedometer-style-auren_aton .cluster.is-redline .redline-aura { animation: aton-redline-breathe .28s ease-in-out infinite alternate; }
+.speedometer-style-auren_aton .cluster.is-redline .red-band { filter: drop-shadow(0 0 3px var(--model-accent, #ff1328)); }
+.speedometer-style-auren_aton .cluster.is-low-fuel .fuel-symbol { color: var(--model-accent, #ff1328); filter: drop-shadow(0 0 3px #ff1328); animation: aton-critical-pulse 1.1s ease-in-out infinite; }
+.speedometer-style-auren_aton .cluster.is-low-fuel [data-part="fuel-bars"] path,
+.speedometer-style-auren_aton .cluster.is-low-fuel .fuel-track { stroke: var(--model-accent, #ff1328); }
+.speedometer-style-auren_aton .cluster.is-low-fuel [data-part="fuel-bars"] path { fill: var(--model-accent, #ff1328); }
+.speedometer-style-auren_aton .cluster.is-low-fuel .fuel-track { opacity: .36; }
+.speedometer-style-auren_aton .cluster.is-unbuckled .lamp-seatbelt.is-on { animation: aton-warning-pulse 1s ease-in-out infinite; }
+.speedometer-style-auren_aton .fuel-symbol { color: #e5eef5; transition: color .4s; }
+.speedometer-style-auren_aton .gauge-housing { shape-rendering: geometricPrecision; pointer-events: none; }
+.speedometer-style-auren_aton .needle { will-change: transform; }
+.speedometer-style-auren_aton .lamp-signal { color: #41e88b; opacity: .055; }
+.speedometer-style-auren_aton .lamp-signal.is-on { opacity: 1; filter: drop-shadow(0 0 1.2px #41e88b); }
+.speedometer-style-auren_aton .lamp-hazard { opacity: .04; }
+.speedometer-style-auren_aton .lamp-hazard.is-on { opacity: 1; filter: drop-shadow(0 0 1.2px #ff1328); }
+.speedometer-style-auren_aton .cluster.reduce-motion * { animation: none !important; }
+@keyframes aton-redline-breathe { from { opacity: .28; } to { opacity: .8; } }
+@keyframes aton-warning-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@keyframes aton-critical-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) {
+  .speedometer-style-auren_aton .cluster * { animation: none !important; }
+  .speedometer-style-auren_aton .needle { will-change: auto; }
+}

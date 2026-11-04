@@ -37,6 +37,9 @@
       "classic",
       "apex",
       "vector",
+      "auren_felon",
+      "auren_truck",
+      "auren_aton",
     ],
     logoPosition: [
       "bottom-left",
@@ -121,6 +124,9 @@
     classic: "Clássico",
     apex: "Apex",
     vector: "Vector",
+    auren_felon: "Auren Felon",
+    auren_truck: "Auren Truck",
+    auren_aton: "Auren Aton",
   };
 
   const colorPresets = [

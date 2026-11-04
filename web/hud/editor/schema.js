@@ -1,9 +1,11 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(root.MZHudThemes);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.MZHudEditorSchema = api;
-})(typeof globalThis !== "undefined" ? globalThis : window, function () {
+})(typeof globalThis !== "undefined" ? globalThis : window, function (themes) {
   "use strict";
+
+  themes = themes || (typeof require === "function" ? require("./themes.js") : null);
 
   const SCHEMA_VERSION = 2;
   const anchors = ["top-left", "top-center", "top-right", "center-left", "center", "center-right", "bottom-left", "bottom-center", "bottom-right"];
@@ -47,6 +49,9 @@
     config.schema_version = SCHEMA_VERSION;
     config.revision = Math.max(0, Math.floor(clamp(config.revision, 0, 2147483647, 0)));
     config.general = config.general || {};
+    config.general.appearance = themes
+      ? themes.normalizeAppearance(config.general.appearance)
+      : normalizeAppearanceFallback(config.general.appearance);
     config.general.show_minimap = config.general.show_minimap !== false;
     config.general.minimap_style = oneOf(config.general.minimap_style, ["square", "circle", "default"], "square");
     config.general.minimap_visibility = oneOf(config.general.minimap_visibility, ["always", "vehicle", "foot", "never"], "vehicle");
@@ -106,10 +111,33 @@
     };
   }
 
+  // Fallback autocontido de normalização de aparência, usado apenas quando o
+  // módulo themes.js não está disponível (testes isolados). Espelha a mesma
+  // política de whitelist/enum de themes.normalizeAppearance.
+  function normalizeAppearanceFallback(appearance) {
+    const source = appearance && typeof appearance === "object" ? appearance : {};
+    const mode = ["legacy", "preset", "custom"].includes(source.mode) ? source.mode : "legacy";
+    const roles = ["primary", "secondary", "accent", "text", "background", "border", "success", "warning", "danger"];
+    const defaultPalette = {
+      primary: "#22d3ee", secondary: "#67e8f9", accent: "#38bdf8", text: "#f0fdfa",
+      background: "#020617", border: "#164e63", success: "#22c55e", warning: "#f59e0b", danger: "#ef4444",
+    };
+    const palette = {};
+    roles.forEach((role) => {
+      const value = source.palette && source.palette[role];
+      palette[role] = typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value)
+        ? value.toLowerCase()
+        : defaultPalette[role];
+    });
+    return { mode, theme: "", palette, overrides: {} };
+  }
+
   function target(config, id) {
     if (!config) return null;
     if (id === "statusGroup") return config.general?.status_group || null;
     if (id === "minimap") return config.general || null;
+    if (id === "general") return config.general || null;
+    if (id === "appearance") return config.general?.appearance || null;
     if (statusKeys.includes(id) || config.elements?.[id]) return config.elements?.[id] || null;
     if (["speedometer", "weapon", "logo", "chat"].includes(id)) return config[id] || null;
     return null;

@@ -11,7 +11,7 @@
     oxygen: "STATUS / OXIGÊNIO", stress: "STATUS / STRESS", voice: "COMUNICAÇÃO / VOZ",
     radio: "COMUNICAÇÃO / RÁDIO", speedometer: "VEÍCULO / VELOCÍMETRO",
     weapon: "COMBATE / ARMA", logo: "IDENTIDADE / LOGO", chat: "INTERFACE / CHAT",
-    minimap: "GERAL / MAPA",
+    minimap: "GERAL / MAPA", general: "GERAL / HUD", appearance: "APARÊNCIA / TEMA",
   };
 
   const field = (label, property, control, extra = "") =>
@@ -32,6 +32,7 @@
       inspector: document.getElementById("editor-inspector"),
       inspectorTitle: document.getElementById("inspector-title"),
       inspectorBody: document.getElementById("inspector-body"),
+      dock: document.getElementById("editor-dock"),
       dirty: document.getElementById("editor-dirty-state"),
       undo: document.getElementById("editor-undo"), redo: document.getElementById("editor-redo"),
       grid: document.getElementById("editor-grid-guide"), safezone: document.getElementById("editor-safezone"),
@@ -46,6 +47,14 @@
     let confirmAction = null;
     let frame = 0;
     const flags = { grid: false, snap: true, safezone: false };
+    let dockPosIndex = 0;
+    const DOCK_POSITIONS = ["", "dock-bottom-right", "dock-top"];
+
+    function cycleDockPosition() {
+      DOCK_POSITIONS.forEach((cls) => { if (cls) ui.dock.classList.remove(cls); });
+      dockPosIndex = (dockPosIndex + 1) % DOCK_POSITIONS.length;
+      if (DOCK_POSITIONS[dockPosIndex]) ui.dock.classList.add(DOCK_POSITIONS[dockPosIndex]);
+    }
 
     function renderDraft(reason) {
       state.config = store.draft;
@@ -84,17 +93,218 @@
       }
       const general = store.draft.general;
       const style = ["square", "circle", "default"].includes(general.minimap_style) ? general.minimap_style : "square";
+      const geometry = MINIMAP_GEOMETRY[style];
+      const x = schema.clamp(general.minimap_x, -300, 500, 24);
+      const y = schema.clamp(general.minimap_y, -300, 500, 24);
+      const aspect = window.innerWidth / window.innerHeight;
+      const defaultAspect = 1920 / 1080;
+      const minimapOffset = aspect > defaultAspect ? ((defaultAspect - aspect) / 3.6) - 0.008 : 0;
+      const dx = (x - 24) / 1920;
+      const dy = (y - 24) / 1080;
       ui.minimapProxy.classList.remove("hidden", "is-square", "is-circle", "is-default");
       ui.minimapProxy.classList.add(`is-${style}`);
       ui.minimapProxy.classList.toggle("is-disabled", general.show_minimap === false || general.minimap_visibility === "never");
-      ui.minimapProxy.style.left = `${schema.clamp(general.minimap_x, -300, 500, 24) / 1920 * window.innerWidth}px`;
-      ui.minimapProxy.style.bottom = `${schema.clamp(general.minimap_y, -300, 500, 24) / 1080 * window.innerHeight}px`;
+      // Ancora L/B igual ao client. A base negativa dos estilos e a area das
+      // barras de vida/colete (ocultas), entao a caixa visivel fica no recuo do
+      // safezone; x/y (dx,dy) deslocam a partir dai.
+      const inset = Math.max(0, Number(state.minimapInset) || 0);
+      ui.minimapProxy.style.left = `${(inset + Math.max(0, geometry.x) + minimapOffset + dx) * 100}%`;
+      ui.minimapProxy.style.bottom = `${(inset + Math.max(0, geometry.y) + dy) * 100}%`;
       ui.minimapProxy.style.top = "auto";
       ui.minimapProxy.style.right = "auto";
+      ui.minimapProxy.style.width = geometry.circle
+        ? `min(${geometry.w * 100}vw, ${geometry.h * 100}vh)`
+        : `${geometry.w * 100}vw`;
+      ui.minimapProxy.style.height = geometry.circle
+        ? `min(${geometry.w * 100}vw, ${geometry.h * 100}vh)`
+        : `${geometry.h * 100}vh`;
     }
 
     function isLocked(id, entry) {
       return id === "minimap" ? entry?.minimap_locked === true : entry?.locked === true;
+    }
+
+    function setByPath(object, path, value) {
+      const parts = String(path).split(".");
+      let target = object;
+      for (let index = 0; index < parts.length - 1; index += 1) {
+        const key = parts[index];
+        if (target[key] == null || typeof target[key] !== "object") target[key] = {};
+        target = target[key];
+      }
+      target[parts[parts.length - 1]] = value;
+    }
+
+    const themes = window.MZHudThemes;
+    const ROLES = themes && themes.ROLES
+      ? themes.ROLES
+      : ["primary", "secondary", "accent", "text", "background", "border", "success", "warning", "danger"];
+    const ROLE_LABELS = {
+      primary: "Primária",
+      secondary: "Secundária",
+      accent: "Destaque",
+      text: "Texto",
+      background: "Fundo",
+      border: "Borda",
+      success: "Sucesso",
+      warning: "Aviso",
+      danger: "Perigo",
+    };
+    const ELEMENT_ROLES = ["primary", "secondary", "background", "text", "border"];
+    const SPEEDOMETER_SLOT_ROLES = themes && themes.SPEEDOMETER_SLOT_ROLES
+      ? themes.SPEEDOMETER_SLOT_ROLES
+      : { primary_color: "text", secondary_color: "primary", accent_color: "danger", background_color: "background" };
+    const SPEEDOMETER_SLOT_LABELS = {
+      primary_color: "Principal",
+      secondary_color: "Secundária",
+      accent_color: "Destaque",
+      background_color: "Fundo",
+    };
+    let paletteFocusRole = "primary";
+
+    function appearance() {
+      return (store.draft && store.draft.general && store.draft.general.appearance)
+        || { mode: "legacy", theme: "", palette: {}, overrides: {} };
+    }
+
+    function isThemed() {
+      return appearance().mode !== "legacy";
+    }
+
+    function roleHasOverride(componentId, role) {
+      const app = appearance();
+      return !!(app.overrides && app.overrides[componentId] && app.overrides[componentId][role]);
+    }
+
+    function setAppearanceMode(mode) {
+      store.mutate((draft) => {
+        const app = draft.general.appearance;
+        app.mode = mode;
+        if (mode === "preset") {
+          if (!themes || !themes.THEME_PRESETS[app.theme]) {
+            app.theme = themes ? themes.DEFAULT_THEME_ID : "mz_cyan";
+          }
+          const preset = themes && themes.THEME_PRESETS[app.theme];
+          if (preset) ROLES.forEach((role) => { app.palette[role] = preset.palette[role]; });
+        } else {
+          app.theme = "";
+        }
+      }, "appearance:mode");
+    }
+
+    function applyThemePreset(themeId) {
+      const preset = themes && themes.THEME_PRESETS[themeId];
+      if (!preset) return;
+      store.mutate((draft) => {
+        const app = draft.general.appearance;
+        app.mode = "preset";
+        app.theme = themeId;
+        ROLES.forEach((role) => { app.palette[role] = preset.palette[role]; });
+      }, "appearance:preset");
+    }
+
+    function setPaletteRole(role, value) {
+      store.mutate((draft) => {
+        const app = draft.general.appearance;
+        if (app.mode === "preset") { app.mode = "custom"; app.theme = ""; }
+        app.palette[role] = value;
+      }, "appearance:palette");
+    }
+
+    function setRoleOverride(componentId, role, value) {
+      store.mutate((draft) => {
+        const app = draft.general.appearance;
+        app.overrides = app.overrides || {};
+        app.overrides[componentId] = app.overrides[componentId] || {};
+        app.overrides[componentId][role] = value;
+      }, "appearance:override");
+    }
+
+    function clearRoleOverride(componentId, role) {
+      store.mutate((draft) => {
+        const app = draft.general.appearance;
+        if (!app.overrides || !app.overrides[componentId]) return;
+        delete app.overrides[componentId][role];
+        if (Object.keys(app.overrides[componentId]).length === 0) delete app.overrides[componentId];
+      }, "appearance:inherit");
+    }
+
+    function clearAllOverrides() {
+      store.mutate((draft) => {
+        draft.general.appearance.overrides = {};
+      }, "appearance:clear-overrides");
+    }
+
+    function renderColorRoleField(componentId, role, label, effectiveValue, slotKey, legacyValue) {
+      const themed = isThemed();
+      const overridden = roleHasOverride(componentId, role);
+      const badge = themed
+        ? `<span class="role-inherit-badge ${overridden ? "is-override" : "is-theme"}">${overridden ? "Override" : "Tema"}</span>`
+        : "";
+      const safeValue = themes && themes.isValidHex(effectiveValue) ? effectiveValue : "#ffffff";
+      let actionBtn = "";
+      if (themed && overridden) {
+        actionBtn = `<button type="button" class="role-inherit-btn" data-appearance-inherit="${componentId}:${role}" title="Voltar a herdar do tema">herdar</button>`;
+      } else if (themed && legacyValue && themes && themes.isValidHex(legacyValue) && legacyValue.toLowerCase() !== safeValue.toLowerCase()) {
+        actionBtn = `<button type="button" class="role-inherit-btn" data-appearance-preserve="${componentId}:${role}:${slotKey}" title="Usar a cor legada como override">legado</button>`;
+      }
+      return `<label class="inspector-field color-role-field"><span>${label}${badge}</span><div class="color-role-control"><INPUT type="color" value="${safeValue}" data-appearance-component="${componentId}" data-appearance-role="${role}" data-appearance-slot="${slotKey}">${actionBtn}</div></label>`;
+    }
+
+    function renderElementColorFields(componentId, entry) {
+      const elColors = themes
+        ? themes.resolveElementColors(store.draft, componentId, entry.color)
+        : { accent: entry.color, track: null, background: null, text: null, border: null };
+      const roleToValue = {
+        primary: elColors.accent,
+        secondary: elColors.track,
+        background: elColors.background,
+        text: elColors.text,
+        border: elColors.border,
+      };
+      return ELEMENT_ROLES.map((role) =>
+        renderColorRoleField(
+          componentId,
+          role,
+          ROLE_LABELS[role],
+          roleToValue[role] || "#ffffff",
+          "color",
+          role === "primary" ? entry.color : null,
+        ),
+      ).join("");
+    }
+
+    function speedometerThemeButtons() {
+      const speedThemes = window.MZHudCore && window.MZHudCore.speedometerThemes;
+      if (!speedThemes) return "";
+      const labels = { blue: "Azul", red: "Vermelho", green: "Verde", purple: "Roxo", orange: "Laranja", mono: "Mono" };
+      return Object.keys(speedThemes).map((key) =>
+        `<button type="button" class="theme-quick-btn" data-speedometer-theme="${key}">${labels[key] || key}</button>`,
+      ).join("");
+    }
+
+    function applySpeedometerTheme(key) {
+      const t = window.MZHudCore && window.MZHudCore.speedometerThemes && window.MZHudCore.speedometerThemes[key];
+      if (!t) return;
+      const themed = isThemed();
+      store.mutate((draft) => {
+        const sp = draft.speedometer;
+        if (themed) {
+          const app = draft.general.appearance;
+          app.overrides = app.overrides || {};
+          app.overrides.speedometer = {
+            text: t.primary_color,
+            primary: t.secondary_color,
+            danger: t.accent_color,
+            background: t.background_color,
+          };
+        } else {
+          sp.primary_color = t.primary_color;
+          sp.secondary_color = t.secondary_color;
+          sp.accent_color = t.accent_color;
+          sp.background_color = t.background_color;
+        }
+      }, "speedometer:theme");
     }
 
     function selectElement(id, openInspector = false) {
@@ -140,6 +350,40 @@
         ${visibility}${field("Bloqueado", "locked", toggle(entry.locked), "toggle-field")}`;
     }
 
+    const speedometerIconSlots = [
+      ["fuel", "Combustível"], ["engine", "Motor"], ["engine_indicator", "Indicador do motor"],
+      ["belt", "Cinto"], ["unbelt", "Cinto removido"], ["light", "Farol"],
+      ["light_high", "Farol alto"], ["light_off", "Farol apagado"],
+      ["lock", "Cadeado"], ["unlock", "Cadeado aberto"],
+      ["arrow", "Seta"], ["arrow_active", "Seta ativa"],
+      ["speed", "Velocidade"], ["rpm", "RPM"], ["gear", "Marcha"],
+      ["weapon", "Arma"], ["ammo", "Munição"],
+    ];
+    const chatPresetOptions = [
+      ["left-top", "Esquerda superior"], ["left-center", "Esquerda centro"], ["left-bottom", "Esquerda inferior"],
+      ["center-top", "Centro superior"], ["center", "Centro"], ["center-bottom", "Centro inferior"],
+      ["right-top", "Direita superior"], ["right-center", "Direita centro"], ["right-bottom", "Direita inferior"],
+    ];
+    const statusStyleKeys = ["health", "armor", "hunger", "thirst", "stamina", "oxygen", "stress"];
+    const statusStyleChoices = [
+      ["circle", "Circular"], ["bar", "Barra"], ["square", "Quadrado"], ["pill", "Pílula"], ["apex", "Apex"],
+    ];
+    // Espelha client/main.lua (SetMinimapComponentPosition) para o preview do mapa.
+    const MINIMAP_GEOMETRY = {
+      square: { x: 0.0, y: -0.047, w: 0.1638, h: 0.183, circle: false },
+      circle: { x: -0.0100, y: -0.030, w: 0.180, h: 0.258, circle: true },
+      default: { x: -0.0045, y: 0.002, w: 0.150, h: 0.188888, circle: false },
+    };
+
+    function vehicleIconField(entry, slot, label) {
+      const options = typeof getVehicleIconOptions === "function"
+        ? (getVehicleIconOptions(slot) || []).map((option) => [option.id, option.label || option.id])
+        : [];
+      const current = entry.icons?.[slot] || options[0]?.[0] || slot;
+      const values = options.some(([key]) => key === current) ? options : [...options, [current, `${current} (custom)`]];
+      return field(label, `icons.${slot}`, select(current, values));
+    }
+
     function renderInspector() {
       const id = state.selectedElement;
       const entry = schema.target(store.draft, id);
@@ -153,32 +397,144 @@
           ${field("Exibição", "minimap_visibility", select(entry.minimap_visibility, [["always", "Sempre"], ["vehicle", "Em veículo"], ["foot", "A pé"], ["never", "Nunca"]]))}
           <div class="inspector-pair">${field("Deslocamento X", "minimap_x", number(entry.minimap_x, -300, 500, 1))}${field("Deslocamento Y", "minimap_y", number(entry.minimap_y, -300, 500, 1))}</div>
           ${field("Bloqueado", "minimap_locked", toggle(entry.minimap_locked), "toggle-field")}
-          <p class="inspector-note">Este contorno representa o minimapa nativo. Arraste para posicionar; o formato real é aplicado pelo jogo depois de salvar.</p>
+          <p class="inspector-note">O contorno usa a mesma posição e tamanho que o cliente aplica no jogo (base do estilo + deslocamento X/Y). Arraste para posicionar; o mapa real é desenhado pelo jogo sobre esta área.</p>
         </section>`;
         return;
+      } else if (id === "general") {
+        specific = `<section><h3>Global</h3>
+          ${field("Opacidade da HUD", "global_opacity", range(entry.global_opacity ?? 100, 0, 100, 1))}
+          <p class="inspector-note">Opacidade aplicada ao conjunto da HUD. Cada módulo mantém a própria opacidade.</p>
+        </section>`;
       } else if (store.draft.elements?.[id]) {
         const iconOptions = typeof getElementIconOptions === "function" ? getElementIconOptions(id).map((option) => [option.id, option.label || option.id]) : [[entry.icon, entry.icon]];
-        specific = `${field("Nome", "label", `<INPUT type="text" maxlength="24" value="${escapeHTML(entry.label || id)}">`)}
+        specific = `<section><h3>Aparência</h3>
+          ${field("Nome", "label", `<INPUT type="text" maxlength="24" value="${escapeHTML(entry.label || id)}">`)}
           ${field("Ícone", "icon", select(entry.icon, iconOptions))}
           ${field("Estilo", "style", select(entry.style || "circle", [["circle", "Circular"], ["bar", "Barra"], ["square", "Quadrado"], ["pill", "Pílula"], ["apex", "Apex"], ["comms", "Comunicação"]]))}
-          ${field("Cor", "color", `<INPUT type="color" value="${entry.color || "#ffffff"}">`)}
+          ${isThemed() ? `<div class="inspector-color-grid">${renderElementColorFields(id, entry)}</div><p class="inspector-note">Cores vêm do tema; edite para criar override ou use ↺ para voltar a herdar.</p>` : field("Cor", "color", `<INPUT type="color" value="${entry.color || "#ffffff"}">`)}
           ${!["voice", "radio"].includes(id) ? field("Mover separado", "individual", toggle(entry.individual), "toggle-field") : ""}
-          ${field("Colapsar quando oculto", "collapseWhenHidden", toggle(entry.collapseWhenHidden), "toggle-field")}`;
+          ${field("Colapsar quando oculto", "collapseWhenHidden", toggle(entry.collapseWhenHidden), "toggle-field")}
+        </section>`;
+        if (id === "voice") {
+          const options = ctx.withCommsOptions ? ctx.withCommsOptions("voice", entry.comms_options) : (entry.comms_options || {});
+          specific += `<section><h3>Comunicação</h3>
+            ${field("Mostrar rótulo", "comms_options.show_label", toggle(options.show_label !== false), "toggle-field")}
+            ${field("Texto de nível", "comms_options.show_level_text", toggle(options.show_level_text !== false), "toggle-field")}
+            ${field("Texto 'falando'", "comms_options.show_talking_text", toggle(options.show_talking_text !== false), "toggle-field")}
+            ${field("Opacidade inativo", "comms_options.inactive_opacity", range(options.inactive_opacity ?? 72, 0, 100, 1))}
+          </section>`;
+        }
+        if (id === "radio") {
+          const options = ctx.withCommsOptions ? ctx.withCommsOptions("radio", entry.comms_options) : (entry.comms_options || {});
+          specific += `<section><h3>Comunicação</h3>
+            ${field("Mostrar frequência", "comms_options.show_frequency", toggle(options.show_frequency !== false), "toggle-field")}
+            ${field("Mostrar inativo", "comms_options.show_inactive", toggle(options.show_inactive !== false), "toggle-field")}
+            ${field("Texto 'falando'", "comms_options.show_talking_text", toggle(options.show_talking_text !== false), "toggle-field")}
+            ${field("Texto inativo", "comms_options.inactive_text", `<INPUT type="text" maxlength="12" value="${escapeHTML(options.inactive_text || "OFF")}">`)}
+            ${field("Sufixo da frequência", "comms_options.frequency_suffix", `<INPUT type="text" maxlength="12" value="${escapeHTML(options.frequency_suffix || "MHz")}">`)}
+          </section>`;
+        }
       } else if (id === "statusGroup") {
-        specific = `${field("Orientação", "orientation", select(entry.orientation, [["horizontal", "Horizontal"], ["vertical", "Vertical"]]))}
-          ${field("Alinhamento", "alignment", select(entry.alignment, [["start", "Início"], ["center", "Centro"], ["end", "Fim"]]))}
-          ${field("Espaçamento", "gap", range(entry.gap, 0, 40, 1))}`;
+        specific = `<section><h3>Agrupamento</h3>
+          ${field("Orientação", "orientation", select(entry.orientation, [["horizontal", "Horizontal"], ["vertical", "Vertical"]]))}
+          ${field("Alinhamento", "alignment", select(entry.alignment, [["start", "Início (→ / ↓)"], ["center", "Centro"], ["end", "Fim (← / ↑)"]]))}
+          ${field("Espaçamento", "gap", range(entry.gap, 0, 40, 1))}
+          <p class="inspector-note">Horizontal: Início cresce da esquerda para a direita e Fim da direita para a esquerda. Vertical: Início de cima para baixo e Fim de baixo para cima. Status ocultos com "colapsar" fecham o vão nessa direção.</p>
+        </section>
+        <section><h3>Modelo dos status</h3>
+          <label class="inspector-field"><span>Aplicar a todos</span><select data-bulk="statusStyle"><option value="">Escolher modelo...</option>${statusStyleChoices.map(([value, label]) => `<option value="${value}">${label}</option>`).join("")}</select></label>
+          <p class="inspector-note">Aplica o modelo a todos os status (vida, colete, fome, sede, stamina, oxigênio, stress). Voz e rádio usam o modelo de comunicação. Cada status também pode ter seu próprio modelo no inspetor individual.</p>
+        </section>`;
       } else if (id === "speedometer") {
-        specific = `${field("Modelo", "style", select(entry.style, [["apex", "Apex"], ["minimal", "Minimal"], ["digital", "Digital"], ["analog", "Analógico"], ["classic", "Classic"], ["racing", "Racing"], ["vector", "Vector"]]))}
-          ${field("Unidade", "unit", select(entry.unit, [["kmh", "KM/H"], ["mph", "MPH"]]))}
-          ${field("Velocidade", "show_speed", toggle(entry.show_speed), "toggle-field")}${field("RPM", "show_rpm", toggle(entry.show_rpm), "toggle-field")}${field("Combustível", "show_fuel", toggle(entry.show_fuel), "toggle-field")}${field("Marcha", "show_gear", toggle(entry.show_gear), "toggle-field")}${field("Cinto", "show_seatbelt", toggle(entry.show_seatbelt), "toggle-field")}
-          <div class="inspector-pair">${field("Cor principal", "primary_color", `<INPUT type="color" value="${entry.primary_color || "#ffffff"}">`)}${field("Destaque", "accent_color", `<INPUT type="color" value="${entry.accent_color || "#ef4444"}">`)}</div>`;
+        const slots = themes ? themes.resolveSpeedometerSlots(store.draft, entry) : entry;
+        const colorFields = Object.keys(SPEEDOMETER_SLOT_ROLES).map((slot) => {
+          const role = SPEEDOMETER_SLOT_ROLES[slot];
+          return renderColorRoleField("speedometer", role, SPEEDOMETER_SLOT_LABELS[slot], slots[slot] || entry[slot] || "#ffffff", slot, entry[slot]);
+        }).join("");
+        const quickPicks = speedometerThemeButtons();
+        const iconFields = speedometerIconSlots.map(([slot, label]) => vehicleIconField(entry, slot, label)).join("");
+        specific = `<section><h3>Modelo e unidade</h3>
+            ${field("Modelo", "style", select(entry.style, [["apex", "Apex"], ["minimal", "Minimal"], ["digital", "Digital"], ["analog", "Analógico"], ["classic", "Classic"], ["racing", "Racing"], ["vector", "Vector"], ["auren_felon", "Auren Felon"], ["auren_truck", "Auren Truck"], ["auren_aton", "Auren Aton"]]))}
+            ${field("Unidade", "unit", select(entry.unit, [["kmh", "KM/H"], ["mph", "MPH"]]))}
+          </section>
+          <section><h3>Indicadores</h3>
+            ${field("Velocidade", "show_speed", toggle(entry.show_speed), "toggle-field")}
+            ${field("RPM", "show_rpm", toggle(entry.show_rpm), "toggle-field")}
+            ${field("Combustível", "show_fuel", toggle(entry.show_fuel), "toggle-field")}
+            ${field("Marcha", "show_gear", toggle(entry.show_gear), "toggle-field")}
+            ${field("Cinto", "show_seatbelt", toggle(entry.show_seatbelt), "toggle-field")}
+            ${field("Faróis", "show_lights", toggle(entry.show_lights), "toggle-field")}
+            ${field("Cadeado", "show_lock", toggle(entry.show_lock), "toggle-field")}
+            ${field("Motor", "show_engine", toggle(entry.show_engine), "toggle-field")}
+          </section>
+          <section><h3>Cores</h3>
+            <div class="inspector-color-grid">${colorFields}</div>
+            ${quickPicks ? `<div class="theme-quick-picks"><span>Rápidos</span>${quickPicks}</div>` : ""}
+            <p class="inspector-note">${isThemed() ? "Cores vêm do tema; edite para criar um override ou use ↺ para voltar a herdar." : "Cores do velocímetro no modo legado."}</p>
+          </section>
+          <section><h3>Ícones</h3>${iconFields}</section>`;
       } else if (id === "weapon") {
-        specific = `${field("Imagem", "show_image", toggle(entry.show_image), "toggle-field")}${field("Munição", "show_ammo", toggle(entry.show_ammo), "toggle-field")}${field("Nome", "show_name", toggle(entry.show_name), "toggle-field")}`;
+        specific = `<section><h3>Exibição</h3>
+          ${field("Imagem", "show_image", toggle(entry.show_image), "toggle-field")}
+          ${field("Munição", "show_ammo", toggle(entry.show_ammo), "toggle-field")}
+          ${field("Nome", "show_name", toggle(entry.show_name), "toggle-field")}
+          ${field("Modelo da imagem", "image_model", `<INPUT type="text" maxlength="24" value="${escapeHTML(entry.image_model || "default")}">`)}
+          <p class="inspector-note">O modelo define a pasta em web/assets/weapons/&lt;modelo&gt;/ — o padrão do resource é "default".</p>
+        </section>`;
       } else if (id === "logo") {
-        specific = `${field("Imagem", "image_url", `<INPUT type="text" maxlength="512" value="${escapeHTML(entry.image_url || "")}">`)}<div class="inspector-pair">${field("Largura", "width", number(entry.width, 40, 400))}${field("Altura", "height", number(entry.height, 20, 200))}</div>${field("Só em veículo", "show_only_in_vehicle", toggle(entry.show_only_in_vehicle), "toggle-field")}`;
+        specific = `<section><h3>Logo</h3>
+          ${field("Imagem", "image_url", `<INPUT type="text" maxlength="512" value="${escapeHTML(entry.image_url || "")}">`)}
+          <div class="inspector-pair">${field("Largura", "width", number(entry.width, 40, 400))}${field("Altura", "height", number(entry.height, 20, 200))}</div>
+          ${field("Só em veículo", "show_only_in_vehicle", toggle(entry.show_only_in_vehicle), "toggle-field")}
+        </section>`;
+      } else if (id === "chat") {
+        specific = `<section><h3>Chat</h3>
+          ${field("Preset de posição", "preset", select(entry.preset || "left-top", chatPresetOptions))}
+          <p class="inspector-note">O preset é aplicado ao mz_chat quando disponível. Ative "Posição livre" para usar X/Y manuais.</p>
+        </section>`;
+      } else if (id === "appearance") {
+        const app = appearance();
+        const presetCards = themes && themes.THEME_PRESETS
+          ? Object.keys(themes.THEME_PRESETS).map((key) => {
+              const preset = themes.THEME_PRESETS[key];
+              const swatches = ROLES.slice(0, 5).map((role) => `<i style="background:${preset.palette[role]}"></i>`).join("");
+              const active = app.mode === "preset" && app.theme === key;
+              return `<button type="button" class="theme-preset-card ${active ? "is-active" : ""}" data-appearance-preset="${key}"><span class="theme-preset-swatches">${swatches}</span><strong>${escapeHTML(preset.label)}</strong></button>`;
+            }).join("")
+          : "";
+        const paletteFields = ROLES.map((role) =>
+          `<label class="inspector-field color-role-field"><span>${ROLE_LABELS[role]}</span><div class="color-role-control"><INPUT type="color" value="${app.palette[role] || "#ffffff"}" data-appearance-palette-role="${role}"></div></label>`,
+        ).join("");
+        const swatchRow = (ctx.colorPresets || []).map((hex) =>
+          `<button type="button" class="palette-swatch" data-palette-swatch="${hex}" style="background:${hex}" title="${hex}"></button>`,
+        ).join("");
+        const overrideKeys = Object.keys(app.overrides || {});
+        const overrideSummary = overrideKeys.length
+          ? `<div class="override-chips">${overrideKeys.map((cid) => `<span class="override-chip">${escapeHTML(names[cid] || cid)}</span>`).join("")}</div>`
+          : `<p class="inspector-note">Nenhum override. Componentes herdam as cores do tema.</p>`;
+        specific = `<section><h3>Modo</h3>
+          <label class="inspector-field"><span>Modo</span><SELECT data-appearance-mode>
+            <option value="legacy" ${app.mode === "legacy" ? "selected" : ""}>Legado (sem tema)</option>
+            <option value="preset" ${app.mode === "preset" ? "selected" : ""}>Preset</option>
+            <option value="custom" ${app.mode === "custom" ? "selected" : ""}>Personalizado</option>
+          </SELECT></label>
+          <p class="inspector-note">Legado preserva o visual atual (sem salvar automaticamente). Preset aplica um tema fixo. Personalizado edita a paleta livremente.</p>
+        </section>
+        <section><h3>Presets de tema</h3>
+          <div class="theme-preset-grid">${presetCards}</div>
+        </section>
+        <section><h3>Paleta</h3>
+          ${swatchRow ? `<div class="palette-swatches">${swatchRow}</div>` : ""}
+          <div class="inspector-color-grid">${paletteFields}</div>
+          <p class="inspector-note">Clique em uma amostra acima para aplicar ao papel com foco (ou edite cada papel pelo seletor).</p>
+        </section>
+        <section><h3>Overrides por componente</h3>
+          ${overrideSummary}
+          ${overrideKeys.length ? `<button type="button" class="inspector-danger" data-appearance-action="clear-overrides">Limpar todos os overrides</button>` : ""}
+        </section>`;
       }
-      ui.inspectorBody.innerHTML = `<section><h3>Posicionamento e aparência</h3>${commonInspector(entry)}</section>${specific ? `<section><h3>Propriedades</h3>${specific}</section>` : ""}`;
+      const common = (id === "general" || id === "appearance") ? "" : `<section><h3>Posicionamento e aparência</h3>${commonInspector(entry)}</section>`;
+      ui.inspectorBody.innerHTML = `${common}${specific}`;
     }
 
     function showInspector() {
@@ -194,7 +550,7 @@
       state.status = deepClone(runtimeSnapshot.status);
       state.vehicle = deepClone(runtimeSnapshot.vehicle);
       state.weapon = deepClone(runtimeSnapshot.weapon);
-      if (["all", "vehicle"].includes(mode)) state.vehicle = { ...state.vehicle, visible: true, speed: 87, rpm: 65, fuel: 72, gear: "4", seatbeltAvailable: true };
+      if (["all", "vehicle"].includes(mode)) state.vehicle = { ...state.vehicle, visible: true, speed: 87, rpm: 65, fuel: 72, gear: "4", seatbelt: true, seatbeltAvailable: true, engine: true, engineHealth: 80, lights: true, lightsHigh: false, indicatorLeft: true, indicatorRight: false };
       if (mode === "all") state.weapon = { ...state.weapon, visible: true, name: "weapon_pistol", clip: 12, reserve: 48 };
       if (mode === "low") state.status = { ...state.status, health: 18, armor: 12, hunger: 14, thirst: 10, stamina: 72 };
       if (mode === "submerged") state.status = { ...state.status, oxygen: 42, oxygenActive: true };
@@ -224,6 +580,13 @@
       return Math.max(4, Math.min(96, output));
     }
 
+    function anchorFraction(id) {
+      if (id !== "statusGroup") return { x: 0.5, y: 0.5 };
+      const group = schema.target(store.draft, "statusGroup") || {};
+      const align = group.alignment === "start" ? 0 : group.alignment === "end" ? 1 : 0.5;
+      return group.orientation === "vertical" ? { x: 0.5, y: align } : { x: align, y: 0.5 };
+    }
+
     function startPointer(event, mode) {
       if (event.button !== 0 || !state.editorOpen) return;
       let id = state.selectedElement;
@@ -243,13 +606,14 @@
         mode, id, entry, node, startX: event.clientX, startY: event.clientY,
         startScale: Number(entry.scale || 100), startRect: node.getBoundingClientRect(),
         startMinimapX: Number(entry.minimap_x ?? 24), startMinimapY: Number(entry.minimap_y ?? 24),
+        anchor: anchorFraction(id),
       };
       document.body.classList.add("editor-is-dragging");
     }
 
     function movePointer(event) {
       if (!pointerAction) return;
-      const { mode, entry, node, startX, startY, startScale, startRect, startMinimapX, startMinimapY, id } = pointerAction;
+      const { mode, entry, node, startX, startY, startScale, startRect, startMinimapX, startMinimapY, id, anchor } = pointerAction;
       if (mode === "drag" && id === "minimap") {
         entry.minimap_x = schema.clamp(startMinimapX + ((event.clientX - startX) * 1920 / window.innerWidth), -300, 500, startMinimapX);
         entry.minimap_y = schema.clamp(startMinimapY - ((event.clientY - startY) * 1080 / window.innerHeight), -300, 500, startMinimapY);
@@ -258,9 +622,11 @@
         ui.selection.style.left = `${rect.left - 5}px`;
         ui.selection.style.top = `${rect.top - 5}px`;
       } else if (mode === "drag") {
+        const ax = anchor?.x ?? 0.5;
+        const ay = anchor?.y ?? 0.5;
         entry.free = true;
-        entry.x = snapValue(((startRect.left + startRect.width / 2 + event.clientX - startX) / window.innerWidth) * 100, "x", id);
-        entry.y = snapValue(((startRect.top + startRect.height / 2 + event.clientY - startY) / window.innerHeight) * 100, "y", id);
+        entry.x = snapValue(((startRect.left + startRect.width * ax + event.clientX - startX) / window.innerWidth) * 100, "x", id);
+        entry.y = snapValue(((startRect.top + startRect.height * ay + event.clientY - startY) / window.innerHeight) * 100, "y", id);
         node.style.left = `${entry.x}%`;
         node.style.top = `${entry.y}%`;
         node.style.right = "auto";
@@ -351,7 +717,28 @@
       dom.editorOverlay.addEventListener("click", (event) => {
         const selectButton = event.target.closest("[data-select-element]");
         if (selectButton) return selectElement(selectButton.dataset.selectElement, true);
+        const presetCard = event.target.closest("[data-appearance-preset]");
+        if (presetCard) { applyThemePreset(presetCard.dataset.appearancePreset); return; }
+        const paletteSwatch = event.target.closest("[data-palette-swatch]");
+        if (paletteSwatch) { setPaletteRole(paletteFocusRole, paletteSwatch.dataset.paletteSwatch); return; }
+        const inheritBtn = event.target.closest("[data-appearance-inherit]");
+        if (inheritBtn) { const pair = inheritBtn.dataset.appearanceInherit.split(":"); clearRoleOverride(pair[0], pair[1]); return; }
+        const preserveBtn = event.target.closest("[data-appearance-preserve]");
+        if (preserveBtn) {
+          const parts = preserveBtn.dataset.appearancePreserve.split(":");
+          const target = schema.target(store.draft, parts[0]);
+          const legacy = target ? target[parts[2] || "color"] : null;
+          if (themes && themes.isValidHex(legacy)) setRoleOverride(parts[0], parts[1], legacy);
+          return;
+        }
+        const speedTheme = event.target.closest("[data-speedometer-theme]");
+        if (speedTheme) { applySpeedometerTheme(speedTheme.dataset.speedometerTheme); return; }
+        const clearOverrides = event.target.closest('[data-appearance-action="clear-overrides"]');
+        if (clearOverrides) { clearAllOverrides(); return; }
         const action = event.target.closest("[data-editor-action]")?.dataset.editorAction;
+        if (action === "toggle-dock") ui.dock.classList.toggle("is-collapsed");
+        if (action === "cycle-dock-pos") cycleDockPosition();
+        if (action === "cycle-inspector-pos") ui.inspector.classList.toggle("inspector-left");
         if (action === "inspect") showInspector();
         if (action === "toggle-lock") store.mutate(() => {
           const item = schema.target(store.draft, state.selectedElement);
@@ -377,11 +764,58 @@
           if (actionToRun === "reset") store.reset("hud"); else discardAndClose();
         }
       });
-      ui.inspectorBody.addEventListener("focusin", (event) => { if (event.target.dataset.prop) store.begin(); });
+      ui.inspectorBody.addEventListener("focusin", (event) => {
+        if (event.target.dataset.prop || event.target.dataset.appearanceComponent || event.target.dataset.appearancePaletteRole) store.begin();
+      });
       ui.inspectorBody.addEventListener("input", (event) => {
-        const input = event.target; const property = input.dataset.prop; if (!property) return;
+        const input = event.target;
+        if (input.dataset.bulk === "statusStyle") {
+          const style = input.value;
+          input.value = "";
+          if (!style) return;
+          store.mutate((draft) => {
+            statusStyleKeys.forEach((key) => {
+              if (draft.elements?.[key]) draft.elements[key].style = style;
+            });
+          }, "status:style-all");
+          return;
+        }
+        if (input.dataset.appearanceMode) {
+          setAppearanceMode(input.value);
+          return;
+        }
+        if (input.dataset.appearanceComponent && input.dataset.appearanceRole) {
+          const componentId = input.dataset.appearanceComponent;
+          const role = input.dataset.appearanceRole;
+          const slot = input.dataset.appearanceSlot || "color";
+          const value = input.value;
+          const themed = isThemed();
+          const app = store.draft.general.appearance;
+          if (themed) {
+            app.overrides = app.overrides || {};
+            app.overrides[componentId] = app.overrides[componentId] || {};
+            app.overrides[componentId][role] = value;
+          } else {
+            const target = schema.target(store.draft, componentId);
+            if (target) target[slot] = value;
+          }
+          store.draft = schema.normalizeConfig(store.draft); state.config = store.draft;
+          renderDraft("inspector-live");
+          return;
+        }
+        if (input.dataset.appearancePaletteRole) {
+          const role = input.dataset.appearancePaletteRole;
+          paletteFocusRole = role;
+          const app = store.draft.general.appearance;
+          if (app.mode === "preset") { app.mode = "custom"; app.theme = ""; }
+          app.palette[role] = input.value;
+          store.draft = schema.normalizeConfig(store.draft); state.config = store.draft;
+          renderDraft("inspector-live");
+          return;
+        }
+        const property = input.dataset.prop; if (!property) return;
         const entry = schema.target(store.draft, state.selectedElement); if (!entry) return;
-        entry[property] = input.type === "checkbox" ? input.checked : input.type === "number" || input.type === "range" ? Number(input.value) : input.value;
+        setByPath(entry, property, input.type === "checkbox" ? input.checked : input.type === "number" || input.type === "range" ? Number(input.value) : input.value);
         store.draft = schema.normalizeConfig(store.draft); state.config = store.draft;
         const output = input.parentElement?.querySelector("output"); if (output) output.value = input.value;
         renderDraft("inspector-live");

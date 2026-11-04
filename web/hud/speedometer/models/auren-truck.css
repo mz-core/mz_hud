@@ -1,0 +1,78 @@
+/*
+  MZ HUD — modelo "auren_truck" (portado do Auren_Speedometer Truck).
+  Uso local autorizado; não redistribuir publicamente sem autorização.
+  Textura carbon original e fonte Rajdhani não foram copiadas (gradiente/sistema).
+  Isolado sob .speedometer-style-auren_truck e .truck-*.
+*/
+
+.speedometer-style-auren_truck {
+  width: 600px;
+  height: 285px;
+  padding: 0;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.speedometer-style-auren_truck .truck-view {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 600 / 285;
+  position: relative;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 5px #0009);
+}
+.speedometer-style-auren_truck .truck-instrument { display: block; width: 100%; height: 100%; overflow: visible; }
+.speedometer-style-auren_truck .truck-view text { font-family: 'Arial Narrow', Arial, sans-serif; fill: var(--model-text, #f0f1ed); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.speedometer-style-auren_truck .truck-rim-outer { fill: #020608; stroke-opacity: .92; stroke-width: 3; filter: drop-shadow(0 3px 4px #000b); }
+.speedometer-style-auren_truck .truck-rim-inner { fill: #172329; stroke: #a6b7ba; stroke-opacity: .54; stroke-width: 1.25; }
+.speedometer-style-auren_truck .truck-rim-highlight { fill: none; stroke-width: 1.1; stroke-opacity: .92; filter: drop-shadow(0 0 2px #d1e4eb55); }
+.speedometer-style-auren_truck .truck-face { stroke: #364851; stroke-opacity: .65; stroke-width: 1; }
+.speedometer-style-auren_truck .truck-inner-line { fill: none; stroke: #bad0d5; stroke-opacity: .12; stroke-width: .9; }
+.speedometer-style-auren_truck .truck-arc { fill: none; stroke: #adbcc4; stroke-opacity: .44; stroke-width: 1.3; }
+.speedometer-style-auren_truck .truck-warning-arc { fill: none; stroke: var(--model-accent, #e32132); stroke-width: 2.2; stroke-opacity: .8; }
+.speedometer-style-auren_truck .truck-tick { fill: none; stroke: #c9d0d0; stroke-width: 1.2; stroke-opacity: .58; }
+.speedometer-style-auren_truck .truck-tick.micro { stroke-width: .55; stroke-opacity: .27; }
+.speedometer-style-auren_truck .truck-tick.medium { stroke-width: .9; stroke-opacity: .48; }
+.speedometer-style-auren_truck .truck-tick.major { stroke-width: 1.2; stroke-opacity: .78; }
+.speedometer-style-auren_truck .truck-tick-label { font-size: 11px; font-weight: 600; fill-opacity: .80; }
+.speedometer-style-auren_truck [data-dial$="rpm"] .truck-tick-label { font-size: 9px; }
+.speedometer-style-auren_truck [data-dial$="fuel"] .truck-tick-label { font-size: 7px; }
+.speedometer-style-auren_truck [data-dial$="health"] .truck-tick-label { font-size: 6.5px; }
+.speedometer-style-auren_truck .truck-tick.danger { stroke: var(--model-accent, #e32132); stroke-opacity: .94; }
+.speedometer-style-auren_truck .truck-tick-label.danger { fill: var(--model-accent, #e32132); }
+.speedometer-style-auren_truck .truck-title { font-size: 9px; letter-spacing: 1px; font-weight: 600; fill-opacity: .75; }
+.speedometer-style-auren_truck [data-dial$="speed"] .truck-title { font-size: 16px; letter-spacing: .8px; }
+.speedometer-style-auren_truck [data-dial$="fuel"] .truck-title,
+.speedometer-style-auren_truck [data-dial$="health"] .truck-title { font-size: 6px; letter-spacing: .4px; }
+.speedometer-style-auren_truck .truck-needle path { fill: var(--model-accent, #e32132); stroke: #ff6970; stroke-opacity: .35; stroke-width: .6; filter: drop-shadow(0 0 2px #e9253544); }
+.speedometer-style-auren_truck .truck-needle circle { fill: #261012; stroke: #de3c46; stroke-width: 1; }
+.speedometer-style-auren_truck .truck-speed { font-size: 24px; font-weight: 700; fill: #f4f7f4; filter: drop-shadow(0 0 2px #d3e2e439); }
+.speedometer-style-auren_truck .truck-gear { font-size: 12px; font-weight: 700; fill-opacity: .82; }
+.speedometer-style-auren_truck .truck-gear-strip rect { fill: #040b0d; fill-opacity: .88; stroke: #768b8e; stroke-opacity: .52; stroke-width: .7; }
+.speedometer-style-auren_truck .truck-gear-strip text { font-size: 8px; font-weight: 700; fill: #829496; fill-opacity: .76; }
+.speedometer-style-auren_truck .truck-gear-strip text.is-current { fill: #f2fcf8; fill-opacity: 1; filter: drop-shadow(0 0 2px #c7eee8); }
+.speedometer-style-auren_truck .truck-gear-strip [data-gear-caret] { fill: #e2f1eb; filter: drop-shadow(0 0 2px #b7eeea); }
+.speedometer-style-auren_truck .truck-fixed-symbol { fill: none; stroke: #d5e7e3; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+.speedometer-style-auren_truck .truck-gauge-value { font-size: 10px; font-weight: 700; fill: #e7f5ee; }
+.speedometer-style-auren_truck .truck-signals [data-lamp] { opacity: .38; }
+.speedometer-style-auren_truck .truck-signals > path[data-lamp] { fill: #73877f; fill-opacity: .66; }
+.speedometer-style-auren_truck .truck-signals > path[data-lamp].is-on { fill: #42f096; fill-opacity: 1; opacity: 1; filter: drop-shadow(0 0 4px #49fb98); }
+.speedometer-style-auren_truck .truck-signals .truck-hazard { fill: none; stroke: #8b5960; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+.speedometer-style-auren_truck .truck-signals .truck-hazard path { fill: none; }
+.speedometer-style-auren_truck .truck-signals .truck-hazard.is-on { opacity: 1; stroke: #ff4556; filter: drop-shadow(0 0 4px #ff3045); }
+.speedometer-style-auren_truck .truck-lamps [data-lamp] { fill: none; stroke: #84959a; stroke-opacity: .65; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; opacity: .44; }
+.speedometer-style-auren_truck .truck-lamps [data-lamp].is-on { stroke: #f1ba53; stroke-opacity: 1; opacity: 1; filter: drop-shadow(0 0 3px #f1ba5388); }
+.speedometer-style-auren_truck .truck-lamps [data-lamp="seatbelt"].is-on { stroke: #ef4254; }
+.speedometer-style-auren_truck .truck-lamps [data-lamp="headlights"].is-on { stroke: #98c9ff; }
+.speedometer-style-auren_truck .truck-dial-glass { opacity: .35; }
+.speedometer-style-auren_truck .truck-low-fuel [data-dial$="fuel"] .truck-needle path { fill: #ff4a4a; filter: drop-shadow(0 0 4px #ed3030); }
+.speedometer-style-auren_truck .truck-redline [data-dial$="rpm"] .truck-needle path { filter: drop-shadow(0 0 5px #ed3030); }
+.speedometer-style-auren_truck .truck-engine-off .truck-arc,
+.speedometer-style-auren_truck .truck-engine-off .truck-tick { opacity: .58; }
+.speedometer-style-auren_truck .truck-reduced-motion * { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .speedometer-style-auren_truck .truck-view * { animation: none !important; transition: none !important; }
+}

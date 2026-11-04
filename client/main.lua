@@ -61,6 +61,14 @@ local function isHudEffectivelyVisible()
   return HudState.hudVisible == true and next(HudState.suppressors) == nil
 end
 
+local function isLogoEffectivelyVisible()
+  if HudState.hudVisible ~= true then return false end
+  for _, mode in pairs(HudState.suppressors) do
+    if mode ~= 'logo-only' then return false end
+  end
+  return true
+end
+
 local function resetSeatbeltRuntime(vehicle)
   SeatbeltRuntime.enabled = false
   SeatbeltRuntime.lastVehicle = vehicle or 0
@@ -554,12 +562,6 @@ end
 local function getPlayerMetadataValue(key, fallback, minimum, maximum)
   local metadata = HudState.coreHUDState and HudState.coreHUDState.metadata or {}
   local value = metadata and metadata[key]
-
-  if value == nil then
-    local hudState = exports['mz_core']:GetHUDState()
-    local hudMetadata = hudState and hudState.metadata or {}
-    value = hudMetadata and hudMetadata[key]
-  end
 
   local numeric = tonumber(value)
   if numeric == nil then
@@ -1097,26 +1099,38 @@ local function applyMinimapPositions(general)
 
   local x = tonumber(general.minimap_x or 24) or 24
   local y = tonumber(general.minimap_y or 24) or 24
+  -- x/y sao deslocamentos a partir do padrao (24,24): positivo = direita/cima,
+  -- igual ao eixo do editor. O preview em web/hud/editor/visual.js espelha isto.
   local dx = (x - 24.0) / 1920.0
   local dy = (y - 24.0) / 1080.0
 
   if style == 'square' then
-    SetMinimapComponentPosition('minimap', 'L', 'B', 0.0 + minimapOffset + dx, -0.047 - dy, 0.1638, 0.183)
-    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.0 + minimapOffset + dx, 0.0 - dy, 0.128, 0.20)
-    SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.01 + minimapOffset + dx, 0.025 - dy, 0.262, 0.300)
+    SetMinimapComponentPosition('minimap', 'L', 'B', 0.0 + minimapOffset + dx, -0.047 + dy, 0.1638, 0.183)
+    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.0 + minimapOffset + dx, 0.0 + dy, 0.128, 0.20)
+    SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.01 + minimapOffset + dx, 0.025 + dy, 0.262, 0.300)
   elseif style == 'circle' then
-    SetMinimapComponentPosition('minimap', 'L', 'B', -0.0100 + minimapOffset + dx, -0.030 - dy, 0.180, 0.258)
-    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.200 + minimapOffset + dx, 0.0 - dy, 0.065, 0.20)
-    SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.00 + minimapOffset + dx, 0.015 - dy, 0.252, 0.338)
+    SetMinimapComponentPosition('minimap', 'L', 'B', -0.0100 + minimapOffset + dx, -0.030 + dy, 0.180, 0.258)
+    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.200 + minimapOffset + dx, 0.0 + dy, 0.065, 0.20)
+    SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.00 + minimapOffset + dx, 0.015 + dy, 0.252, 0.338)
   else
     SetMinimapClipType(0)
-    SetMinimapComponentPosition('minimap', 'L', 'B', -0.0045 + minimapOffset + dx, 0.002 - dy, 0.150, 0.188888)
-    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.020 + minimapOffset + dx, 0.032 - dy, 0.111, 0.159)
-    SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.03 + minimapOffset + dx, 0.022 - dy, 0.266, 0.237)
+    SetMinimapComponentPosition('minimap', 'L', 'B', -0.0045 + minimapOffset + dx, 0.002 + dy, 0.150, 0.188888)
+    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.020 + minimapOffset + dx, 0.032 + dy, 0.111, 0.159)
+    SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.03 + minimapOffset + dx, 0.022 + dy, 0.266, 0.237)
   end
 
   SetBlipAlpha(GetNorthRadarBlip(), 0)
   SetRadarZoom(1000)
+end
+
+--[[
+  Recuo do safezone aplicado pela native a partir da borda da tela.
+  1.0 = sem recuo; 0.9 = 5%. Enviado a NUI para o preview do mapa
+  (web/hud/editor/visual.js) desenhar a mesma caixa do jogo.
+]]
+local function getMinimapInset()
+  local size = GetSafeZoneSize() or 1.0
+  return math.max(0.0, math.min(0.2, 0.5 * (1.0 - size)))
 end
 
 local function buildMinimapSignature(general, visible)
@@ -1169,11 +1183,13 @@ local function applyMinimapSettings(force)
   minimapAppliedOnce = true
 end
 
-local function setHudSuppressed(owner, suppressed)
+local function setHudSuppressed(owner, suppressed, options)
   owner = tostring(owner or 'external')
 
   if suppressed == true then
-    HudState.suppressors[owner] = true
+    local keepLogo = options == 'logo-only'
+      or (type(options) == 'table' and options.keepLogo == true)
+    HudState.suppressors[owner] = keepLogo and 'logo-only' or 'all'
   else
     HudState.suppressors[owner] = nil
   end
@@ -1181,13 +1197,14 @@ local function setHudSuppressed(owner, suppressed)
   clearNuiPayloadCache()
   sendUI({
     action = 'setHudVisible',
-    visible = isHudEffectivelyVisible()
+    visible = isHudEffectivelyVisible(),
+    logoVisible = isLogoEffectivelyVisible()
   })
   applyMinimapSettings(true)
 end
 
-RegisterNetEvent('mz_hud:client:setSuppressed', function(owner, suppressed)
-  setHudSuppressed(owner, suppressed)
+RegisterNetEvent('mz_hud:client:setSuppressed', function(owner, suppressed, options)
+  setHudSuppressed(owner, suppressed, options)
 end)
 
 exports('SetSuppressed', setHudSuppressed)
@@ -1212,14 +1229,6 @@ end)
 AddEventHandler('onClientResourceStart', function(resourceName)
   if resourceName == 'mz_chat' and HudState.config then
     applyChatLayout(HudState.config.chat)
-  end
-end)
-
-RegisterNetEvent('mz_core:client:hudStateUpdated', function(hudState)
-  if type(hudState) == 'table' and HudState.coreRevision < 0 then
-    HudState.coreHUDState = {
-      metadata = type(hudState.metadata) == 'table' and hudState.metadata or {}
-    }
   end
 end)
 
@@ -1300,7 +1309,8 @@ RegisterNetEvent('mz_hud:client:applyConfig', function(config)
 
   sendUI({
     action = 'applyConfig',
-    config = HudState.config
+    config = HudState.config,
+    minimapInset = getMinimapInset()
   })
 end)
 
@@ -1317,7 +1327,8 @@ RegisterNetEvent('mz_hud:client:openEditor', function(config, defaults)
     action = 'openEditor',
     config = HudState.config,
     defaults = HudState.defaults,
-    canManage = HudState.canManage
+    canManage = HudState.canManage,
+    minimapInset = getMinimapInset()
   })
 
   SetNuiFocus(true, true)
@@ -1329,7 +1340,6 @@ RegisterNUICallback('ready', function(_, cb)
   HudState.defaults = bootstrap and bootstrap.defaults or HudState.defaults
   HudState.canManage = bootstrap and bootstrap.can_manage == true or false
   HudState.bootstrapDone = true
-  HudState.coreHUDState = exports['mz_core']:GetHUDState() or HudState.coreHUDState
   local snapshotOk, snapshot = pcall(function() return exports['mz_core']:GetLocalPlayerState() end)
   if snapshotOk and type(snapshot) == 'table' then applyCanonicalPlayerState(snapshot) end
   clearNuiPayloadCache()
@@ -1343,7 +1353,9 @@ RegisterNUICallback('ready', function(_, cb)
     defaults = HudState.defaults,
     canManage = HudState.canManage,
     hudVisible = isHudEffectivelyVisible(),
-    speedometerVisible = HudState.speedometerVisible
+    logoVisible = isLogoEffectivelyVisible(),
+    speedometerVisible = HudState.speedometerVisible,
+    minimapInset = getMinimapInset()
   })
 
   cb({ ok = true })
@@ -1429,7 +1441,8 @@ RegisterCommand('togglehud', function()
   HudState.hudVisible = not HudState.hudVisible
   sendUI({
     action = 'setHudVisible',
-    visible = isHudEffectivelyVisible()
+    visible = isHudEffectivelyVisible(),
+    logoVisible = isLogoEffectivelyVisible()
   })
   applyMinimapSettings(true)
 end, false)

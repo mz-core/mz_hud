@@ -6,7 +6,82 @@
     "max_index": 12,
     "extensions": ["svg", "png", "webp"]
   },
-  "status": {},
-  "vehicle": {},
-  "comms": {}
+  "status": {
+    "health": [
+      { "id": "heart-pulse", "label": "Coracao (pulso)", "path": "./assets/icons/status/health/heart-pulse.svg" },
+      { "id": "activity", "label": "Atividade (ECG)", "path": "./assets/icons/status/health/activity.svg" },
+      { "id": "cross", "label": "Cruz medica", "path": "./assets/icons/status/health/cross.svg" }
+    ],
+    "armor": [
+      { "id": "shield-check", "label": "Escudo (check)", "path": "./assets/icons/status/armor/shield-check.svg" },
+      { "id": "shield-half", "label": "Escudo (metade)", "path": "./assets/icons/status/armor/shield-half.svg" }
+    ],
+    "hunger": [
+      { "id": "drumstick", "label": "Coxa", "path": "./assets/icons/status/hunger/drumstick.svg" },
+      { "id": "beef", "label": "Carne", "path": "./assets/icons/status/hunger/beef.svg" },
+      { "id": "utensils-crossed", "label": "Talheres (cruz)", "path": "./assets/icons/status/hunger/utensils-crossed.svg" }
+    ],
+    "thirst": [
+      { "id": "droplets", "label": "Gotas", "path": "./assets/icons/status/thirst/droplets.svg" },
+      { "id": "glass-water", "label": "Copo d'agua", "path": "./assets/icons/status/thirst/glass-water.svg" },
+      { "id": "cup-soda", "label": "Refrigerante", "path": "./assets/icons/status/thirst/cup-soda.svg" }
+    ],
+    "stamina": [
+      { "id": "battery-charging", "label": "Bateria carregando", "path": "./assets/icons/status/stamina/battery-charging.svg" },
+      { "id": "footprints", "label": "Pegadas", "path": "./assets/icons/status/stamina/footprints.svg" },
+      { "id": "gauge", "label": "Medidor", "path": "./assets/icons/status/stamina/gauge.svg" }
+    ],
+    "oxygen": [
+      { "id": "cloud", "label": "Nuvem", "path": "./assets/icons/status/oxygen/cloud.svg" }
+    ],
+    "stress": [
+      { "id": "brain-circuit", "label": "Cerebro (circuito)", "path": "./assets/icons/status/stress/brain-circuit.svg" },
+      { "id": "triangle-alert", "label": "Alerta", "path": "./assets/icons/status/stress/triangle-alert.svg" }
+    ]
+  },
+  "vehicle": {
+    "fuel": [
+      { "id": "fuel-lucide", "label": "Combustivel (Lucide)", "path": "./assets/icons/vehicle/fuel/fuel.svg" }
+    ],
+    "engine": [
+      { "id": "settings", "label": "Engrenagens", "path": "./assets/icons/vehicle/engine/settings.svg" },
+      { "id": "cog", "label": "Engrenagem", "path": "./assets/icons/vehicle/engine/cog.svg" }
+    ],
+    "lights": [
+      { "id": "lightbulb", "label": "Lampada", "path": "./assets/icons/vehicle/lights/lightbulb.svg" }
+    ],
+    "lock": [
+      { "id": "lock-open", "label": "Cadeado aberto (Lucide)", "path": "./assets/icons/vehicle/lock/lock-open.svg" }
+    ],
+    "arrow": [
+      { "id": "arrow-right", "label": "Seta direita", "path": "./assets/icons/vehicle/arrow/arrow-right.svg" }
+    ],
+    "speed": [
+      { "id": "gauge", "label": "Medidor", "path": "./assets/icons/vehicle/speed/gauge.svg" }
+    ],
+    "rpm": [
+      { "id": "activity", "label": "Atividade", "path": "./assets/icons/vehicle/rpm/activity.svg" }
+    ],
+    "gear": [
+      { "id": "cog", "label": "Engrenagem", "path": "./assets/icons/vehicle/gear/cog.svg" }
+    ],
+    "weapon": [
+      { "id": "crosshair", "label": "Mira", "path": "./assets/icons/vehicle/weapon/crosshair.svg" }
+    ],
+    "ammo": [
+      { "id": "box", "label": "Caixa", "path": "./assets/icons/vehicle/ammo/box.svg" }
+    ]
+  },
+  "comms": {
+    "voice": [
+      { "id": "mic-off", "label": "Microfone desligado", "path": "./assets/icons/comms/voice/mic-off.svg" },
+      { "id": "audio-lines", "label": "Ondas de audio", "path": "./assets/icons/comms/voice/audio-lines.svg" },
+      { "id": "volume-2", "label": "Volume", "path": "./assets/icons/comms/voice/volume-2.svg" }
+    ],
+    "radio": [
+      { "id": "radio-tower", "label": "Torre de radio", "path": "./assets/icons/comms/radio/radio-tower.svg" },
+      { "id": "antenna", "label": "Antena", "path": "./assets/icons/comms/radio/antenna.svg" },
+      { "id": "signal", "label": "Sinal", "path": "./assets/icons/comms/radio/signal.svg" }
+    ]
+  }
 }

@@ -1,0 +1,131 @@
+/*
+  MZ HUD — modelo "auren_felon" (portado do Auren_Speedometer FELON).
+  Uso local autorizado; não redistribuir publicamente sem autorização.
+  Fontes originais (dial-italic/montserrat) não foram copiadas; usa fontes de sistema.
+  Isolado sob .speedometer-style-auren_felon e .felon-* para não afetar outros módulos.
+*/
+
+.speedometer-style-auren_felon {
+  width: 324px;
+  height: 324px;
+  padding: 0;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.speedometer-style-auren_felon .felon-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 324 / 324;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 1px 2px #0006);
+}
+
+.speedometer-style-auren_felon .felon-instrument {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 324 / 324;
+  overflow: visible;
+}
+
+.speedometer-style-auren_felon .felon-view text {
+  font-family: 'Arial Narrow', Arial, sans-serif !important;
+  font-style: italic !important;
+  font-weight: 400;
+  font-synthesis: none;
+  text-anchor: middle;
+  fill: var(--model-text, #fff);
+  font-variant-numeric: tabular-nums;
+}
+
+.speedometer-style-auren_felon .felon-rpm-track { fill: none; stroke: var(--model-text, #fff); stroke-opacity: .345; stroke-width: 2; }
+.speedometer-style-auren_felon .felon-rpm-redline { fill: none; stroke: var(--model-accent, #ed008b); stroke-width: 3; }
+.speedometer-style-auren_felon .felon-tick { stroke: var(--model-text, #fff); stroke-opacity: .396; stroke-width: 1.25; }
+.speedometer-style-auren_felon .felon-tick.felon-major { stroke-opacity: .627; stroke-width: 2; }
+.speedometer-style-auren_felon .felon-tick.felon-redline { stroke: var(--model-accent, #ed008b); stroke-opacity: 1; }
+.speedometer-style-auren_felon .felon-rpm-number { fill-opacity: .69; font-size: 13px; dominant-baseline: central; }
+.speedometer-style-auren_felon .felon-rpm-number.felon-redline { fill: var(--model-accent, #ed008b); fill-opacity: 1; }
+.speedometer-style-auren_felon .felon-needle { fill: var(--model-text, #fff); }
+.speedometer-style-auren_felon .felon-gear-ring { fill: transparent; stroke: var(--model-text, #fff); stroke-opacity: .565; stroke-width: 2; }
+.speedometer-style-auren_felon .felon-gear { font-size: 31px; }
+.speedometer-style-auren_felon .felon-speed-unit { font-size: 12px; fill-opacity: .737; text-anchor: middle; }
+.speedometer-style-auren_felon .felon-digital-speed { font-size: 58px; text-anchor: middle; letter-spacing: -1px; }
+.speedometer-style-auren_felon .felon-trip-inline text { font-family: Arial, sans-serif !important; font-style: normal !important; font-size: 9.5px; letter-spacing: .3px; fill-opacity: .92; }
+.speedometer-style-auren_felon .felon-hazard { fill: #ff3045; fill-opacity: .15; stroke: none; }
+.speedometer-style-auren_felon .felon-hazard.felon-active { fill-opacity: 1; }
+.speedometer-style-auren_felon .felon-assist {
+  font-family: Arial, sans-serif !important;
+  font-size: 11px;
+  font-style: normal !important;
+  font-weight: 600;
+  fill-opacity: .22;
+}
+.speedometer-style-auren_felon .felon-assist.felon-active { fill: #f1c867; fill-opacity: 1; }
+.speedometer-style-auren_felon .felon-status-icon {
+  fill: none;
+  stroke: var(--model-text, #fff);
+  stroke-opacity: .322;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.speedometer-style-auren_felon .felon-status-icon.felon-active { stroke: #ecf6ef; stroke-opacity: 1; }
+.speedometer-style-auren_felon .felon-status-icon.felon-warning { stroke: #ed665f; stroke-opacity: 1; filter: drop-shadow(0 0 2px #f6504040); }
+.speedometer-style-auren_felon .felon-engine-indicator.felon-warning { stroke: #f1c867; }
+.speedometer-style-auren_felon .felon-headlight-indicator.felon-highbeam { stroke: #69acff; stroke-opacity: 1; }
+.speedometer-style-auren_felon .felon-turn-arrow { fill: var(--model-text, #fff); fill-opacity: .271; }
+.speedometer-style-auren_felon .felon-turn-arrow.felon-active { fill: #ceffe0; fill-opacity: 1; }
+.speedometer-style-auren_felon .felon-parking-letter { stroke-width: 1.45; }
+.speedometer-style-auren_felon .felon-secondary-symbols .felon-status-icon { stroke-width: 1.45; }
+.speedometer-style-auren_felon .felon-fuel-track { stroke: var(--model-text, #fff); stroke-opacity: .22; stroke-width: 2; }
+.speedometer-style-auren_felon .felon-fuel-progress { stroke: var(--model-text, #fff); stroke-opacity: .78; stroke-width: 2; }
+.speedometer-style-auren_felon .felon-fuel-value { font-size: 13px; text-anchor: start; fill-opacity: .733; }
+.speedometer-style-auren_felon .felon-low-fuel .felon-fuel-progress,
+.speedometer-style-auren_felon .felon-low-fuel .felon-fuel-icon { stroke: #f1c867; stroke-opacity: 1; }
+.speedometer-style-auren_felon .felon-low-fuel .felon-fuel-value { fill: #f1c867; fill-opacity: 1; }
+.speedometer-style-auren_felon .felon-not-applicable { opacity: 0; }
+.speedometer-style-auren_felon .felon-emergency-halo,
+.speedometer-style-auren_felon .felon-emergency-rim { opacity: 0; }
+.speedometer-style-auren_felon .felon-emergency-halo path { fill: none; stroke-width: 14; }
+.speedometer-style-auren_felon .felon-emergency-rim path { fill: none; stroke-width: 2.8; stroke-linecap: round; }
+.speedometer-style-auren_felon .felon-emergency-left { stroke: #ff3b45; }
+.speedometer-style-auren_felon .felon-emergency-right { stroke: #258dff; }
+.speedometer-style-auren_felon .felon-startup-raster { fill: none; stroke: #efffff; stroke-width: 3.3; stroke-linecap: round; opacity: 0; }
+.speedometer-style-auren_felon .felon-engine-off .felon-rpm-scale,
+.speedometer-style-auren_felon .felon-engine-off .felon-rpm-track { opacity: .65; }
+
+/* Reflexo de vidro (sem variáveis de ambiente do Auren; opacidade fixa segura). */
+.speedometer-style-auren_felon .felon-view::after {
+  content: '';
+  position: absolute;
+  left: 11.73%;
+  top: 16.05%;
+  width: 71.6%;
+  height: 71.6%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 28% 8%, #eaf5ff1a, #cce4f805 44%, transparent 66%),
+    linear-gradient(145deg, #e5f2ff0a, transparent 45%, #0209120d);
+  box-shadow: inset 0 .6px .6px #e7f3ff26, inset 0 -.6px .8px #b0cee40a;
+  opacity: .35;
+}
+
+.speedometer-style-auren_felon .felon-reduced-motion .felon-emergency-halo { display: none; }
+.speedometer-style-auren_felon .felon-reduced-motion .felon-emergency-rim path { opacity: .8 !important; }
+.speedometer-style-auren_felon .felon-reduced-motion .felon-startup-raster { opacity: 0; }
+.speedometer-style-auren_felon .felon-reduced-motion .felon-turn-arrow { opacity: 1 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .speedometer-style-auren_felon .felon-emergency-halo { display: none; }
+  .speedometer-style-auren_felon .felon-emergency-rim path { opacity: .8 !important; }
+  .speedometer-style-auren_felon .felon-startup-raster { opacity: 0; }
+  .speedometer-style-auren_felon .felon-turn-arrow { opacity: 1 !important; }
+}

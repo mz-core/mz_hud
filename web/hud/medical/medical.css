@@ -1,0 +1,380 @@
+/* Apresentação médica. A decisão de estado continua pertencendo ao mz_core/mz_medical. */
+.medical-hud {
+  --medical-accent: #f3ae3d;
+  --medical-accent-rgb: 243, 174, 61;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 5vh 5vw;
+  overflow: hidden;
+  color: #f7f5f2;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.medical-dead {
+  --medical-accent: #f0444f;
+  --medical-accent-rgb: 240, 68, 79;
+}
+
+.medical-respawning {
+  --medical-accent: #59a7ff;
+  --medical-accent-rgb: 89, 167, 255;
+}
+
+.medical-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(var(--medical-accent-rgb), 0.12), transparent 32%),
+    radial-gradient(circle at center, transparent 22%, rgba(3, 4, 7, 0.74) 76%),
+    linear-gradient(180deg, rgba(4, 5, 8, 0.66), rgba(4, 5, 8, 0.84));
+  animation: medical-vignette-in 420ms ease-out both;
+}
+
+.medical-stage {
+  width: min(760px, 88vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(-1.5vh);
+  animation: medical-stage-in 520ms cubic-bezier(0.2, 0.78, 0.24, 1) both;
+}
+
+.medical-eyebrow {
+  display: grid;
+  grid-template-columns: 72px auto 72px;
+  align-items: center;
+  gap: 14px;
+  color: var(--medical-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+}
+
+.medical-eyebrow i,
+.medical-eyebrow b {
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--medical-accent-rgb), 0.78));
+}
+
+.medical-eyebrow b {
+  background: linear-gradient(90deg, rgba(var(--medical-accent-rgb), 0.78), transparent);
+}
+
+.medical-eyebrow span::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 10px 1px 0;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 12px rgba(var(--medical-accent-rgb), 0.9);
+  animation: medical-status-pulse 1.15s ease-in-out infinite;
+}
+
+.medical-hud h1 {
+  margin: 18px 0 4px;
+  color: #fff;
+  font-size: clamp(52px, 7.2vw, 92px);
+  font-weight: 780;
+  line-height: 0.95;
+  letter-spacing: 0.13em;
+  text-indent: 0.13em;
+  text-shadow: 0 2px 30px rgba(var(--medical-accent-rgb), 0.18);
+}
+
+.medical-description {
+  margin: 10px 0 30px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.medical-monitor {
+  width: 100%;
+  border: 1px solid rgba(var(--medical-accent-rgb), 0.28);
+  background: linear-gradient(180deg, rgba(var(--medical-accent-rgb), 0.055), rgba(8, 9, 13, 0.55));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.24), inset 0 0 38px rgba(var(--medical-accent-rgb), 0.025);
+}
+
+.medical-monitor header,
+.medical-monitor footer {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+}
+
+.medical-monitor header {
+  border-bottom: 1px solid rgba(var(--medical-accent-rgb), 0.18);
+}
+
+.medical-monitor footer {
+  justify-content: flex-start;
+  gap: 12px;
+  border-top: 1px solid rgba(var(--medical-accent-rgb), 0.14);
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 8px;
+  letter-spacing: 0.28em;
+}
+
+.medical-monitor footer strong {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+}
+
+.medical-monitor-title,
+.medical-monitor-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.medical-monitor-title strong,
+.medical-monitor-state span {
+  font-size: 9px;
+  letter-spacing: 0.24em;
+}
+
+.medical-monitor-title strong {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.medical-heart {
+  color: var(--medical-accent);
+  font-size: 17px;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(var(--medical-accent-rgb), 0.65));
+  animation: medical-heart-beat 1.18s ease-in-out infinite;
+}
+
+.medical-monitor-state {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.medical-monitor-state i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--medical-accent);
+  box-shadow: 0 0 9px rgba(var(--medical-accent-rgb), 0.8);
+  animation: medical-status-pulse 1.15s ease-in-out infinite;
+}
+
+.medical-wave {
+  position: relative;
+  height: 126px;
+  overflow: hidden;
+  background-image:
+    linear-gradient(rgba(var(--medical-accent-rgb), 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--medical-accent-rgb), 0.045) 1px, transparent 1px);
+  background-size: 100% 34px, 120px 100%;
+}
+
+.medical-wave::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -18%;
+  width: 18%;
+  background: linear-gradient(90deg, transparent, rgba(var(--medical-accent-rgb), 0.12), transparent);
+  animation: medical-monitor-scan 3.2s linear infinite;
+}
+
+.medical-wave svg {
+  position: absolute;
+  inset: 13px 16px;
+  width: calc(100% - 32px);
+  height: calc(100% - 26px);
+  overflow: visible;
+}
+
+.medical-wave path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.medical-wave-base {
+  stroke: rgba(var(--medical-accent-rgb), 0.2);
+  stroke-width: 1.5;
+}
+
+.medical-wave-trace {
+  stroke: var(--medical-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 150 920;
+  filter: drop-shadow(0 0 5px rgba(var(--medical-accent-rgb), 0.9));
+  animation: medical-wave-travel 2.35s linear infinite;
+}
+
+.medical-dead .medical-heart {
+  animation: none;
+  opacity: 0.52;
+}
+
+.medical-dead .medical-eyebrow span::before,
+.medical-dead .medical-monitor-state i {
+  animation-duration: 2.4s;
+}
+
+.medical-dead .medical-wave-trace {
+  stroke-dasharray: 80 920;
+  opacity: 0.65;
+  animation-duration: 3.8s;
+}
+
+.medical-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 26px;
+}
+
+.medical-timer small {
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+}
+
+.medical-timer strong {
+  margin-top: 6px;
+  color: #fff;
+  font-size: 34px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-shadow: 0 0 20px rgba(var(--medical-accent-rgb), 0.24);
+}
+
+.medical-timer > i {
+  width: 230px;
+  height: 1px;
+  margin-top: 11px;
+  background: linear-gradient(90deg, transparent, rgba(var(--medical-accent-rgb), 0.48), transparent);
+}
+
+.medical-ready .medical-timer strong {
+  color: var(--medical-accent);
+  animation: medical-ready-pulse 1.4s ease-in-out infinite;
+}
+
+.medical-actions {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 20px;
+}
+
+.medical-actions > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.medical-actions kbd {
+  min-width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(var(--medical-accent-rgb), 0.42);
+  background: rgba(var(--medical-accent-rgb), 0.08);
+  color: #fff;
+  font: 700 10px/1 "Segoe UI", sans-serif;
+  box-shadow: inset 0 0 12px rgba(var(--medical-accent-rgb), 0.06);
+}
+
+.medical-treatment {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.medical-treatment-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--medical-accent);
+  box-shadow: 0 0 10px rgba(var(--medical-accent-rgb), 0.9);
+  animation: medical-status-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes medical-stage-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 1; transform: translateY(-1.5vh) scale(1); }
+}
+
+@keyframes medical-vignette-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes medical-heart-beat {
+  0%, 28%, 70%, 100% { transform: scale(1); }
+  12% { transform: scale(1.28); }
+  20% { transform: scale(0.92); }
+  36% { transform: scale(1.16); }
+}
+
+@keyframes medical-status-pulse {
+  0%, 100% { opacity: 0.42; transform: scale(0.82); }
+  48% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes medical-wave-travel {
+  from { stroke-dashoffset: 1070; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes medical-monitor-scan {
+  from { transform: translateX(0); }
+  to { transform: translateX(760%); }
+}
+
+@keyframes medical-ready-pulse {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 720px), (max-height: 680px) {
+  .medical-hud { padding: 3vh 4vw; }
+  .medical-stage { width: min(650px, 92vw); }
+  .medical-hud h1 { margin-top: 12px; font-size: clamp(42px, 10vw, 66px); }
+  .medical-description { margin: 8px 0 18px; }
+  .medical-wave { height: 92px; }
+  .medical-timer { margin-top: 18px; }
+  .medical-actions { margin-top: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medical-vignette,
+  .medical-stage,
+  .medical-heart,
+  .medical-eyebrow span::before,
+  .medical-monitor-state i,
+  .medical-wave::after,
+  .medical-wave-trace,
+  .medical-ready .medical-timer strong,
+  .medical-treatment-dot {
+    animation: none !important;
+  }
+}

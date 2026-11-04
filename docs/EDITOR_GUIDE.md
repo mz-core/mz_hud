@@ -23,6 +23,13 @@ O comando `/mzhud` abre o editor administrativo global diretamente sobre a HUD. 
 - Use o handle inferior direito para resize.
 - Setas movem 1 unidade percentual; Shift+setas movem 10.
 - O inspector edita aparência, posição, visibilidade e propriedades específicas.
+  - **Velocímetro**: modelo, unidade, indicadores (incluindo faróis, cadeado e motor), quatro cores e ícone por slot.
+  - **Voz e rádio**: opções de `comms_options` (rótulos, textos e frequência).
+  - **Arma**: exibição, nome, munição e modelo da imagem.
+  - **Chat**: preset de posição. **Geral**: opacidade global.
+- No grupo de status, **Alinhamento** define a direção (Início = esq→dir / cima→baixo, Fim = dir→esq / baixo→cima) e **Modelo dos status → Aplicar a todos** define o modelo de todos os status de uma vez; cada status continua editável individualmente.
+- Status ocultos com "Colapsar quando oculto" fecham o vão na direção configurada; sem colapso, o espaço é preservado.
+- O navegador superior inclui `Geral`, `Chat`, `Mapa`, `Velocímetro`, `Arma` e `Logo`.
 - `statusGroup` move e dimensiona os status agrupados como unidade.
 
 ## Dock

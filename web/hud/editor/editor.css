@@ -28,10 +28,6 @@
 .editor-minimap-proxy {
   position: fixed;
   z-index: 18;
-  width: 16.38vw;
-  height: 18.3vh;
-  min-width: 170px;
-  min-height: 118px;
   overflow: hidden;
   border: 1px solid rgba(56,189,248,.5);
   border-radius: 8px;
@@ -40,7 +36,8 @@
   pointer-events: auto;
   cursor: move;
 }
-.editor-minimap-proxy.is-circle { width: min(18vw, 24vh); height: min(18vw, 24vh); min-width: 150px; min-height: 150px; border-radius: 50%; }
+/* tamanho/posição vêm do inspector (web/hud/editor/visual.js), espelhando o client. */
+.editor-minimap-proxy.is-circle { border-radius: 50%; }
 .editor-minimap-proxy.is-default { border-radius: 2px; }
 .editor-minimap-proxy.is-disabled { opacity: .48; border-style: dashed; }
 .minimap-proxy-grid { position: absolute; inset: 0; opacity: .55; background-image: linear-gradient(32deg, transparent 44%, rgba(125,211,252,.22) 45%, rgba(125,211,252,.22) 47%, transparent 48%), linear-gradient(118deg, transparent 47%, rgba(125,211,252,.16) 48%, rgba(125,211,252,.16) 50%, transparent 51%); background-size: 54px 47px; }
@@ -202,6 +199,45 @@
 .editor-preview-mode .is-editor-forced { opacity: .58 !important; }
 .hud-editor-module-badge { position: absolute; left: 50%; top: -18px; transform: translateX(-50%); padding: 2px 5px; border: 1px solid rgba(56,189,248,.4); border-radius: 4px; background: rgba(3,10,18,.9); color: #bae6fd; font-size: 7px; font-weight: 800; letter-spacing: .08em; }
 .editor-is-dragging, .editor-is-dragging * { cursor: grabbing !important; }
+
+/* ===== Aparência / temas (Wave 1) ===== */
+.inspector-color-grid { display: grid; gap: 6px; }
+.color-role-field .color-role-control { display: flex; align-items: center; gap: 6px; }
+.color-role-control input[type="color"] { flex: 1; width: 100%; height: 29px; border: 1px solid rgba(148,184,209,.18); border-radius: 6px; background: #0b1722; padding: 3px; }
+.role-inherit-badge { margin-left: 6px; padding: 1px 5px; border-radius: 999px; font-size: 7px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.role-inherit-badge.is-theme { color: #7dd3fc; background: rgba(56,189,248,.12); }
+.role-inherit-badge.is-override { color: #fbbf24; background: rgba(245,158,11,.14); }
+.role-inherit-btn { min-width: 26px; height: 26px; padding: 0 6px; border: 1px solid rgba(148,184,209,.2); border-radius: 6px; background: rgba(148,184,209,.08); color: #b9c8d6; cursor: pointer; font-size: 8px; line-height: 1; white-space: nowrap; }
+.role-inherit-btn:hover { color: #fff; background: rgba(56,189,248,.15); }
+.theme-preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.theme-preset-card { display: flex; flex-direction: column; gap: 6px; align-items: stretch; padding: 9px; border: 1px solid rgba(148,184,209,.16); border-radius: 9px; background: rgba(11,24,36,.8); color: #c7d5df; cursor: pointer; text-align: left; }
+.theme-preset-card:hover { border-color: rgba(56,189,248,.35); }
+.theme-preset-card.is-active { border-color: #38bdf8; box-shadow: 0 0 0 1px rgba(56,189,248,.4); }
+.theme-preset-card strong { font-size: 10px; }
+.theme-preset-swatches { display: flex; gap: 3px; }
+.theme-preset-swatches i { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,.12); }
+.palette-swatches { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.palette-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(255,255,255,.14); cursor: pointer; padding: 0; }
+.palette-swatch:hover { outline: 2px solid #38bdf8; outline-offset: 1px; }
+.override-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.override-chip { padding: 3px 7px; border-radius: 999px; background: rgba(245,158,11,.12); color: #fde68a; font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.inspector-danger { width: 100%; margin-top: 10px; min-height: 30px; border: 1px solid rgba(248,113,113,.3); border-radius: 7px; background: rgba(248,113,113,.08); color: #fecaca; cursor: pointer; font-size: 9px; }
+.theme-quick-picks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 8px; }
+.theme-quick-picks > span { color: #8397a9; font-size: 8px; margin-right: 2px; }
+.theme-quick-btn { padding: 3px 7px; border: 1px solid rgba(148,184,209,.2); border-radius: 6px; background: rgba(148,184,209,.06); color: #b9c8d6; cursor: pointer; font-size: 8px; }
+.theme-quick-btn:hover { color: #fff; background: rgba(56,189,248,.14); }
+
+/* ===== Ergonomia do dock e inspector ===== */
+.editor-dock.is-collapsed > *:not(#editor-dock-collapse) { display: none; }
+.editor-dock.is-collapsed { padding: 7px; }
+#editor-dock-collapse { min-height: 33px; padding: 0 10px; font-size: 11px; color: #b9c8d6; }
+.editor-dock.is-collapsed #editor-dock-collapse { color: #7dd3fc; }
+.editor-dock.dock-bottom-right { left: auto; right: 18px; transform: none; }
+.editor-dock.dock-top { bottom: auto; top: 18px; }
+.inspector-head-actions { display: flex; gap: 6px; }
+.inspector-head-actions button { width: 28px; height: 28px; border: 0; border-radius: 7px; background: rgba(148,184,209,.08); color: #a8bac9; cursor: pointer; }
+.inspector-head-actions button:hover { color: #fff; background: rgba(56,189,248,.16); }
+.visual-inspector.inspector-left { left: 18px; right: auto; }
 
 @media (max-width: 1100px) {
   .editor-navigator button { display: none; }

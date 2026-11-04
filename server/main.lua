@@ -53,7 +53,10 @@ local ALLOWED_SPEED_STYLES = {
   racing = true,
   classic = true,
   apex = true,
-  vector = true
+  vector = true,
+  auren_felon = true,
+  auren_truck = true,
+  auren_aton = true
 }
 
 local ALLOWED_ICONS = {
@@ -85,6 +88,35 @@ local ALLOWED_VISIBILITY_MODES = {
 
 local ALLOWED_GROUP_ORIENTATIONS = { horizontal = true, vertical = true }
 local ALLOWED_GROUP_ALIGNMENTS = { start = true, center = true, ['end'] = true }
+
+local ALLOWED_APPEARANCE_MODES = { legacy = true, preset = true, custom = true }
+
+local ALLOWED_THEME_IDS = {
+  mz_cyan = true,
+  midnight = true,
+  arctic = true,
+  emerald = true,
+  amber = true,
+  crimson = true,
+  violet = true,
+  monochrome = true
+}
+
+local APPEARANCE_ROLES = { 'primary', 'secondary', 'accent', 'text', 'background', 'border', 'success', 'warning', 'danger' }
+
+-- Componentes que aceitam override de aparência e os papéis permitidos por cada um.
+local ALLOWED_APPEARANCE_OVERRIDES = {
+  speedometer = { text = true, primary = true, danger = true, background = true },
+  stamina = { primary = true, secondary = true, background = true, text = true, border = true },
+  armor = { primary = true, secondary = true, background = true, text = true, border = true },
+  health = { primary = true, secondary = true, background = true, text = true, border = true },
+  hunger = { primary = true, secondary = true, background = true, text = true, border = true },
+  thirst = { primary = true, secondary = true, background = true, text = true, border = true },
+  oxygen = { primary = true, secondary = true, background = true, text = true, border = true },
+  stress = { primary = true, secondary = true, background = true, text = true, border = true },
+  voice = { primary = true, secondary = true, background = true, text = true, border = true },
+  radio = { primary = true, secondary = true, background = true, text = true, border = true }
+}
 
 local SPEEDOMETER_ICON_DEFAULTS = {
   fuel = 'fuel',
@@ -333,6 +365,47 @@ local function sanitizeChatConfig(defaults, incoming)
   }
 end
 
+local function sanitizeAppearance(defaults, incoming)
+  local defaultAppearance = defaults.general and defaults.general.appearance or {}
+  local appearance = type(incoming) == 'table' and incoming or {}
+
+  local mode = sanitizeEnum(appearance.mode, ALLOWED_APPEARANCE_MODES, defaultAppearance.mode or 'legacy')
+  local theme = ''
+  if mode == 'preset' then
+    theme = sanitizeEnum(appearance.theme, ALLOWED_THEME_IDS, defaultAppearance.theme or 'mz_cyan')
+  end
+
+  local defaultPalette = type(defaultAppearance.palette) == 'table' and defaultAppearance.palette or {}
+  local paletteIncoming = type(appearance.palette) == 'table' and appearance.palette or {}
+  local palette = {}
+  for _, role in ipairs(APPEARANCE_ROLES) do
+    palette[role] = sanitizeColor(paletteIncoming[role], defaultPalette[role] or '#22d3ee')
+  end
+
+  local overrides = {}
+  local overridesIncoming = type(appearance.overrides) == 'table' and appearance.overrides or {}
+  for componentId, allowedRoles in pairs(ALLOWED_APPEARANCE_OVERRIDES) do
+    local entry = type(overridesIncoming[componentId]) == 'table' and overridesIncoming[componentId] or {}
+    local cleaned = {}
+    for role in pairs(allowedRoles) do
+      local value = sanitizeColor(entry[role], nil)
+      if value then
+        cleaned[role] = value
+      end
+    end
+    if next(cleaned) ~= nil then
+      overrides[componentId] = cleaned
+    end
+  end
+
+  return {
+    mode = mode,
+    theme = theme,
+    palette = palette,
+    overrides = overrides
+  }
+end
+
 local function sanitizeHudConfig(incoming)
   local defaults = getDefaults()
   local general = type(incoming) == 'table' and incoming.general or {}
@@ -345,6 +418,7 @@ local function sanitizeHudConfig(incoming)
     schema_version = SCHEMA_VERSION,
     revision = math.max(0, math.floor(clampNumber(type(incoming) == 'table' and incoming.revision, 0, 2147483647, defaults.revision or 0))),
     general = {
+      appearance = sanitizeAppearance(defaults, general.appearance),
       show_minimap = sanitizeBool(general.show_minimap, defaults.general.show_minimap),
       minimap_style = sanitizeEnum(general.minimap_style, ALLOWED_MINIMAP_STYLES, defaults.general.minimap_style),
       minimap_visibility = sanitizeEnum(general.minimap_visibility, { always = true, vehicle = true, foot = true, never = true }, defaults.general.minimap_visibility or 'always'),

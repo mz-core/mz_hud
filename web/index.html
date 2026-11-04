@@ -13,7 +13,11 @@
   <link rel="stylesheet" href="hud/radio/radio.css">
   <link rel="stylesheet" href="hud/logo/logo.css">
   <link rel="stylesheet" href="hud/weapon/weapon.css">
+  <link rel="stylesheet" href="hud/medical/medical.css">
   <link rel="stylesheet" href="hud/speedometer/speedometer.css">
+  <link rel="stylesheet" href="hud/speedometer/models/auren-felon.css">
+  <link rel="stylesheet" href="hud/speedometer/models/auren-truck.css">
+  <link rel="stylesheet" href="hud/speedometer/models/auren-aton.css">
   <link rel="stylesheet" href="hud/editor/editor.css">
 </head>
 <body class="hud-initializing" style="background: transparent !important; background-color: rgba(0,0,0,0) !important;">
@@ -37,9 +41,12 @@
       <select id="editor-element-select" aria-label="Selecionar status"><option value="">Status...</option><option value="health">Vida</option><option value="armor">Colete</option><option value="hunger">Fome</option><option value="thirst">Sede</option><option value="stamina">Stamina</option><option value="oxygen">Oxigênio</option><option value="stress">Stress</option><option value="voice">Voz</option><option value="radio">Rádio</option></select>
       <button type="button" data-select-element="statusGroup">Status group</button>
       <button type="button" data-select-element="minimap">Mapa</button>
+      <button type="button" data-select-element="general">Geral</button>
+      <button type="button" data-select-element="appearance">Tema</button>
       <button type="button" data-select-element="speedometer">Velocímetro</button>
       <button type="button" data-select-element="weapon">Arma</button>
       <button type="button" data-select-element="logo">Logo</button>
+      <button type="button" data-select-element="chat">Chat</button>
     </aside>
 
     <div id="editor-selection-box" class="editor-selection-box hidden" aria-hidden="true">
@@ -56,12 +63,16 @@
     <section id="editor-inspector" class="visual-inspector hidden" aria-label="Inspector de propriedades">
       <header>
         <div><small>INSPECTOR</small><strong id="inspector-title">Elemento</strong></div>
-        <button id="inspector-close" type="button" title="Fechar inspector">x</button>
+        <div class="inspector-head-actions">
+          <button id="inspector-cycle" type="button" data-editor-action="cycle-inspector-pos" title="Mover inspector">⇄</button>
+          <button id="inspector-close" type="button" title="Fechar inspector">x</button>
+        </div>
       </header>
       <div id="inspector-body" class="inspector-body"></div>
     </section>
 
-    <div class="editor-dock" role="toolbar" aria-label="Ações globais">
+    <div id="editor-dock" class="editor-dock" role="toolbar" aria-label="Ações globais">
+      <button id="editor-dock-collapse" type="button" data-editor-action="toggle-dock" title="Recolher/expandir dock">▾</button>
       <div class="editor-brand"><strong>MZ HUD</strong><span id="editor-dirty-state">Sem alterações</span></div>
       <div class="dock-group">
         <button id="editor-undo" type="button" title="Desfazer (Ctrl+Z)" disabled>Undo</button>
@@ -76,6 +87,7 @@
       <button id="editor-presets-open" type="button" title="Abrir presets">Presets</button>
       <button id="reset-config" class="dock-danger" type="button" title="Resetar toda a HUD no draft">Resetar</button>
       <button id="save-config" class="dock-primary" type="button">Salvar e Aplicar</button>
+      <button id="editor-dock-cycle" type="button" data-editor-action="cycle-dock-pos" title="Mover dock">⇅</button>
       <button id="close-editor" type="button" title="Fechar editor">Fechar</button>
     </div>
 
@@ -97,11 +109,15 @@
   <script src="core/utils.js"></script>
   <script src="core/positions.js"></script>
   <script src="core/icons.js"></script>
+  <script src="hud/editor/themes.js"></script>
   <script src="hud/editor/schema.js"></script>
   <script src="hud/editor/visibility.js"></script>
   <script src="core/defaults.js"></script>
   <script src="core/weapons.js"></script>
   <script src="core/core.js"></script>
+  <script src="hud/speedometer/models/auren-felon.js"></script>
+  <script src="hud/speedometer/models/auren-truck.js"></script>
+  <script src="hud/speedometer/models/auren-aton.js"></script>
   <script src="hud/speedometer/speedometer.js"></script>
   <script src="hud/status/status.js"></script>
   <script src="hud/voice/voice.js"></script>

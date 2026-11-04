@@ -1,5 +1,50 @@
 # Changelog da organização da mz_hud
 
+## Fase 14 - Preview do mapa fiel ao cliente
+
+```txt
+- proxy do mapa passa a usar a geometria real do cliente por estilo
+  (base + tamanho: square 0.1638x0.183, circle 0.180x0.258, default 0.150x0.188888)
+- minimap_x/minimap_y tratados como deslocamento a partir de (24,24), com o mesmo
+  minimapOffset de ultrawide usado pelo cliente
+- cliente envia minimapInset (recuo do safezone) para o proxy alinhar com a borda
+  real do minimapa no jogo
+- eixo Y corrigido no cliente (era invertido em relação ao editor): positivo sobe
+- editor.css deixa de fixar largura/altura do proxy
+```
+
+Testes: `tests/minimap_proxy_contract.test.js`.
+
+## Fase 13 - Alinhamento/colapso do grupo de status e modelo em lote
+
+```txt
+- grupo de status ancora a direção de crescimento pelo alignment
+  (start esq→dir / cima→baixo, center, end dir→esq / baixo→cima)
+- status oculto com collapseWhenHidden sai do fluxo (display:none), fechando o
+  vão e reancorando o grupo sem espaçamento residual
+- inspector do grupo recebe "Modelo dos status → Aplicar a todos"; cada status
+  continua editável individualmente
+```
+
+Testes: `tests/status_group_alignment_contract.test.js`.
+
+## Fase 12 - Editor completo, ícones Lucide e correções do velocímetro
+
+```txt
+- inspector expõe opções já suportadas pelo schema: indicadores do velocímetro
+  (faróis, cadeado, motor), cores secundária/fundo, ícone por slot, comms_options
+  de voz/rádio, modelo de imagem da arma e preset do chat
+- navegador do editor inclui Geral (opacidade global) e Chat
+- conjunto curado de ícones Lucide adicionado e registrado em icon_manifest.json
+- setas de apex/analog/classic passam a herdar a cor do tema via máscara CSS,
+  removendo a cor base fixa do SVG
+- indicador de motor separa barra e ícone: aro/arco segue a saúde, ícone segue
+  ligado/desligado
+```
+
+Testes: `tests/editor_harness.js` e `tests/hud_editor_extended.test.js`.
+Validação runtime FiveM continua pendente.
+
 ## Fase 10 - Release, produção e documentação final
 
 ```txt

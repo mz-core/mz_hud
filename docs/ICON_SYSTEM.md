@@ -70,6 +70,34 @@ Exemplo:
 }
 ```
 
+## Ícones Lucide
+
+Um conjunto curado de ícones Lucide foi incluído e registrado em `web/assets/icons/icon_manifest.json`, portanto aparece na lista de ícones do editor sem depender do padrão `categoria_N.svg`.
+
+```txt
+status/health:  heart-pulse, activity, cross
+status/armor:   shield-check, shield-half
+status/hunger:  drumstick, beef, utensils-crossed
+status/thirst:  droplets, glass-water, cup-soda
+status/stamina: battery-charging, footprints, gauge
+status/oxygen:  cloud
+status/stress:  brain-circuit, triangle-alert
+comms/voice:    mic-off, audio-lines, volume-2
+comms/radio:    radio-tower, antenna, signal
+vehicle/fuel:   fuel (id fuel-lucide)
+vehicle/engine: settings, cog
+vehicle/lights: lightbulb
+vehicle/lock:   lock-open
+vehicle/arrow:  arrow-right
+vehicle/speed:  gauge
+vehicle/rpm:    activity
+vehicle/gear:   cog
+vehicle/weapon: crosshair
+vehicle/ammo:   box
+```
+
+Os SVGs Lucide são desenhados por traço e são usados como máscara CSS (`mask`), recebendo a cor do tema via `currentColor`. Para adicionar outros, copie o SVG para a pasta da categoria e registre `id`, `label` e `path` no manifesto.
+
 ## Regras
 
 - Não coloque CSS para cada ícone.

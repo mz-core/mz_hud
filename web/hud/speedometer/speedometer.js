@@ -103,17 +103,18 @@
     const beltClass = state.vehicle.seatbelt ? "is-active" : "is-danger";
     const seatbeltAvailable = state.vehicle.seatbeltAvailable !== false;
     const locked = Boolean(state.vehicle.locked);
-    const engineClass = state.vehicle.engine ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
+    // O aro do motor segue a saúde; o ícone segue ligado/desligado.
+    const engineRingClass = engineValue < 35 ? "is-critical" : engineValue < 65 ? "is-warning" : "is-ok";
 
     return `<div class="speedometer-panel speedometer-apex">
       ${speedometer.show_speed ? `<svg class="apex-speed-arc" viewBox="0 0 64 64" aria-hidden="true"><circle class="apex-speed-track" r="20" cx="32" cy="32"></circle><circle class="apex-speed-fill" r="20" cx="32" cy="32" style="stroke-dashoffset:${speedArc}"></circle></svg>` : ""}
       ${speedometer.show_fuel ? `<div class="apex-side-circle apex-fuel ${fuelLowClass}" title="CombustÃ­vel"><svg class="apex-status-svg" viewBox="0 0 50 50"><circle class="apex-circle-back" r="18" cx="25" cy="25"></circle><circle class="apex-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${fuelArc}"></circle></svg><span class="apex-side-value">${fuel}<b>L</b></span><span class="apex-side-icon">${icon("fuel", speedometer)}</span></div>` : ""}
-      ${speedometer.show_engine ? `<div class="apex-side-circle apex-engine-circle ${engineClass}" title="Motor"><svg class="apex-status-svg" viewBox="0 0 50 50"><circle class="apex-circle-back" r="18" cx="25" cy="25"></circle><circle class="apex-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${engineArc}"></circle></svg><span class="apex-side-icon">${icon("engine", speedometer)}</span></div>` : ""}
+      ${speedometer.show_engine ? `<div class="apex-side-circle apex-engine-circle ${engineRingClass}" title="Motor"><svg class="apex-status-svg" viewBox="0 0 50 50"><circle class="apex-circle-back" r="18" cx="25" cy="25"></circle><circle class="apex-circle-fill" r="18" cx="25" cy="25" style="stroke-dashoffset:${engineArc}"></circle></svg><span class="apex-side-icon ${engineOn ? "is-on" : "is-off"}">${icon("engine", speedometer)}</span></div>` : ""}
       ${speedometer.show_gear ? `<div class="apex-gear"><small>${escapeHTML(previousGear)}</small><div>${escapeHTML(gear)}</div><small>${escapeHTML(nextGear)}</small></div>` : ""}
       ${speedometer.show_rpm ? `<div class="apex-rpm"><strong>RPM</strong><div class="apex-rpm-leds">${Array.from({ length: 10 }, (_, i) => `<span class="${i < Math.ceil((rpm / 100) * 10) ? "active" : ""} ${i > 7 ? "hot" : ""}"></span>`).join("")}</div></div>` : ""}
       ${speedometer.show_speed ? `<h1>${renderSpeedDigits(speed)}</h1><em>${escapeHTML(speedometer.unit === "mph" ? "MPH" : "KM")}</em>` : ""}
       <div class="apex-car-info">
-        ${speedometer.show_lights ? `<span class="apex-arrows"><img class="apex-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta esquerda" style="transform:scaleX(-1)"><img class="apex-arrow ${rightActive ? "is-active" : ""}" src="${rightActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta direita"></span>` : ""}
+        ${speedometer.show_lights ? `<span class="apex-arrows"><span class="apex-arrow ${leftActive ? "is-active" : ""}" aria-hidden="true">${icon(leftActive ? "arrow_active" : "arrow", speedometer)}</span><span class="apex-arrow ${rightActive ? "is-active" : ""}" aria-hidden="true">${icon(rightActive ? "arrow_active" : "arrow", speedometer)}</span></span>` : ""}
         ${speedometer.show_seatbelt && seatbeltAvailable ? `<span class="apex-info-icon ${beltClass}" title="Cinto">${icon(beltIcon, speedometer)}</span>` : ""}
         ${speedometer.show_lights ? `<span class="apex-info-icon ${lightClass}" title="Faróis">${icon(lightIcon, speedometer)}</span>` : ""}
         ${speedometer.show_lock ? `<span class="apex-info-icon ${locked ? "is-active" : "is-off"}" title="${locked ? "Trancado" : "Destrancado"}">${icon(locked ? "lock" : "unlock", speedometer)}</span>` : ""}
@@ -211,7 +212,8 @@
     const needle = (safeSpeed / maxSpeed) * 240 - 120;
     const engineValue = Math.max(0, Math.min(100, Number(state.vehicle.engineHealth ?? (state.vehicle.engine ? 100 : 0)) || 0));
     const engineOn = Boolean(state.vehicle.engine);
-    const engineClass = engineOn ? (engineValue < 35 ? "is-warning" : "is-ok") : "is-off";
+    // O aro do motor segue a saúde; o ícone segue ligado/desligado.
+    const engineRingClass = engineValue < 35 ? "is-critical" : engineValue < 65 ? "is-warning" : "is-ok";
     const engineArc = 120;
     const engineOffset = (engineArc * (1 - engineValue / 100)).toFixed(1);
     const leftActive = Boolean(state.vehicle.indicatorLeft);
@@ -266,8 +268,8 @@
         </div>
       </div>
       <div class="gauge-side">
-        ${speedometer.show_engine ? `<div class="gauge-engine-edge ${engineClass}" title="Motor"><span class="gauge-engine-icon">${icon("engine", speedometer)}</span><svg viewBox="0 0 32 120" aria-hidden="true"><path d="M 8 10 C 30 34 30 86 8 110" class="gauge-engine-arc-bg" /><path d="M 8 10 C 30 34 30 86 8 110" class="gauge-engine-arc ${engineClass}" stroke-dasharray="${engineArc}" stroke-dashoffset="${engineOffset}" /></svg></div>` : ""}
-        ${speedometer.show_lights ? `<div class="gauge-drive-icons"><img class="gauge-arrow ${leftActive ? "is-active" : ""}" src="${leftActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta esquerda"><img class="gauge-arrow gauge-arrow-right ${rightActive ? "is-active" : ""}" src="${rightActive ? iconSrc("arrow_active", speedometer) : iconSrc("arrow", speedometer)}" alt="Seta direita"></div>` : ""}
+        ${speedometer.show_engine ? `<div class="gauge-engine-edge ${engineRingClass}" title="Motor"><span class="gauge-engine-icon ${engineOn ? "is-on" : "is-off"}">${icon("engine", speedometer)}</span><svg viewBox="0 0 32 120" aria-hidden="true"><path d="M 8 10 C 30 34 30 86 8 110" class="gauge-engine-arc-bg" /><path d="M 8 10 C 30 34 30 86 8 110" class="gauge-engine-arc" stroke-dasharray="${engineArc}" stroke-dashoffset="${engineOffset}" /></svg></div>` : ""}
+        ${speedometer.show_lights ? `<div class="gauge-drive-icons"><span class="gauge-arrow ${leftActive ? "is-active" : ""}" aria-hidden="true">${icon(leftActive ? "arrow_active" : "arrow", speedometer)}</span><span class="gauge-arrow gauge-arrow-right ${rightActive ? "is-active" : ""}" aria-hidden="true">${icon(rightActive ? "arrow_active" : "arrow", speedometer)}</span></div>` : ""}
         ${speedometer.show_fuel ? `<div class="gauge-fuel ${fuelLowClass}">${icon("fuel", speedometer)}<span>${fuel}%</span></div>` : ""}
         ${speedometer.show_rpm ? `<div class="gauge-rpm"><div class="speedometer-bar-track"><div class="speedometer-bar-fill" style="width:${rpm}%"></div></div><small>RPM</small></div>` : ""}
         <div class="gauge-status-icons">
@@ -280,10 +282,55 @@
     </div>`;
   }
 
+  // Modelos persistentes (DOM próprio + update incremental). Evitam reconstruir a
+  // HUD inteira a cada updateVehicle. Cada modelo expõe create(host) -> instância
+  // com theme(accent, text), update(vehicle, config, now) e destroy().
+  const persistentModels = {
+    auren_felon: {
+      create: (host) => window.MZHudSpeedometerFelon.create(host),
+    },
+    auren_truck: {
+      create: (host) => window.MZHudSpeedometerTruck.create(host),
+    },
+    auren_aton: {
+      create: (host) => window.MZHudSpeedometerAton.create(host),
+    },
+  };
+  let activeModel = null; // { style, instance, host }
+
+  // Mapeia o payload canônico updateVehicle para a forma consumida pelos modelos.
+  function toModelVehicle(vehicle) {
+    const bool = (v) => v === true || v === 1;
+    const engine = bool(vehicle.engine);
+    return {
+      engine,
+      speed: vehicle.speed,
+      rpm: (Number(vehicle.rpm) || 0) / 100,
+      gear: vehicle.gear,
+      fuel: vehicle.fuel,
+      engineHealth: (Number(vehicle.engineHealth) || 0) / 100,
+      seatbelt: bool(vehicle.seatbelt),
+      seatbeltAvailable: vehicle.seatbeltAvailable !== false,
+      engineWarning: engine && (Number(vehicle.engineHealth) || 100) < 40,
+      lights: bool(vehicle.lights),
+      lightsHigh: bool(vehicle.lightsHigh),
+      indicatorLeft: bool(vehicle.indicatorLeft),
+      indicatorRight: bool(vehicle.indicatorRight),
+    };
+  }
+
   function render(ctx) {
     const { state, dom, withSpeedometerDefaults, getSpeedometerPositionClass } = ctx;
     if (!state.config) return;
     const speedometer = withSpeedometerDefaults(state.config.speedometer || {});
+    const slots = (window.MZHudThemes && window.MZHudThemes.resolveSpeedometerSlots)
+      ? window.MZHudThemes.resolveSpeedometerSlots(state.config, speedometer)
+      : {
+          primary_color: speedometer.primary_color,
+          secondary_color: speedometer.secondary_color,
+          accent_color: speedometer.accent_color,
+          background_color: speedometer.background_color,
+        };
     const visibility = window.MZHudVisibility?.resolveVisibility("speedometer", speedometer, state, { preview: state.editorPreview }) || { visible: true, forced: false };
     const visible = Boolean(speedometer.enabled && visibility.visible && state.speedometerVisible);
     if (!visible) {
@@ -295,16 +342,16 @@
     const speed = Math.max(0, Number(state.vehicle.speed) || 0);
     const gear = state.vehicle.gear || "N";
     const fuelLowClass = fuel < 20 ? "is-low" : "";
-    const style = ["digital", "analog", "minimal", "racing", "classic", "apex", "vector"].includes(speedometer.style) ? speedometer.style : "digital";
+    const style = ["digital", "analog", "minimal", "racing", "classic", "apex", "vector", "auren_felon", "auren_truck", "auren_aton"].includes(speedometer.style) ? speedometer.style : "digital";
     const positionClass = speedometer.free ? "speedometer-free" : getSpeedometerPositionClass(speedometer.position);
     dom.speedometer.className = `speedometer speedometer-style-${style} ${positionClass} ${state.editorOpen && state.selectedElement === "speedometer" ? "is-selected" : ""} ${visibility.forced ? "is-editor-forced" : ""}`;
     dom.speedometer.dataset.hudSelect = "speedometer";
     dom.speedometer.style.opacity = `${Math.max(0, Math.min(100, speedometer.opacity || 100)) / 100}`;
-    dom.speedometer.style.setProperty("--speed-primary", speedometer.primary_color);
-    dom.speedometer.style.setProperty("--speed-secondary", speedometer.secondary_color);
-    dom.speedometer.style.setProperty("--speed-accent", speedometer.accent_color);
-    dom.speedometer.style.setProperty("--speed-bg", speedometer.background_color);
-    dom.speedometer.style.setProperty("--speed-primary-soft", `${speedometer.primary_color}80`);
+    dom.speedometer.style.setProperty("--speed-primary", slots.primary_color);
+    dom.speedometer.style.setProperty("--speed-secondary", slots.secondary_color);
+    dom.speedometer.style.setProperty("--speed-accent", slots.accent_color);
+    dom.speedometer.style.setProperty("--speed-bg", slots.background_color);
+    dom.speedometer.style.setProperty("--speed-primary-soft", `${slots.primary_color}80`);
     const speedScale = Math.max(60, Math.min(150, speedometer.scale || 100)) / 100;
     if (speedometer.free) {
       const x = Math.max(0, Math.min(100, Number(speedometer.x) || 88));
@@ -329,6 +376,44 @@
       dom.speedometer.style.transform = `${speedTranslate}scale(${speedScale})`;
     }
 
+    const badge = state.editorOpen && visibility.mode !== "always" ? `<span class="hud-editor-module-badge">${visibility.mode.toUpperCase()}</span>` : "";
+
+    if (persistentModels[style]) {
+      if (!activeModel || activeModel.style !== style) {
+        if (activeModel) { activeModel.instance.destroy(); activeModel = null; }
+        dom.speedometer.innerHTML = ""; // limpa badge/legado anteriores
+        // Anexa o modelo diretamente ao #speedometer (que já tem 324x324 via CSS),
+        // sem div intermediário que quebraria a cadeia height:100%.
+        activeModel = { style, instance: persistentModels[style].create(dom.speedometer), host: dom.speedometer };
+      }
+      activeModel.instance.theme(slots.accent_color, slots.primary_color);
+      const now = (typeof performance !== "undefined" && typeof performance.now === "function") ? performance.now() : 0;
+      activeModel.instance.update(
+        toModelVehicle(state.vehicle),
+        {
+          unit: speedometer.unit,
+          animation: true,
+          lowFuel: 20,
+          show_speed: speedometer.show_speed,
+          show_gear: speedometer.show_gear,
+          show_fuel: speedometer.show_fuel,
+          show_rpm: speedometer.show_rpm,
+          show_seatbelt: speedometer.show_seatbelt,
+          show_lights: speedometer.show_lights,
+          show_engine: speedometer.show_engine,
+        },
+        now,
+      );
+      dom.speedometer.querySelector(".hud-editor-module-badge")?.remove();
+      if (badge) dom.speedometer.insertAdjacentHTML("afterbegin", badge);
+      return;
+    }
+
+    if (activeModel) {
+      activeModel.instance.destroy();
+      activeModel = null;
+    }
+
     const renderers = {
       digital: renderDigital,
       minimal: renderMinimal,
@@ -339,7 +424,6 @@
       vector: renderVector,
     };
 
-    const badge = state.editorOpen && visibility.mode !== "always" ? `<span class="hud-editor-module-badge">${visibility.mode.toUpperCase()}</span>` : "";
     dom.speedometer.innerHTML = badge + renderers[style](ctx, speedometer, speed, rpm, fuel, gear, fuelLowClass);
   }
 

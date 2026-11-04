@@ -8,6 +8,7 @@
   const dom = app.dom;
   const core = app.core;
   const h = app.helpers;
+  let lastThemeSignature = null;
 
   app.voiceLevelFromStatus = function voiceLevelFromStatus() {
     return core.voiceLevelFromStatus
@@ -17,11 +18,39 @@
 
   app.itemInlineStyle = function itemInlineStyle(key, entry) {
     const item = h.withElementDefaults(key, entry);
+    const colors = (window.MZHudThemes && window.MZHudThemes.resolveElementColors)
+      ? window.MZHudThemes.resolveElementColors(state.config, key, item.color)
+      : { accent: item.color, track: null, background: null, text: null, border: null };
     const opacity = Math.max(0, Math.min(100, Number(item.opacity) || 0)) / 100;
     const scale = Math.max(40, Math.min(200, Number(item.scale) || 100)) / 100;
     const x = Math.max(0, Math.min(100, Number(item.x) || 0));
     const y = Math.max(0, Math.min(100, Number(item.y) || 0));
-    return `--item-accent:${item.color};--item-value:${Math.max(0, Math.min(100, Number(state.status[key]) || 0))};--item-opacity:${opacity};--item-scale:${scale};--item-x:${x}%;--item-y:${y}%`;
+    let style = `--item-accent:${colors.accent || "transparent"};--item-value:${Math.max(0, Math.min(100, Number(state.status[key]) || 0))};--item-opacity:${opacity};--item-scale:${scale};--item-x:${x}%;--item-y:${y}%`;
+    if (colors.track) style += `;--item-track:${colors.track}`;
+    if (colors.background) style += `;--item-background:${colors.background}`;
+    if (colors.text) style += `;--item-text:${colors.text}`;
+    if (colors.border) style += `;--item-border:${colors.border}`;
+    return style;
+  };
+
+  // Aplica os papéis semânticos da paleta como tokens CSS no escopo do #hud-root.
+  // Em modo legacy os tokens são removidos para o CSS voltar aos valores legados.
+  // A assinatura evita reescrever o DOM a cada poll (200ms).
+  app.applyThemeTokens = function applyThemeTokens() {
+    const appearance = state.config?.general?.appearance;
+    const roles = window.MZHudThemes?.ROLES || [];
+    const signature = appearance && appearance.mode !== "legacy"
+      ? `${appearance.mode}:${roles.map((role) => appearance.palette?.[role] || "").join(",")}`
+      : "legacy";
+    if (signature === lastThemeSignature) return;
+    lastThemeSignature = signature;
+    roles.forEach((role) => {
+      if (appearance && appearance.mode !== "legacy" && appearance.palette?.[role]) {
+        dom.hudRoot.style.setProperty(`--theme-${role}`, appearance.palette[role]);
+      } else {
+        dom.hudRoot.style.removeProperty(`--theme-${role}`);
+      }
+    });
   };
 
   app.renderCommsItem = function renderCommsItem(key, rawEntry) {
@@ -105,6 +134,7 @@
     if (!state.editorOpen) state.config = h.normalizeConfig(state.config);
     const general = state.config.general || {};
     const elements = state.config.elements || {};
+    app.applyThemeTokens();
     dom.hudContainer.className = "hud-container hud-layout-free";
     dom.hudContainer.style.opacity = `${(general.global_opacity || 100) / 100}`;
     dom.hudContainer.style.transform = "none";
@@ -188,9 +218,9 @@
 
   app.applyVisibility = function applyVisibility() {
     dom.hudContainer.classList.toggle("hidden", !state.hudVisible);
-    if (!state.hudVisible) dom.hudLogo.classList.add("hidden");
+    if (!state.logoVisible) dom.hudLogo.classList.add("hidden");
     const speedVisibility = window.MZHudVisibility?.resolveVisibility("speedometer", state.config?.speedometer || {}, state, { preview: state.editorPreview });
-    if (!state.speedometerVisible || !state.config?.speedometer?.enabled || speedVisibility?.visible === false)
+    if (!state.hudVisible || !state.speedometerVisible || !state.config?.speedometer?.enabled || speedVisibility?.visible === false)
       dom.speedometer.classList.add("hidden");
     if (
       !state.hudVisible ||

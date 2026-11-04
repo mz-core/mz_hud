@@ -126,6 +126,26 @@ Config.DefaultHUD = {
   schema_version = 2,
   revision = 0,
   general = {
+    -- Aparência global / temas (Wave 1). Modo 'legacy' preserva o visual atual;
+    -- 'preset' aplica um dos temas fixos; 'custom' usa a paleta editável.
+    -- Overrides por componente vivem em appearance.overrides e nunca derivam
+    -- automaticamente dos campos color legados.
+    appearance = {
+      mode = 'legacy', -- legacy | preset | custom
+      theme = '',      -- id do preset quando mode == 'preset' (ex: mz_cyan)
+      palette = {
+        primary = '#22d3ee',
+        secondary = '#67e8f9',
+        accent = '#38bdf8',
+        text = '#f0fdfa',
+        background = '#020617',
+        border = '#164e63',
+        success = '#22c55e',
+        warning = '#f59e0b',
+        danger = '#ef4444'
+      },
+      overrides = {}
+    },
     show_minimap = true,
     minimap_style = 'square', -- circle | square | default
     minimap_visibility = 'vehicle', -- always | vehicle | foot | never
@@ -162,7 +182,7 @@ Config.DefaultHUD = {
     free = true,
     x = 88,
     y = 82,
-    style = 'apex', -- modelos oficiais: digital | analog | minimal | racing | classic | apex | vector
+    style = 'apex', -- modelos oficiais: digital | analog | minimal | racing | classic | apex | vector | auren_felon | auren_truck | auren_aton
     unit = 'kmh',
     icons = {
       fuel = 'fuel',
